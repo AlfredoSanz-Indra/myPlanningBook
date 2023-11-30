@@ -3,8 +3,7 @@ package com.alfred.myplanningbook.ui.view.viewmodel
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.alfred.myplanningbook.domain.model.SimpleResponse
-import com.alfred.myplanningbook.domain.repositoryapi.UsersRepository
+import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.domain.usecaseapi.UsersService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +24,8 @@ data class RegisterUiState(
     var pwdError: Boolean = false,
     var pwdErrorText: String = "",
     var generalError: Boolean = false,
-    var generalErrorText: String = ""
+    var generalErrorText: String = "",
+    var registerAction: Boolean = false
 )
 
 class RegisterViewModel(val usersService: UsersService) : ViewModel() {
@@ -51,29 +51,35 @@ class RegisterViewModel(val usersService: UsersService) : ViewModel() {
         }
     }
 
-    fun registerUser(): Boolean {
+    fun registerUser() {
 
-        var result = true
         clearErrors()
 
         if(!validateLengths() ||
            !validatePasswords() ||
            !validateEmail()) {
 
-            return false
+            return
         }
 
         viewModelScope.launch {
-
             val resp = usersService.newUserRegister(uiState.value.email.trim(), uiState.value.pwd01.trim())
-            println("*** RegisterViewModel registerUser resp= $resp")
-            if(!resp.result) {
-                setGeneralError("Error registering: ${resp.code} , ${resp.message}")
-                result = false
+            Klog.line("RegisterViewModel", "registerUser", "resp: $resp")
+            if(resp.result) {
+                updateRegisterAction(true);
             }
+            else {
+                setGeneralError(" ${resp.code}: ${resp.message}")
+            }
+
+            Klog.line("RegisterViewModel", "registerUser", "registerAction: ${_uiState.value.registerAction}")
         }
-        println("*** RegisterViewModel registerUser result: $result")
-        return result
+    }
+
+    private fun updateRegisterAction(action: Boolean) {
+        _uiState.update {
+            it.copy(registerAction = action)
+        }
     }
 
     private fun validateLengths(): Boolean {

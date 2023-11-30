@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.alfred.myplanningbook.core.firebase.FirebaseSession
+import com.alfred.myplanningbook.core.log.Klog
 
 /**
  * @author Alfredo Sanz
@@ -30,7 +31,7 @@ class MainView() {
     fun createView(onLogin: () -> Unit, onRegister: () -> Unit) {
 
         val userSigned = FirebaseSession.isUserSigned()
-        println("**MainView createView userSigned= $userSigned")
+        Klog.line("MainView", "createView", "userSigned= $userSigned")
 
         buttonsPrimaryActions(onLogin, onRegister)
     }
@@ -51,7 +52,7 @@ class MainView() {
                     .height(70.dp),
                     colors = getLoginButtonColour(),
                     onClick = {
-                        println("*** Login button clicked")
+                        Klog.line("MainView", "buttonsPrimaryActions", "Login button clicked")
                         onLogin()
                     }
                 ) {
@@ -65,7 +66,7 @@ class MainView() {
                     .height(70.dp),
                     colors = getRegisterButtonColour(),
                     onClick = {
-                        println("*** Register button clicked")
+                        Klog.line("MainView", "buttonsPrimaryActions", "Register button clicked")
                         onRegister()
                     }
                 ) {

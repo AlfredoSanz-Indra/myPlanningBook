@@ -5,15 +5,25 @@ import com.alfred.myplanningbook.domain.repositoryapi.UsersRepository
 import com.alfred.myplanningbook.domain.usecase.UsersServiceImpl
 import com.alfred.myplanningbook.domain.usecaseapi.UsersService
 import com.alfred.myplanningbook.ui.view.viewmodel.RegisterViewModel
+import kotlinx.coroutines.Dispatchers
 import org.koin.androidx.viewmodel.dsl.viewModelOf
-import org.koin.core.module.dsl.bind
-import org.koin.core.module.dsl.factoryOf
-import org.koin.core.module.dsl.singleOf
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val appModule = module {
 
-    singleOf(::UsersRepositoryImpl) { bind<UsersRepository>() }
-    factoryOf(::UsersServiceImpl) { bind<UsersService>() }
+    single(named("IODispatcher")) {
+        Dispatchers.IO
+    }
+
+    single<UsersRepository> {
+        UsersRepositoryImpl(get(named("IODispatcher")))
+    }
+
+    //factoryOf(::UsersServiceImpl) { bind<UsersService>() }
+    factory<UsersService> {
+        UsersServiceImpl(get())
+    }
+
     viewModelOf(::RegisterViewModel)
 }

@@ -8,7 +8,7 @@ import com.alfred.myplanningbook.data.model.SimpleDataResponse
  */
 interface UsersRepository {
 
-    fun registerUser(email: String, password: String): SimpleDataResponse
+    suspend fun registerUser(email: String, password: String): SimpleDataResponse
 
     fun logginUser(email: String, password: String): SimpleDataResponse
 }
