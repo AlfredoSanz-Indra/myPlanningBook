@@ -28,6 +28,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.ui.view.viewmodel.RegisterViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -157,23 +158,22 @@ class RegisterView {
     private fun registerButton(onRegister: () -> Unit) {
 
         val viewModel: RegisterViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
         OutlinedButton(modifier = Modifier
             .width(200.dp)
             .height(70.dp),
             colors = getRegisterButtonColour(),
             onClick = {
-                println("*** register clicked")
-                if(viewModel.registerUser()) {
-                    println("*** RegisterView registerButton register ok")
-                    onRegister()
-                }
-                else {
-                    println("*** RegisterView registerButton register ko")
-                }
+                Klog.line("RegisterView", "registerButton", "register clicked")
+                viewModel.registerUser();
             }
         ) {
             Text("Register")
+        }
+
+        if(uiState.registerAction) {
+            onRegister()
         }
     }
 
@@ -185,7 +185,7 @@ class RegisterView {
             .height(50.dp),
             colors = getBackButtonColour(),
             onClick = {
-                println("*** RegisterView backButton Back button clicked")
+                Klog.line("RegisterView", "backButton", "Back button clicked")
                 onBack()
             }
         ) {

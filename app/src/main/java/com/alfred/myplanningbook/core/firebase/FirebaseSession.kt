@@ -1,5 +1,6 @@
 package com.alfred.myplanningbook.core.firebase
 
+import com.alfred.myplanningbook.core.log.Klog
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -11,11 +12,15 @@ import com.google.firebase.auth.auth
 object FirebaseSession {
 
     lateinit var auth: FirebaseAuth
+    var useEmulator: Boolean = false
+
 
     // Initialize Firebase Auth
     fun initFirebaseAuth() {
-        Firebase.auth.useEmulator("10.0.2.2", 9099)
-        println("*** FirebaseSession initFirebaseAuth Using firebase with emulator")
+        if(useEmulator) {
+            Firebase.auth.useEmulator("10.0.2.2", 9099)
+            Klog.line("FirebaseSession", "initFirebaseAuth", "Using firebase with emulator")
+        }
 
         auth = Firebase.auth
     }

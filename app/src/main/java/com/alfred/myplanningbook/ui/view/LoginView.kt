@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.alfred.myplanningbook.core.log.Klog
 
 /**
  * @author Alfredo Sanz
@@ -48,7 +49,7 @@ class LoginView {
                     .height(70.dp),
                     colors = getLoginButtonColour(),
                     onClick = {
-                        println("*** Login button to back clicked")
+                        Klog.line("LoginView", "buttonDoLogin", "Login button to back clicked")
                         onBack()
                     }
                 ) {
@@ -66,19 +67,4 @@ class LoginView {
             disabledContentColor = MaterialTheme.colorScheme.onPrimary,
         )
     }
-
-    /*
-    private fun doLogin(ctx: Context) {
-        val auth = FirebaseAuth.getInstance()
-
-        if(auth.currentUser != null) {
-            Toast.makeText(ctx, "Tengo user", Toast.LENGTH_SHORT)
-            println("***  User OK")
-        }
-        else {
-            Toast.makeText(ctx, "No hay user", Toast.LENGTH_SHORT)
-            println("***  NO USER")
-        }
-    }
-*/
 }

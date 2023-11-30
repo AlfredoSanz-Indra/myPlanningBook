@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.alfred.myplanningbook.core.log.Klog
 
 /**
  * @author Alfredo Sanz
@@ -46,7 +47,7 @@ class BookListView {
                     .height(70.dp),
                     colors = getLogoutButtonColour(),
                     onClick = {
-                        println("*** Logout button clicked")
+                        Klog.line("BookListView", "bookList", "Logout button clicked")
                         onLogout()
                     }
                 ) {
