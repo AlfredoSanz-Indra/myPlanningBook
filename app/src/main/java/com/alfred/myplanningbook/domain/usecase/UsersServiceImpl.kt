@@ -18,16 +18,22 @@ class UsersServiceImpl(private val usersRepository: UsersRepository): UsersServi
 
         try {
             val repoResponse = usersRepository.registerUser(email, pwd)
-            if(repoResponse.result) {
-                result = SimpleResponse(true, repoResponse.code, repoResponse.message, "")
+            result = if(repoResponse.result) {
+                val repoResponseVerif = usersRepository.sendEmailVerification()
+                if(repoResponseVerif.result) {
+                    SimpleResponse(true, repoResponseVerif.code, repoResponseVerif.message, "")
+                }
+                else {
+                    SimpleResponse(false, repoResponse.code, repoResponse.message, "")
+                }
             }
             else {
-                result = SimpleResponse(false, repoResponse.code, repoResponse.message, "")
+                SimpleResponse(false, repoResponse.code, repoResponse.message, "")
             }
         }
         catch(e: FirebaseAuthException) {
             Klog.line("UsersServiceImpl", "newUserRegister", "FirebaseAuthException localizedMessage: ${e.localizedMessage}")
-            Klog.line("UsersServiceImpl", "newUserRegister", "FirebaseAuthException localizedMessage: ${e.errorCode}")
+            Klog.line("UsersServiceImpl", "newUserRegister", "FirebaseAuthException errorCode: ${e.errorCode}")
 
             result = SimpleResponse(false, 400, e.localizedMessage, e.errorCode )
         }
@@ -36,7 +42,7 @@ class UsersServiceImpl(private val usersRepository: UsersRepository): UsersServi
             result = SimpleResponse(false, 500, e.localizedMessage, "" )
         }
 
-        Klog.line("UsersServiceImpl", "newUserRegister", " result: ${result}")
+        Klog.line("UsersServiceImpl", "newUserRegister", " result: $result")
         return result
     }
 

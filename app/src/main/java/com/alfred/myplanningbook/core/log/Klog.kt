@@ -14,9 +14,9 @@ object Klog {
     fun line(kmessage: String) {
         when(level.name) {
             KlogLevel.DEBUG.name ->
-                println("*** DEBUG- $kmessage")
-            KlogLevel.INFO.name ->
-                println("*** INFO- $kmessage")
+                println("*** KLOG DEBUG - $kmessage")
+            KlogLevel.PROD.name ->
+                println("*** KLOG PROD ***********")
         }
     }
 
@@ -24,10 +24,10 @@ object Klog {
 
         when(level.name) {
             KlogLevel.DEBUG.name ->
-                println("*** DEBUG- $kclass $kmethod -> $kmessage")
+                println("*** KLOG DEBUG - $kclass $kmethod -> $kmessage")
 
-            KlogLevel.INFO.name ->
-                println("*** INFO- $kclass $kmethod -> $kmessage")
+            KlogLevel.PROD.name ->
+                println("*** kLOG PROD ***********")
         }
     }
 }
