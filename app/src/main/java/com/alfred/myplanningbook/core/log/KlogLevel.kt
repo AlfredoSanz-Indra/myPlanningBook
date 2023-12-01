@@ -6,5 +6,5 @@ package com.alfred.myplanningbook.core.log
  */
 enum class KlogLevel {
     DEBUG,
-    INFO
+    PROD
 }

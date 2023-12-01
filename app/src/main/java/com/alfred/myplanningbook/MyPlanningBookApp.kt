@@ -39,7 +39,7 @@ class MyPlanningBookApp  : Application() {
         val logLevel: String = TheResources.getAppProp(baseContext)["log.level"] as String
         when(logLevel) {
             "DEBUG" -> Klog.updateLevel(KlogLevel.DEBUG)
-            "INFO"  -> Klog.updateLevel(KlogLevel.INFO)
+            "PROD"  -> Klog.updateLevel(KlogLevel.PROD)
         }
 
         val firebaseEmu: String = TheResources.getAppProp(baseContext)["firebase.emulator"] as String

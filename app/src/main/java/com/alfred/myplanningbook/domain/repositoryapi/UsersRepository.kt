@@ -10,5 +10,7 @@ interface UsersRepository {
 
     suspend fun registerUser(email: String, password: String): SimpleDataResponse
 
+    suspend fun sendEmailVerification(): SimpleDataResponse
+
     fun logginUser(email: String, password: String): SimpleDataResponse
 }

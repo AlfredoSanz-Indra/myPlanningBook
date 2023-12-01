@@ -39,7 +39,7 @@ class UsersRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): UsersR
                     Klog.line("UsersRepositoryImpl", "registerUser", "error cause: ${task.exception?.cause}")
                     Klog.line("UsersRepositoryImpl", "registerUser", "error message: ${task.exception?.message}")
 
-                    taskResp = SimpleDataResponse(false, 300, "Register user failed.")
+                    taskResp = SimpleDataResponse(false, 400, "Register user failed.")
                 }
 
                 return@async taskResp
@@ -49,6 +49,42 @@ class UsersRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): UsersR
         }//scope
 
         Klog.line("UsersRepositoryImpl", "registerUser", "result-end: $result")
+        return result
+    }
+
+    override suspend fun sendEmailVerification(): SimpleDataResponse {
+
+        var result = SimpleDataResponse(false, 100, "not registered")
+
+        withContext(ioDispatcher) {
+            val defer = async(ioDispatcher) {
+
+                val user = FirebaseSession.auth.currentUser
+                Klog.line("UsersRepositoryImpl", "sendEmailVerification", "user: ${user?.uid}")
+
+                val task: Task<Void> = user!!.sendEmailVerification()
+                    .addOnCompleteListener { }
+
+                task.await()
+
+                var taskResp: SimpleDataResponse = if(task.isSuccessful) {
+                    val user = FirebaseSession.auth.currentUser
+                    SimpleDataResponse(true, 200, "verification email sent - ${user?.uid}")
+                }
+                else {
+                    Klog.line("UsersRepositoryImpl", "sendEmailVerification", "error cause: ${task.exception?.cause}")
+                    Klog.line("UsersRepositoryImpl", "sendEmailVerification", "error message: ${task.exception?.message}")
+
+                    SimpleDataResponse(false, 400, "verification email sent failed!!.")
+                }
+
+                return@async taskResp
+            }
+
+            result = defer.await()
+        }//scope
+
+        Klog.line("UsersRepositoryImpl", "sendEmailVerification", "result-end: $result")
         return result
     }
 
