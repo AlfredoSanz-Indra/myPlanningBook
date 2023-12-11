@@ -81,6 +81,10 @@ fun NavigationGraph(
                 onBack = {
                     Klog.line("NavigationController", "NavigationGraph", "navHost login Back!")
                     navController.popBackStack()
+                },
+                onLogin = {
+                    Klog.line("NavigationController", "NavigationGraph", "navHost login go booklist!")
+                    navActions.navigateToBookList()
                 })
         }
 
@@ -91,7 +95,7 @@ fun NavigationGraph(
             bookListView.createView(
                 onLogout = {
                     Klog.line("NavigationController", "NavigationGraph", "navHost logout!")
-                    navController.popBackStack(MAIN_ROUTE, false)
+                    navActions.navigateToMain()
                 })
         }
     }

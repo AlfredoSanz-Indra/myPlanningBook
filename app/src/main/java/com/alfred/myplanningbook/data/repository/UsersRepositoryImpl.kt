@@ -88,27 +88,52 @@ class UsersRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): UsersR
         return result
     }
 
-    override fun logginUser(email: String, password: String): SimpleDataResponse {
+    override suspend fun logginUser(email: String, password: String): SimpleDataResponse {
 
         var result = SimpleDataResponse(false, 100, "not logged")
 
-        FirebaseSession.auth
-            .signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener {
-                task ->
-                    if(task.isSuccessful) {
-                        Klog.line("UsersRepositoryImpl", "logginUser", "user logged")
+        withContext(ioDispatcher) {
+            val defer = async(ioDispatcher) {
+                val task: Task<AuthResult> = FirebaseSession.auth
+                    .signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener {}
 
-                        val user = FirebaseSession.auth.currentUser
-                        result = SimpleDataResponse(true, 200, "logged - ${user?.uid}")
-                    }
-                    else {
-                        Klog.line("UsersRepositoryImpl", "logginUser", "Error logging")
-                        result = SimpleDataResponse(false, 300, "Authentication failed.")
-                    }
+                task.await()
+
+                var taskResp: SimpleDataResponse
+                if (task.isSuccessful) {
+                    val user = FirebaseSession.auth.currentUser
+                    taskResp = SimpleDataResponse(true, 200, "Logged - ${user?.uid}")
+                }
+                else {
+                    Klog.line("UsersRepositoryImpl","logginUser","error cause: ${task.exception?.cause}")
+                    Klog.line("UsersRepositoryImpl","logginUser","error message: ${task.exception?.message}")
+
+                    taskResp = SimpleDataResponse(false, 400, "Logging user failed.")
+                }
+
+                return@async taskResp
             }
+
+            result = defer.await()
+        }//scope
 
         return result
     }
 
+    override suspend fun logoutUser(): SimpleDataResponse {
+
+        var result = SimpleDataResponse(false, 100, "can't logout")
+
+        withContext(ioDispatcher) {
+            async(ioDispatcher) {
+                FirebaseSession.auth.signOut()
+                Klog.line("UsersRepositoryImpl","logoutUser","User logged out")
+
+                result = SimpleDataResponse(true, 200, "User Logged out ")
+            }
+        }
+
+        return result
+    }
 }
