@@ -71,8 +71,6 @@ class RegisterViewModel(val usersService: UsersService) : ViewModel() {
             else {
                 setGeneralError(" ${resp.code}: ${resp.message}")
             }
-
-            Klog.line("RegisterViewModel", "registerUser", "registerAction: ${_uiState.value.registerAction}")
         }
     }
 
@@ -87,14 +85,14 @@ class RegisterViewModel(val usersService: UsersService) : ViewModel() {
         var result = true
 
         if(uiState.value.email.trim().isEmpty()) {
-            setEmailError("Introduce un email")
+            setEmailError("Enter a email")
             result = false
         }
 
         if(uiState.value.pwd01.trim().length < 8 ||
            uiState.value.pwd02.trim().length < 8) {
 
-            setPwdError("Password debe tener minimo 8 caracteres")
+            setPwdError("Password 8 characters min")
             result = false
         }
 
@@ -106,7 +104,7 @@ class RegisterViewModel(val usersService: UsersService) : ViewModel() {
         var result = true
 
         if(!Patterns.EMAIL_ADDRESS.matcher(uiState.value.email.trim()).matches()) {
-            setEmailError("Introduce un email válido")
+            setEmailError("Enter a valid email")
             result = false
         }
 
@@ -118,7 +116,7 @@ class RegisterViewModel(val usersService: UsersService) : ViewModel() {
         var result = true
 
         if(uiState.value.pwd02.trim().length != uiState.value.pwd01.trim().length) {
-            setPwdError("Las Passwords deben coincidir")
+            setPwdError("Passwords must be equal")
             result = false
         }
 

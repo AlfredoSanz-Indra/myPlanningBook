@@ -17,4 +17,6 @@ interface UsersService {
      */
     suspend fun logginUser(email: String, pwd: String): SimpleResponse
 
+    suspend fun logoutUser(): SimpleResponse
+
 }

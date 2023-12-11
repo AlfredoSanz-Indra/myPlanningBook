@@ -48,8 +48,57 @@ class UsersServiceImpl(private val usersRepository: UsersRepository): UsersServi
 
     override suspend fun logginUser(email: String, pwd: String): SimpleResponse {
 
-        var result = SimpleResponse(true, 0, "logged", "")
+        var result: SimpleResponse
 
+        try {
+            val repoResponse = usersRepository.logginUser(email, pwd)
+            result = if(repoResponse.result) {
+                SimpleResponse(true, repoResponse.code, repoResponse.message, "")
+            }
+            else {
+                SimpleResponse(false, repoResponse.code, repoResponse.message, "")
+            }
+        }
+        catch(e: FirebaseAuthException) {
+            Klog.line("UsersServiceImpl", "logginUser", "FirebaseAuthException localizedMessage: ${e.localizedMessage}")
+            Klog.line("UsersServiceImpl", "logginUser", "FirebaseAuthException errorCode: ${e.errorCode}")
+
+            result = SimpleResponse(false, 400, "Loggin Failed", e.errorCode )
+        }
+        catch(e: Exception) {
+            Klog.line("UsersServiceImpl", "logginUser", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleResponse(false, 500, e.localizedMessage, "" )
+        }
+
+        Klog.line("UsersServiceImpl", "logginUser", " result: $result")
+        return result
+    }
+
+    override suspend fun logoutUser(): SimpleResponse {
+
+        var result: SimpleResponse
+
+        try {
+            val repoResponse = usersRepository.logoutUser()
+            result = if(repoResponse.result) {
+                SimpleResponse(true, repoResponse.code, repoResponse.message, "")
+            }
+            else {
+                SimpleResponse(false, repoResponse.code, repoResponse.message, "")
+            }
+        }
+        catch(e: FirebaseAuthException) {
+            Klog.line("UsersServiceImpl", "logoutUser", "FirebaseAuthException localizedMessage: ${e.localizedMessage}")
+            Klog.line("UsersServiceImpl", "logoutUser", "FirebaseAuthException errorCode: ${e.errorCode}")
+
+            result = SimpleResponse(false, 400, "Logout Failed", e.errorCode )
+        }
+        catch(e: Exception) {
+            Klog.line("UsersServiceImpl", "logoutUser", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleResponse(false, 500, e.localizedMessage, "" )
+        }
+
+        Klog.line("UsersServiceImpl", "logoutUser", " result: $result")
         return result
     }
 }
