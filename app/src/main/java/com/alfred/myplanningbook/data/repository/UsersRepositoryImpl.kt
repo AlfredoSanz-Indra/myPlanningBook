@@ -136,4 +136,37 @@ class UsersRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): UsersR
 
         return result
     }
+
+    override suspend fun sendResetEmail(email: String): SimpleDataResponse {
+
+        var result = SimpleDataResponse(false, 100, "can't logout")
+
+        withContext(ioDispatcher) {
+            val defer = async(ioDispatcher) {
+                val task: Task<Void> = FirebaseSession.auth
+                    .sendPasswordResetEmail(email)
+                    .addOnCompleteListener {}
+
+                task.await()
+
+                var taskResp: SimpleDataResponse
+                Klog.line("UsersRepositoryImpl","sendResetEmail","task.isSuccessful: ${task.isSuccessful}")
+                if (task.isSuccessful) {
+                    taskResp = SimpleDataResponse(true, 200, "Email Sent")
+                }
+                else {
+                    Klog.line("UsersRepositoryImpl","sendResetEmail","error cause: ${task.exception?.cause}")
+                    Klog.line("UsersRepositoryImpl","sendResetEmail","error message: ${task.exception?.message}")
+
+                    taskResp = SimpleDataResponse(false, 400, "Email send failed.")
+                }
+
+                return@async taskResp
+            }
+
+            result = defer.await()
+        }//scope
+
+        return result
+    }
 }

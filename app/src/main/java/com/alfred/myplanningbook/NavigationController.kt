@@ -13,11 +13,13 @@ import com.alfred.myplanningbook.AppRoutes.BOOKLIST_ROUTE
 import com.alfred.myplanningbook.AppRoutes.LOGIN_ROUTE
 import com.alfred.myplanningbook.AppRoutes.MAIN_ROUTE
 import com.alfred.myplanningbook.AppRoutes.REGISTER_ROUTE
+import com.alfred.myplanningbook.AppRoutes.RESETPWD_ROUTE
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.ui.loggedview.BookListView
 import com.alfred.myplanningbook.ui.view.LoginView
 import com.alfred.myplanningbook.ui.view.RegisterView
 import com.alfred.myplanningbook.ui.view.MainView
+import com.alfred.myplanningbook.ui.view.ResetPwdView
 
 /**
  * @author Alfredo Sanz
@@ -89,7 +91,28 @@ fun NavigationGraph(
                 onLogin = {
                     Klog.line("NavigationController", "NavigationGraph", "navHost login go to booklist!")
                     navActions.navigateToBookList()
-                })
+                },
+                onReset = {
+                    Klog.line("NavigationController", "NavigationGraph", "navHost login go to resetPassword!")
+                    navActions.navigateToResetPwd()
+                }
+            )
+        }
+
+        composable(RESETPWD_ROUTE,
+                    arguments = listOf()
+        ) {
+            val resetPwdView = ResetPwdView()
+            resetPwdView.createView(
+                onBack = {
+                    Klog.line("NavigationController", "NavigationGraph", "navHost resetPwd go to Back!")
+                    navController.popBackStack()
+                },
+                onReset = {
+                    Klog.line("NavigationController", "NavigationGraph", "navHost resetPwd go to main!")
+                    navActions.navigateToMain()
+                }
+            )
         }
 
         composable(BOOKLIST_ROUTE,

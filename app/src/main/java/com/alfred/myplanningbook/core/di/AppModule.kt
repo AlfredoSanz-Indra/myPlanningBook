@@ -8,6 +8,7 @@ import com.alfred.myplanningbook.ui.loggedview.viewmodel.BookListViewModel
 import com.alfred.myplanningbook.ui.view.viewmodel.LoginViewModel
 import com.alfred.myplanningbook.ui.view.viewmodel.MainViewModel
 import com.alfred.myplanningbook.ui.view.viewmodel.RegisterViewModel
+import com.alfred.myplanningbook.ui.view.viewmodel.ResetPwdViewModel
 import kotlinx.coroutines.Dispatchers
 import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.core.qualifier.named
@@ -29,6 +30,7 @@ val appModule = module {
     }
 
     viewModelOf(::MainViewModel)
+    viewModelOf(::ResetPwdViewModel)
     viewModelOf(::RegisterViewModel)
     viewModelOf(::LoginViewModel)
     viewModelOf(::BookListViewModel)

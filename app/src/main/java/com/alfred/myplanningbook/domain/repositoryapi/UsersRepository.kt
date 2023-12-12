@@ -15,4 +15,6 @@ interface UsersRepository {
     suspend fun logginUser(email: String, password: String): SimpleDataResponse
 
     suspend fun logoutUser(): SimpleDataResponse
+
+    suspend fun sendResetEmail(email: String): SimpleDataResponse
 }
