@@ -48,13 +48,17 @@ fun NavigationGraph(
             val mainView = MainView()
             mainView.createView(
                 onLogin = {
-                            Klog.line("NavigationController", "NavigationGraph", "navHost go to login !")
+                            Klog.line("NavigationController", "NavigationGraph", "navHost Main go to login !")
                             navActions.navigateToLogin()
                           },
                 onRegister = {
-                                Klog.line("NavigationController", "NavigationGraph", "navHost go to register !")
-                                navActions.navigateToRegister()
-                            }
+                            Klog.line("NavigationController", "NavigationGraph", "navHost Main go to register !")
+                            navActions.navigateToRegister()
+                            },
+                onBook = {
+                            Klog.line("NavigationController", "NavigationGraph", "navHost Main go to Booklist !")
+                            navActions.navigateToBookList()
+                        }
             )
         }
 
@@ -64,7 +68,7 @@ fun NavigationGraph(
             val registerView = RegisterView()
             registerView.createView(
                 onBack = {
-                    Klog.line("NavigationController", "NavigationGraph", "navHost register Back!")
+                    Klog.line("NavigationController", "NavigationGraph", "navHost register go to Back!")
                     navController.popBackStack()
                 },
                 onRegister = {
@@ -79,22 +83,22 @@ fun NavigationGraph(
             val loginView = LoginView()
             loginView.createView(
                 onBack = {
-                    Klog.line("NavigationController", "NavigationGraph", "navHost login Back!")
+                    Klog.line("NavigationController", "NavigationGraph", "navHost login go to Back!")
                     navController.popBackStack()
                 },
                 onLogin = {
-                    Klog.line("NavigationController", "NavigationGraph", "navHost login go booklist!")
+                    Klog.line("NavigationController", "NavigationGraph", "navHost login go to booklist!")
                     navActions.navigateToBookList()
                 })
         }
 
         composable(BOOKLIST_ROUTE,
-            arguments = listOf()
+                    arguments = listOf()
         ) {
             val bookListView = BookListView()
             bookListView.createView(
                 onLogout = {
-                    Klog.line("NavigationController", "NavigationGraph", "navHost logout!")
+                    Klog.line("NavigationController", "NavigationGraph", "navHost booklist go to logout!")
                     navActions.navigateToMain()
                 })
         }

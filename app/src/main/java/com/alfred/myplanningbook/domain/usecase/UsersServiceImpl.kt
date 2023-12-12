@@ -1,5 +1,6 @@
 package com.alfred.myplanningbook.domain.usecase
 
+import com.alfred.myplanningbook.core.firebase.FirebaseSession
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.domain.model.SimpleResponse
 import com.alfred.myplanningbook.domain.repositoryapi.UsersRepository
@@ -53,7 +54,12 @@ class UsersServiceImpl(private val usersRepository: UsersRepository): UsersServi
         try {
             val repoResponse = usersRepository.logginUser(email, pwd)
             result = if(repoResponse.result) {
-                SimpleResponse(true, repoResponse.code, repoResponse.message, "")
+                if(FirebaseSession.isUserSignedAndValidated()) {
+                    SimpleResponse(true, repoResponse.code, repoResponse.message, "")
+                }
+                else {
+                    SimpleResponse(false, 404, "User email not validated", "")
+                }
             }
             else {
                 SimpleResponse(false, repoResponse.code, repoResponse.message, "")
