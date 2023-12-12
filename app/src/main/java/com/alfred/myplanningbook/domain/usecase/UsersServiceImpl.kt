@@ -1,5 +1,6 @@
 package com.alfred.myplanningbook.domain.usecase
 
+import com.alfred.myplanningbook.core.firebase.FirebaseSession
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.domain.model.SimpleResponse
 import com.alfred.myplanningbook.domain.repositoryapi.UsersRepository
@@ -53,7 +54,12 @@ class UsersServiceImpl(private val usersRepository: UsersRepository): UsersServi
         try {
             val repoResponse = usersRepository.logginUser(email, pwd)
             result = if(repoResponse.result) {
-                SimpleResponse(true, repoResponse.code, repoResponse.message, "")
+                if(FirebaseSession.isUserSignedAndValidated()) {
+                    SimpleResponse(true, repoResponse.code, repoResponse.message, "")
+                }
+                else {
+                    SimpleResponse(false, 404, "User email not validated", "")
+                }
             }
             else {
                 SimpleResponse(false, repoResponse.code, repoResponse.message, "")
@@ -99,6 +105,37 @@ class UsersServiceImpl(private val usersRepository: UsersRepository): UsersServi
         }
 
         Klog.line("UsersServiceImpl", "logoutUser", " result: $result")
+        return result
+    }
+
+    override suspend fun sendResetEmail(email: String): SimpleResponse {
+        var result: SimpleResponse
+
+        try {
+            val repoResponse = usersRepository.sendResetEmail(email)
+            result = if(repoResponse.result) {
+                SimpleResponse(true, repoResponse.code, repoResponse.message, "")
+            }
+            else {
+                SimpleResponse(false, repoResponse.code, repoResponse.message, "")
+            }
+        }
+        catch(e: FirebaseAuthException) {
+            Klog.line("UsersServiceImpl", "sendResetEmail", "FirebaseAuthException localizedMessage: ${e.localizedMessage}")
+            Klog.line("UsersServiceImpl", "sendResetEmail", "FirebaseAuthException errorCode: ${e.errorCode}")
+
+            when(e.errorCode) {
+                "ERROR_USER_NOT_FOUND" -> result = SimpleResponse(false, 400, "Email not found", e.errorCode )
+                else -> result = SimpleResponse(false, 400, e.errorCode, e.errorCode )
+            }
+
+        }
+        catch(e: Exception) {
+            Klog.line("UsersServiceImpl", "sendResetEmail", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleResponse(false, 500, e.localizedMessage, "" )
+        }
+
+        Klog.line("UsersServiceImpl", "sendResetEmail", " result: $result")
         return result
     }
 }

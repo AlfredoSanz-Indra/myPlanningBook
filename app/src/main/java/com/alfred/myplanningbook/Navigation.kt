@@ -5,6 +5,7 @@ import com.alfred.myplanningbook.AppScreens.BOOKLIST_SCREEN
 import com.alfred.myplanningbook.AppScreens.LOGIN_SCREEN
 import com.alfred.myplanningbook.AppScreens.MAIN_SCREEN
 import com.alfred.myplanningbook.AppScreens.REGISTER_SCREEN
+import com.alfred.myplanningbook.AppScreens.RESETPWD_SCREEN
 
 /**
  * @author Alfredo Sanz
@@ -14,6 +15,7 @@ import com.alfred.myplanningbook.AppScreens.REGISTER_SCREEN
 private object AppScreens {
     const val MAIN_SCREEN = "main"
     const val LOGIN_SCREEN = "login"
+    const val RESETPWD_SCREEN = "resetPwd"
     const val REGISTER_SCREEN = "register"
     const val BOOKLIST_SCREEN = "booklist"
 }
@@ -26,6 +28,7 @@ object AppArgs {
 object AppRoutes {
     const val MAIN_ROUTE = "$MAIN_SCREEN"
     const val LOGIN_ROUTE = "$LOGIN_SCREEN"
+    const val RESETPWD_ROUTE = "$RESETPWD_SCREEN"
     const val REGISTER_ROUTE = "$REGISTER_SCREEN"
     const val BOOKLIST_ROUTE = "$BOOKLIST_SCREEN"
 }
@@ -37,6 +40,10 @@ class NavigationActions(private val navController: NavHostController) {
     }
     fun navigateToLogin() {
         navController.navigate("$LOGIN_SCREEN")
+    }
+
+    fun navigateToResetPwd() {
+        navController.navigate("$RESETPWD_SCREEN")
     }
 
     fun navigateToRegister() {

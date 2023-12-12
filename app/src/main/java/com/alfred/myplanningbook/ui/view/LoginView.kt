@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -35,7 +36,7 @@ import org.koin.androidx.compose.koinViewModel
 class LoginView {
 
     @Composable
-    fun createView(onBack: () -> Unit,  onLogin: () -> Unit) {
+    fun createView(onBack: () -> Unit,  onLogin: () -> Unit, onReset: () -> Unit) {
 
         MaterialTheme(colorScheme = MaterialTheme.colorScheme) {
             Column(
@@ -55,6 +56,9 @@ class LoginView {
                 loginButton(onLogin)
 
                 Spacer(modifier = Modifier.height(10.dp))
+                resetPasswordButton(onReset)
+
+                Spacer(modifier = Modifier.height(50.dp))
                 backButton(onBack)
             }
         }
@@ -159,6 +163,25 @@ class LoginView {
 
         if(uiState.loginAction) {
             onLogin()
+        }
+    }
+
+    @Composable
+    private fun resetPasswordButton(onReset: () -> Unit) {
+
+        val viewModel: LoginViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+        TextButton(modifier = Modifier
+            .width(150.dp)
+            .height(50.dp),
+            colors = getLoginButtonColour(),
+            onClick = {
+                Klog.line("LoginView", "resetPasswordButton", "reset password clicked")
+                onReset()
+            }
+        ) {
+            Text("Reset Password")
         }
     }
 

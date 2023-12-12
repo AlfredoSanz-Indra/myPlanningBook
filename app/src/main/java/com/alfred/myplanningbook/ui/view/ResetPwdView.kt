@@ -10,9 +10,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,20 +23,19 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.alfred.myplanningbook.core.firebase.FirebaseSession
 import com.alfred.myplanningbook.core.log.Klog
-import com.alfred.myplanningbook.ui.view.viewmodel.MainViewModel
-import com.alfred.myplanningbook.ui.view.viewmodel.RegisterViewModel
+import com.alfred.myplanningbook.ui.view.viewmodel.LoginViewModel
+import com.alfred.myplanningbook.ui.view.viewmodel.ResetPwdViewModel
 import org.koin.androidx.compose.koinViewModel
 
 /**
  * @author Alfredo Sanz
  * @time 2023
  */
-class MainView() {
+class ResetPwdView {
 
     @Composable
-    fun createView(onLogin: () -> Unit, onRegister: () -> Unit, onBook: () -> Unit) {
+    fun createView(onBack: () -> Unit, onReset: () -> Unit) {
 
         MaterialTheme(colorScheme = MaterialTheme.colorScheme) {
             Column(
@@ -49,8 +48,13 @@ class MainView() {
             ) {
                 Spacer(modifier = Modifier.height(30.dp))
                 errorGeneralField()
+                emailUserField()
 
-                buttonsPrimaryActions(onLogin, onRegister, onBook)
+                Spacer(modifier = Modifier.height(10.dp))
+                sendResetEmailButton(onReset)
+
+                Spacer(modifier = Modifier.height(50.dp))
+                backButton(onBack)
             }
         }
     }
@@ -58,7 +62,7 @@ class MainView() {
     @Composable
     private fun errorGeneralField() {
 
-        val viewModel: MainViewModel = koinViewModel()
+        val viewModel: ResetPwdViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
         if(uiState.generalError) {
@@ -78,44 +82,73 @@ class MainView() {
     }
 
     @Composable
-    private fun buttonsPrimaryActions(onLogin: () -> Unit, onRegister: () -> Unit, onBook: () -> Unit) {
+    private fun emailUserField() {
 
-        val viewModel: MainViewModel = koinViewModel()
+        val viewModel: ResetPwdViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-        OutlinedButton(modifier = Modifier.width(200.dp)
-            .height(70.dp),
-            colors = getLoginButtonColour(),
-            onClick = {
-                Klog.line("MainView", "buttonsPrimaryActions", "Login button clicked")
-                val r = viewModel.loginAction()
-                if(!r) {
-                    onLogin()
-                }
-                else {
-                    onBook()
-                }
-            }
-        ) {
-            Text("Login")
-        }
+        OutlinedTextField(
+            value = uiState.email,
+            onValueChange = { viewModel.updateEmail(it) },
+            label = { Text("Email") },
+            placeholder = { Text ("Enter your valid Email")}
+        )
 
-        Spacer(modifier = Modifier.height(50.dp))
+        if(uiState.emailError) {
+            Spacer(modifier = Modifier.height(10.dp))
 
-        FilledTonalButton(modifier = Modifier.width(200.dp)
-            .height(70.dp),
-            colors = getRegisterButtonColour(),
-            onClick = {
-                Klog.line("MainView", "buttonsPrimaryActions", "Register button clicked")
-                onRegister()
-            }
-        ) {
-            Text("Register")
+            Text(
+                uiState.emailErrorText,
+                color = Color.Red,
+                style = TextStyle(
+                    fontSize = 15.sp,
+                    color = Color.Red
+                )
+            )
         }
     }
 
     @Composable
-    private fun getLoginButtonColour(): ButtonColors {
+    private fun sendResetEmailButton(onReset: () -> Unit) {
+
+        val viewModel: ResetPwdViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+        OutlinedButton(modifier = Modifier
+            .width(200.dp)
+            .height(70.dp),
+            colors = getResetButtonColour(),
+            onClick = {
+                Klog.line("ResetPwdView", "sendResetEmailButton", "send reset email button clicked")
+                viewModel.sendResetEmail();
+            }
+        ) {
+            Text("Send Reset email")
+        }
+
+        if(uiState.emailSentAction) {
+            onReset()
+        }
+    }
+
+    @Composable
+    private fun backButton(onBack: () -> Unit) {
+
+        OutlinedButton(modifier = Modifier
+            .width(110.dp)
+            .height(50.dp),
+            colors = getBackButtonColour(),
+            onClick = {
+                Klog.line("ResetPwdView", "backButton", "Back button clicked")
+                onBack()
+            }
+        ) {
+            Text("Back")
+        }
+    }
+
+    @Composable
+    private fun getResetButtonColour(): ButtonColors {
         return ButtonDefaults.outlinedButtonColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -126,12 +159,13 @@ class MainView() {
     }
 
     @Composable
-    private fun getRegisterButtonColour(): ButtonColors {
+    private fun getBackButtonColour(): ButtonColors {
         return ButtonDefaults.outlinedButtonColors(
             containerColor = MaterialTheme.colorScheme.secondary,
             contentColor = MaterialTheme.colorScheme.onSecondary,
             disabledContentColor = MaterialTheme.colorScheme.onSecondary,
             disabledContainerColor = MaterialTheme.colorScheme.secondary
+
         )
     }
 }

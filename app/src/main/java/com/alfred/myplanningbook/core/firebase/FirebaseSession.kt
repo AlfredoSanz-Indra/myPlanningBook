@@ -32,4 +32,16 @@ object FirebaseSession {
         }
         return false
     }
+
+    fun isUserSignedAndValidated() : Boolean {
+
+        var result = false
+
+        val currentUser = auth.currentUser
+        if(currentUser != null && currentUser.isEmailVerified) {
+            result = true
+        }
+
+        return result
+    }
 }

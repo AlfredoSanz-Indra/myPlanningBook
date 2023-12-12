@@ -27,7 +27,7 @@ object Klog {
                 println("*** KLOG DEBUG - $kclass $kmethod -> $kmessage")
 
             KlogLevel.PROD.name ->
-                println("*** kLOG PROD ***********")
+                println("*** kLOG PROD **** $kclass $kmethod *******")
         }
     }
 }

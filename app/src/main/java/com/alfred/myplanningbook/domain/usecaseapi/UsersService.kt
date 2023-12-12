@@ -19,4 +19,6 @@ interface UsersService {
 
     suspend fun logoutUser(): SimpleResponse
 
+    suspend fun sendResetEmail(email: String): SimpleResponse
+
 }
