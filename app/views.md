@@ -6,18 +6,25 @@ title: Views navigation
 ---
 stateDiagram-v2
     classDef blankStyle font-style:italic,font-weight:bold,fill:white,color:black
-    
+
     [*] --> MainView
     MainView --> LoginView
     MainView --> RegisterView
     RegisterView --> MainView
-    LoginView --> BookList:::blankStyle
+    LoginView --> ResetPasswordView
+    ResetPasswordView --> MainView
+    LoginView --> PlanningbookMenuView:::blankStyle
     state Logged  {
-        BookList --> TaskList
-        BookList --> NewBook
-        BookList --> EditShareBook
-        TaskList --> NewTask
-        TaskList --> EditTask    
-        BookList --> [*]
+        PlanningbookMenuView --> ActivitiesView
+        PlanningbookMenuView --> TasksView
+        PlanningbookMenuView --> ManagerPlaningBookView
+        ManagerPlaningBookView --> PlanningbookMenuView
+        ActivitiesView --> NewEditActivityView
+        NewEditActivityView --> ActivitiesView
+        ActivitiesView --> PlanningbookMenuView
+        TasksView --> NewEditTaskView
+        NewEditTaskView --> TasksView
+        TasksView --> PlanningbookMenuView
+        PlanningbookMenuView --> [*] : loggout
     }
 ````
