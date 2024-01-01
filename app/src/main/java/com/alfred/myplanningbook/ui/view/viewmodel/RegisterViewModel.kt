@@ -1,9 +1,14 @@
 package com.alfred.myplanningbook.ui.view.viewmodel
 
-import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alfred.myplanningbook.core.log.Klog
+import com.alfred.myplanningbook.core.validators.ChainTextValidator
+import com.alfred.myplanningbook.core.validators.TextValidatorEmail
+import com.alfred.myplanningbook.core.validators.TextValidatorEqualsFields
+import com.alfred.myplanningbook.core.validators.TextValidatorLength
+import com.alfred.myplanningbook.core.validators.TextValidatorPassword
+import com.alfred.myplanningbook.core.validators.ValidatorResult
 import com.alfred.myplanningbook.domain.usecaseapi.UsersService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +28,8 @@ data class RegisterUiState(
     var emailErrorText: String = "",
     var pwdError: Boolean = false,
     var pwdErrorText: String = "",
+    var pwd02Error: Boolean = false,
+    var pwd02ErrorText: String = "",
     var generalError: Boolean = false,
     var generalErrorText: String = "",
     var registerAction: Boolean = false
@@ -54,13 +61,13 @@ class RegisterViewModel(val usersService: UsersService) : ViewModel() {
     fun registerUser() {
 
         clearErrors()
-
-        if(!validateLengths() ||
-           !validatePasswords() ||
-           !validateEmail()) {
-
+        if(!validateFields()) {
+            Klog.line("RegisterViewModel", "registerUser", "Validation was unsuccessfull")
             return
         }
+
+        Klog.line("RegisterViewModel", "registerUser", "Validation has been success")
+
 
         viewModelScope.launch {
             val resp = usersService.newUserRegister(uiState.value.email.trim(), uiState.value.pwd01.trim())
@@ -80,43 +87,35 @@ class RegisterViewModel(val usersService: UsersService) : ViewModel() {
         }
     }
 
-    private fun validateLengths(): Boolean {
+    private fun validateFields(): Boolean {
+
+        val chainTxtValEmail = ChainTextValidator(
+            TextValidatorLength(5, 50),
+            TextValidatorEmail()
+        )
+        val chainTxtValPwd01 = ChainTextValidator(
+            TextValidatorLength(8, 10),
+            TextValidatorPassword()
+        )
+        val chainTxtValPwd02 = ChainTextValidator(
+            TextValidatorEqualsFields(uiState.value.pwd02.trim())
+        )
+
+        val valResultEmail = chainTxtValEmail.validate(uiState.value.email.trim())
+        val valResultPwd01 = chainTxtValPwd01.validate(uiState.value.pwd01.trim())
+        val valResultPwd02 = chainTxtValPwd02.validate(uiState.value.pwd01.trim())
 
         var result = true
-
-        if(uiState.value.email.trim().isEmpty()) {
-            setEmailError("Enter a email")
+        if(valResultEmail is ValidatorResult.Error) {
+            setEmailError(valResultEmail.message)
             result = false
         }
-
-        if(uiState.value.pwd01.trim().length < 8 ||
-           uiState.value.pwd02.trim().length < 8) {
-
-            setPwdError("Password 8 characters min")
+        if(valResultPwd01 is ValidatorResult.Error) {
+            setPwdError(valResultPwd01.message)
             result = false
         }
-
-        return result
-    }
-
-    private fun validateEmail(): Boolean {
-
-        var result = true
-
-        if(!Patterns.EMAIL_ADDRESS.matcher(uiState.value.email.trim()).matches()) {
-            setEmailError("Enter a valid email")
-            result = false
-        }
-
-        return result
-    }
-
-    private fun validatePasswords(): Boolean {
-
-        var result = true
-
-        if(uiState.value.pwd02.trim().length != uiState.value.pwd01.trim().length) {
-            setPwdError("Passwords must be equal")
+        if(valResultPwd02 is ValidatorResult.Error) {
+            setPwd02Error(valResultPwd02.message)
             result = false
         }
 
@@ -153,6 +152,16 @@ class RegisterViewModel(val usersService: UsersService) : ViewModel() {
         }
     }
 
+    private fun setPwd02Error(txt: String) {
+
+        _uiState.update {
+            it.copy(pwd02Error = true)
+        }
+        _uiState.update {
+            it.copy(pwd02ErrorText = txt)
+        }
+    }
+
     private fun clearErrors() {
 
         _uiState.update {
@@ -166,6 +175,12 @@ class RegisterViewModel(val usersService: UsersService) : ViewModel() {
         }
         _uiState.update {
             it.copy(pwdErrorText = "")
+        }
+        _uiState.update {
+            it.copy(pwd02Error = false)
+        }
+        _uiState.update {
+            it.copy(pwd02ErrorText = "")
         }
         _uiState.update {
             it.copy(generalError = false)

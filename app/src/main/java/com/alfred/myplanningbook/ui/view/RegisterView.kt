@@ -129,6 +129,18 @@ class RegisterView {
             label = { Text("Password") },
             placeholder = { Text ("Enter a new password")}
         )
+        if(uiState.pwdError) {
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                uiState.pwdErrorText,
+                color = Color.Red,
+                style = TextStyle(
+                    fontSize = 15.sp,
+                    color = Color.Red
+                )
+            )
+        }
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -140,11 +152,11 @@ class RegisterView {
             placeholder = { Text ("Repeat the new password")}
         )
 
-        if(uiState.pwdError) {
+        if(uiState.pwd02Error) {
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                uiState.pwdErrorText,
+                uiState.pwd02ErrorText,
                 color = Color.Red,
                 style = TextStyle(
                     fontSize = 15.sp,
