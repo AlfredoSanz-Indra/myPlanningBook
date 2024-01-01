@@ -4,6 +4,12 @@ import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alfred.myplanningbook.core.log.Klog
+import com.alfred.myplanningbook.core.validators.ChainTextValidator
+import com.alfred.myplanningbook.core.validators.TextValidatorEmail
+import com.alfred.myplanningbook.core.validators.TextValidatorEqualsFields
+import com.alfred.myplanningbook.core.validators.TextValidatorLength
+import com.alfred.myplanningbook.core.validators.TextValidatorPassword
+import com.alfred.myplanningbook.core.validators.ValidatorResult
 import com.alfred.myplanningbook.domain.usecaseapi.UsersService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,12 +43,11 @@ class ResetPwdViewModel(val usersService: UsersService): ViewModel() {
     fun sendResetEmail() {
 
         clearErrors()
-
-        if(!validateLengths() ||
-            !validateEmail()) {
-
+        if(!validateFields()) {
+            Klog.line("ResetPwdViewModel", "sendResetEmail", "Validation was unsuccessfull")
             return
         }
+        Klog.line("ResetPwdViewModel", "sendResetEmail", "Validation has been success")
 
         viewModelScope.launch {
             val resp = usersService.sendResetEmail(uiState.value.email.trim())
@@ -71,24 +76,19 @@ class ResetPwdViewModel(val usersService: UsersService): ViewModel() {
         }
     }
 
-    private fun validateLengths(): Boolean {
+
+    private fun validateFields(): Boolean {
+
+        val chainTxtValEmail = ChainTextValidator(
+            TextValidatorLength(5, 50),
+            TextValidatorEmail()
+        )
+
+        val valResultEmail = chainTxtValEmail.validate(uiState.value.email.trim())
 
         var result = true
-
-        if(uiState.value.email.trim().isEmpty()) {
-            setEmailError("Enter a email")
-            result = false
-        }
-
-        return result
-    }
-
-    private fun validateEmail(): Boolean {
-
-        var result = true
-
-        if(!Patterns.EMAIL_ADDRESS.matcher(uiState.value.email.trim()).matches()) {
-            setEmailError("Enter a valid email")
+        if(valResultEmail is ValidatorResult.Error) {
+            setEmailError(valResultEmail.message)
             result = false
         }
 
