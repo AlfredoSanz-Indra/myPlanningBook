@@ -1,4 +1,4 @@
-##My planning book App
+## My planning book App
 
 ````mermaid
 ---
@@ -20,5 +20,4 @@ stateDiagram-v2
         TaskList --> EditTask    
         BookList --> [*]
     }
-    
 ````

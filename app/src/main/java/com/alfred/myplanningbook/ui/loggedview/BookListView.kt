@@ -117,6 +117,17 @@ class BookListView {
     @Composable
     private fun getLogoutButtonColour(): ButtonColors {
         return ButtonDefaults.outlinedButtonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            disabledContentColor = MaterialTheme.colorScheme.onPrimary,
+            disabledContainerColor = MaterialTheme.colorScheme.primary
+
+        )
+    }
+
+    @Composable
+    private fun getBackButtonColour(): ButtonColors {
+        return ButtonDefaults.outlinedButtonColors(
             containerColor = MaterialTheme.colorScheme.secondary,
             contentColor = MaterialTheme.colorScheme.onSecondary,
             disabledContentColor = MaterialTheme.colorScheme.onSecondary,

@@ -91,7 +91,7 @@ class ResetPwdView {
             value = uiState.email,
             onValueChange = { viewModel.updateEmail(it) },
             label = { Text("Email") },
-            placeholder = { Text ("Enter your valid Email")}
+            placeholder = { Text ("Enter your Email")}
         )
 
         if(uiState.emailError) {
