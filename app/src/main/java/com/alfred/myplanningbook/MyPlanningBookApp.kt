@@ -13,8 +13,8 @@ import org.koin.core.context.GlobalContext.startKoin
 /**
  * @author Alfredo Sanz
  * @time 2023
+ * @version 1.2.0
  */
-
 class MyPlanningBookApp  : Application() {
 
     override fun onCreate() {
