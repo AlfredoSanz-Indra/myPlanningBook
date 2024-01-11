@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alfred.myplanningbook.core.firebase.FirebaseSession
 import com.alfred.myplanningbook.core.log.Klog
+import com.alfred.myplanningbook.domain.AppState
 import com.alfred.myplanningbook.domain.usecaseapi.UsersService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,12 +31,13 @@ class MainViewModel(val usersService: UsersService) : ViewModel() {
 
         clearErrors()
 
-        var result: Boolean = false
+        var result = false
 
         viewModelScope.launch {
             if(FirebaseSession.isUserSigned()) {
                 if(FirebaseSession.isUserSignedAndValidated()) {
                     Klog.line("MainViewModel", "loginAction", "user is signed and email validated")
+                    AppState.setUserEmail(FirebaseSession.auth.currentUser?.email)
                     result = true
                 }
                 else {
@@ -47,7 +49,7 @@ class MainViewModel(val usersService: UsersService) : ViewModel() {
             }
         }
 
-        Klog.line("RegisterViewModel", "loginAction", "result: $result")
+        Klog.line("MainViewModel", "loginAction", "result: $result")
         return result
     }
 
