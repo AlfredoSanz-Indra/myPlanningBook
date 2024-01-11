@@ -13,7 +13,7 @@ import org.koin.core.context.GlobalContext.startKoin
 /**
  * @author Alfredo Sanz
  * @time 2023
- * @version 1.2.0
+ * @version 1.2.1
  */
 class MyPlanningBookApp  : Application() {
 
@@ -46,5 +46,6 @@ class MyPlanningBookApp  : Application() {
         val useEmulator: Boolean = firebaseEmu.toBoolean()
         FirebaseSession.useEmulator = useEmulator
         FirebaseSession.initFirebaseAuth()
+        FirebaseSession.initFirebaseDB()
     }
 }

@@ -30,4 +30,14 @@ object Klog {
                 println("*** kLOG PROD **** $kclass $kmethod *******")
         }
     }
+
+    fun stackTrace(kclass: String, kmethod: String, stack: Array<StackTraceElement>) {
+        when(level.name) {
+            KlogLevel.DEBUG.name ->
+                stack.forEach{ it ->  println("*** KLOG DEBUG - $kclass $kmethod -> $it")}
+
+            KlogLevel.PROD.name ->
+                stack.forEach{ it ->  println("*** KLOG PROD - $kclass $kmethod  ******* -> $it")}
+        }
+    }
 }

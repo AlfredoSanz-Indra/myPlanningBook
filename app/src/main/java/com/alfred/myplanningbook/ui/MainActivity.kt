@@ -20,8 +20,8 @@ class MainActivity : ComponentActivity() {
 
         val userSigned = FirebaseSession.isUserSigned()
         Klog.line("MainActivity", "onCreate", "userSigned: $userSigned")
-        val userSigned2 = FirebaseSession.isUserSignedAndValidated()
-        Klog.line("MainActivity", "onCreate", "userSigned2: $userSigned2")
+        val userSignedAndValidated = FirebaseSession.isUserSignedAndValidated()
+        Klog.line("MainActivity", "onCreate", "userSigned&validated: $userSignedAndValidated")
 
         setContent {
             MaterialTheme {

@@ -9,16 +9,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.alfred.myplanningbook.AppRoutes.BOOKLIST_ROUTE
+import com.alfred.myplanningbook.AppRoutes.BOOKMENU_ROUTE
 import com.alfred.myplanningbook.AppRoutes.LOGIN_ROUTE
 import com.alfred.myplanningbook.AppRoutes.MAIN_ROUTE
 import com.alfred.myplanningbook.AppRoutes.REGISTER_ROUTE
 import com.alfred.myplanningbook.AppRoutes.RESETPWD_ROUTE
 import com.alfred.myplanningbook.core.log.Klog
-import com.alfred.myplanningbook.ui.loggedview.BookListView
+import com.alfred.myplanningbook.ui.ViewsStore
 import com.alfred.myplanningbook.ui.view.LoginView
-import com.alfred.myplanningbook.ui.view.RegisterView
 import com.alfred.myplanningbook.ui.view.MainView
+import com.alfred.myplanningbook.ui.view.RegisterView
 import com.alfred.myplanningbook.ui.view.ResetPwdView
 
 /**
@@ -59,7 +59,7 @@ fun NavigationGraph(
                             },
                 onBook = {
                             Klog.line("NavigationController", "NavigationGraph", "navHost Main go to Booklist !")
-                            navActions.navigateToBookList()
+                            navActions.navigateToBookMenu()
                         }
             )
         }
@@ -89,8 +89,8 @@ fun NavigationGraph(
                     navController.popBackStack()
                 },
                 onLogin = {
-                    Klog.line("NavigationController", "NavigationGraph", "navHost login go to booklist!")
-                    navActions.navigateToBookList()
+                    Klog.line("NavigationController", "NavigationGraph", "navHost login go to bookMenu!")
+                    navActions.navigateToBookMenu()
                 },
                 onReset = {
                     Klog.line("NavigationController", "NavigationGraph", "navHost login go to resetPassword!")
@@ -115,13 +115,26 @@ fun NavigationGraph(
             )
         }
 
-        composable(BOOKLIST_ROUTE,
+        composable(BOOKMENU_ROUTE,
                     arguments = listOf()
         ) {
-            val bookListView = BookListView()
-            bookListView.createView(
+            val bookMenuView = ViewsStore.getBookMenuView()
+            bookMenuView.createView(
+                onPlanningBooks = {
+                    Klog.line("NavigationController", "NavigationGraph", "navHost bookmenu go to PlanningBooks!")
+                    navActions.navigateToPlanningBook()
+                },
+                onTasks = {
+                    Klog.line("NavigationController", "NavigationGraph", "navHost bookmenu go to Tasks!")
+                    navActions.navigateToTasks()
+                },
+                onActivities = {
+                    Klog.line("NavigationController", "NavigationGraph", "navHost bookmenu go to Activities!")
+                    navActions.navigateToActivities()
+                },
                 onLogout = {
-                    Klog.line("NavigationController", "NavigationGraph", "navHost booklist go to logout!")
+                    Klog.line("NavigationController", "NavigationGraph", "navHost bookmenu go to logout!")
+                    ViewsStore.cleanLoggedViews()
                     navActions.navigateToMain()
                 })
         }

@@ -1,11 +1,15 @@
 package com.alfred.myplanningbook
 
 import androidx.navigation.NavHostController
-import com.alfred.myplanningbook.AppScreens.BOOKLIST_SCREEN
+import com.alfred.myplanningbook.AppScreens.BOOKMENU_SCREEN
 import com.alfred.myplanningbook.AppScreens.LOGIN_SCREEN
 import com.alfred.myplanningbook.AppScreens.MAIN_SCREEN
 import com.alfred.myplanningbook.AppScreens.REGISTER_SCREEN
 import com.alfred.myplanningbook.AppScreens.RESETPWD_SCREEN
+import com.alfred.myplanningbook.AppScreens.PLANNINGBOOK_SCREEN
+import com.alfred.myplanningbook.AppScreens.TASKS_SCREEN
+import com.alfred.myplanningbook.AppScreens.ACTIVITIES_SCREEN
+
 
 /**
  * @author Alfredo Sanz
@@ -17,7 +21,10 @@ private object AppScreens {
     const val LOGIN_SCREEN = "login"
     const val RESETPWD_SCREEN = "resetPwd"
     const val REGISTER_SCREEN = "register"
-    const val BOOKLIST_SCREEN = "booklist"
+    const val BOOKMENU_SCREEN = "booklist"
+    const val PLANNINGBOOK_SCREEN = "planningbook"
+    const val TASKS_SCREEN = "tasks"
+    const val ACTIVITIES_SCREEN = "activities"
 }
 
 object AppArgs {
@@ -30,7 +37,10 @@ object AppRoutes {
     const val LOGIN_ROUTE = "$LOGIN_SCREEN"
     const val RESETPWD_ROUTE = "$RESETPWD_SCREEN"
     const val REGISTER_ROUTE = "$REGISTER_SCREEN"
-    const val BOOKLIST_ROUTE = "$BOOKLIST_SCREEN"
+    const val BOOKMENU_ROUTE = "$BOOKMENU_SCREEN"
+    const val PLANNINGBOOK_ROUTE = "$PLANNINGBOOK_SCREEN"
+    const val TASKS_ROUTE = "$TASKS_SCREEN"
+    const val ACTIVITIES_ROUTE = "$ACTIVITIES_SCREEN"
 }
 
 class NavigationActions(private val navController: NavHostController) {
@@ -50,7 +60,19 @@ class NavigationActions(private val navController: NavHostController) {
         navController.navigate("$REGISTER_SCREEN")
     }
 
-    fun navigateToBookList() {
-        navController.navigate("$BOOKLIST_SCREEN")
+    fun navigateToBookMenu() {
+        navController.navigate("$BOOKMENU_SCREEN")
+    }
+
+    fun navigateToPlanningBook() {
+        navController.navigate("$PLANNINGBOOK_SCREEN")
+    }
+
+    fun navigateToTasks() {
+        navController.navigate("$TASKS_SCREEN")
+    }
+
+    fun navigateToActivities() {
+        navController.navigate("$ACTIVITIES_SCREEN")
     }
 }

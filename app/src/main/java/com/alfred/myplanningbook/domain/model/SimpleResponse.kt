@@ -4,4 +4,7 @@ data class SimpleResponse(val result: Boolean,
                           val code: Int,
                           val message: String,
                           val errorcode: String) {
+
+    var planningBook: PlanningBook? = null
+    var owner: Owner? = null
 }

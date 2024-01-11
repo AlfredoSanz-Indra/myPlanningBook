@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.ui.view.viewmodel.LoginViewModel
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 /**
@@ -147,7 +149,7 @@ class LoginView {
     private fun loginButton(onLogin: () -> Unit) {
 
         val viewModel: LoginViewModel = koinViewModel()
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+        val scope = rememberCoroutineScope()
 
         OutlinedButton(modifier = Modifier
             .width(200.dp)
@@ -155,14 +157,17 @@ class LoginView {
             colors = getLoginButtonColour(),
             onClick = {
                 Klog.line("LoginView", "loginButton", "login clicked")
-                viewModel.loginUser();
+                scope.launch {
+                    val r = viewModel.loginUser();
+                    if(r) {
+                        Klog.line("LoginView", "loginButton", "onLogin")
+                        onLogin()
+                    }
+                }
+
             }
         ) {
             Text("Login")
-        }
-
-        if(uiState.loginAction) {
-            onLogin()
         }
     }
 
