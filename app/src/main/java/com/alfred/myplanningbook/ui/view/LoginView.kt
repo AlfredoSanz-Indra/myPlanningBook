@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alfred.myplanningbook.core.log.Klog
+import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.view.viewmodel.LoginViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -154,7 +155,7 @@ class LoginView {
         OutlinedButton(modifier = Modifier
             .width(200.dp)
             .height(70.dp),
-            colors = getLoginButtonColour(),
+            colors = CommonViewComp.getActionsButtonColour(),
             onClick = {
                 Klog.line("LoginView", "loginButton", "login clicked")
                 scope.launch {
@@ -180,7 +181,7 @@ class LoginView {
         TextButton(modifier = Modifier
             .width(150.dp)
             .height(50.dp),
-            colors = getLoginButtonColour(),
+            colors = CommonViewComp.getActionsButtonColour(),
             onClick = {
                 Klog.line("LoginView", "resetPasswordButton", "reset password clicked")
                 onReset()
@@ -196,7 +197,7 @@ class LoginView {
         OutlinedButton(modifier = Modifier
             .width(110.dp)
             .height(50.dp),
-            colors = getBackButtonColour(),
+            colors = CommonViewComp.getSecondaryButtonColour(),
             onClick = {
                 Klog.line("LoginView", "backButton", "Back button clicked")
                 onBack()
@@ -204,28 +205,5 @@ class LoginView {
         ) {
             Text("Back")
         }
-    }
-
-
-    @Composable
-    private fun getLoginButtonColour(): ButtonColors {
-        return ButtonDefaults.outlinedButtonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            disabledContentColor = MaterialTheme.colorScheme.onPrimary,
-            disabledContainerColor = MaterialTheme.colorScheme.primary
-
-        )
-    }
-
-    @Composable
-    private fun getBackButtonColour(): ButtonColors {
-        return ButtonDefaults.outlinedButtonColors(
-            containerColor = MaterialTheme.colorScheme.secondary,
-            contentColor = MaterialTheme.colorScheme.onSecondary,
-            disabledContentColor = MaterialTheme.colorScheme.onSecondary,
-            disabledContainerColor = MaterialTheme.colorScheme.secondary
-
-        )
     }
 }

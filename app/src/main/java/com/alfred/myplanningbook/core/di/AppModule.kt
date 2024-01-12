@@ -9,6 +9,7 @@ import com.alfred.myplanningbook.domain.usecase.UsersServiceImpl
 import com.alfred.myplanningbook.domain.usecaseapi.PlanningBookService
 import com.alfred.myplanningbook.domain.usecaseapi.UsersService
 import com.alfred.myplanningbook.ui.loggedview.viewmodel.BookMenuViewModel
+import com.alfred.myplanningbook.ui.loggedview.viewmodel.PlanningBookManagerViewModel
 import com.alfred.myplanningbook.ui.view.viewmodel.LoginViewModel
 import com.alfred.myplanningbook.ui.view.viewmodel.MainViewModel
 import com.alfred.myplanningbook.ui.view.viewmodel.RegisterViewModel
@@ -46,4 +47,5 @@ val appModule = module {
     viewModelOf(::RegisterViewModel)
     viewModelOf(::LoginViewModel)
     viewModelOf(::BookMenuViewModel)
+    viewModelOf(::PlanningBookManagerViewModel)
 }

@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alfred.myplanningbook.core.firebase.FirebaseSession
 import com.alfred.myplanningbook.core.log.Klog
+import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.view.viewmodel.MainViewModel
 import com.alfred.myplanningbook.ui.view.viewmodel.RegisterViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -85,7 +86,7 @@ class MainView() {
 
         OutlinedButton(modifier = Modifier.width(200.dp)
             .height(70.dp),
-            colors = getLoginButtonColour(),
+            colors = CommonViewComp.getActionsButtonColour(),
             onClick = {
                 Klog.line("MainView", "buttonsPrimaryActions", "Login button clicked")
                 val r = viewModel.loginAction()
@@ -104,7 +105,7 @@ class MainView() {
 
         FilledTonalButton(modifier = Modifier.width(200.dp)
             .height(70.dp),
-            colors = getRegisterButtonColour(),
+            colors = CommonViewComp.getSecondaryButtonColour(),
             onClick = {
                 Klog.line("MainView", "buttonsPrimaryActions", "Register button clicked")
                 onRegister()
@@ -112,26 +113,5 @@ class MainView() {
         ) {
             Text("Register")
         }
-    }
-
-    @Composable
-    private fun getLoginButtonColour(): ButtonColors {
-        return ButtonDefaults.outlinedButtonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            disabledContentColor = MaterialTheme.colorScheme.onPrimary,
-            disabledContainerColor = MaterialTheme.colorScheme.primary
-
-        )
-    }
-
-    @Composable
-    private fun getRegisterButtonColour(): ButtonColors {
-        return ButtonDefaults.outlinedButtonColors(
-            containerColor = MaterialTheme.colorScheme.secondary,
-            contentColor = MaterialTheme.colorScheme.onSecondary,
-            disabledContentColor = MaterialTheme.colorScheme.onSecondary,
-            disabledContainerColor = MaterialTheme.colorScheme.secondary
-        )
     }
 }

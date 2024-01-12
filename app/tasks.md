@@ -10,7 +10,8 @@ classDiagram
     Task "0" --> "*" Activity
     Activity "*" --> "1" Person
     Task "*" --> "1" Person
-    Owner "*" --> "1" PlanningBook
+    Task "*" --> "1" TaskType
+    Owner "*" --> "*" PlanningBook
     class PlanningBook {
         -String id
         +Number idOwner
@@ -24,8 +25,10 @@ classDiagram
         +String[] planningBooks
     }
     class Task {
-        -Number id
-        +Number idPersona
+        -String id
+        +String idPlanningBook
+        +String idPersona
+        +String idType
         +String name
         +String description
         +Date date
@@ -33,15 +36,22 @@ classDiagram
         +Date endDate
     }
     class Activity {
-        -Number id
-        +Number idTask
-        +Number idPersona
+        -String id
+        +String idPlanningBook
+        +String idTask
+        +String idPersona
         +String name
         +String description
         +Date date
     }
     class Person {
-        -Number id
+        -String id
         +String name
+    }
+
+    class TaskType {
+        "childsAuto, childsNoAuto"
+        -String id
+        -String desc
     }
 ````

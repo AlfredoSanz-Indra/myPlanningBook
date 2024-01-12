@@ -14,6 +14,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/**
+ * @author Alfredo Sanz
+ * @time 2024
+ */
 data class BookMenuUiState(
     var generalError: Boolean = false,
     var generalErrorText: String = "",
