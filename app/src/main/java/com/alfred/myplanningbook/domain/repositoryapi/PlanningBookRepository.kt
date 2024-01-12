@@ -9,7 +9,7 @@ import com.alfred.myplanningbook.data.model.SimpleDataResponse
 interface PlanningBookRepository {
 
     suspend fun createPlanningBook(email: String, name: String): SimpleDataResponse
-    suspend fun getPlanningBook(email: String): SimpleDataResponse
+    suspend fun getPlanningBook(id: String): SimpleDataResponse
     suspend fun findOwner(email: String): SimpleDataResponse
     suspend fun createOwner(email: String, name: String): SimpleDataResponse
 }

@@ -54,8 +54,7 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
                         planningBook = PlanningBook(
                             document.id,
                             document.get("idOwner") as String,
-                            document.get("name") as String,
-                            null
+                            document.get("name") as String
                         )
                     }
                     if(planningBook != null) {

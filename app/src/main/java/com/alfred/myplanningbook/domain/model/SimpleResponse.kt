@@ -6,5 +6,6 @@ data class SimpleResponse(val result: Boolean,
                           val errorcode: String) {
 
     var planningBook: PlanningBook? = null
+    var planningBookList: MutableList<PlanningBook>? = null
     var owner: Owner? = null
 }

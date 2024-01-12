@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -24,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alfred.myplanningbook.core.log.Klog
+import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.loggedview.viewmodel.BookMenuViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -111,7 +110,7 @@ class BookMenuView {
         OutlinedButton(modifier = Modifier
             .width(200.dp)
             .height(70.dp),
-            colors = getActionsButtonColour(),
+            colors = CommonViewComp.getActionsButtonColour(),
             onClick = {
             }
         ) {
@@ -136,7 +135,7 @@ class BookMenuView {
     }
 
     @Composable
-    private fun planningBooksButton(onLogout: () -> Unit) {
+    private fun planningBooksButton(onPlanningBooks: () -> Unit) {
 
         val viewModel: BookMenuViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -144,18 +143,16 @@ class BookMenuView {
         OutlinedButton(modifier = Modifier
             .width(200.dp)
             .height(70.dp),
-            colors = getActionsButtonColour(),
+            colors = CommonViewComp.getActionsButtonColour(),
             onClick = {
                 Klog.line("BookMenuView", "planningBooksButton", "planningBooks button clicked")
-                viewModel.planningbookView();
+                val r = viewModel.planningbookView();
+                if(r) {
+                    onPlanningBooks()
+                }
             }
         ) {
             Text("Manage Planning Book")
-        }
-
-        if(uiState.planningbookAction) {
-            onLogout()
-            viewModel.resetActions()
         }
     }
 
@@ -168,18 +165,13 @@ class BookMenuView {
         OutlinedButton(modifier = Modifier
             .width(200.dp)
             .height(70.dp),
-            colors = getActionsButtonColour(),
+            colors = CommonViewComp.getActionsButtonColour(),
             onClick = {
                 Klog.line("BookMenuView", "tasksButton", "tasks button clicked")
                 viewModel.tasksView();
             }
         ) {
             Text("Tasks")
-        }
-
-        if(uiState.tasksAction) {
-            onTasks()
-            viewModel.resetActions()
         }
     }
 
@@ -192,7 +184,7 @@ class BookMenuView {
         OutlinedButton(modifier = Modifier
             .width(200.dp)
             .height(70.dp),
-            colors = getActionsButtonColour(),
+            colors = CommonViewComp.getActionsButtonColour(),
             onClick = {
                 Klog.line("BookMenuView", "activitiesButton", "activities button clicked")
                 viewModel.activitiesView();
@@ -200,12 +192,8 @@ class BookMenuView {
         ) {
             Text("Activities")
         }
-
-        if(uiState.activitiesAction) {
-            onActivities()
-            viewModel.resetActions()
-        }
     }
+
     @Composable
     private fun logoutButton(onLogout: () -> Unit) {
 
@@ -215,7 +203,7 @@ class BookMenuView {
         OutlinedButton(modifier = Modifier
             .width(200.dp)
             .height(70.dp),
-            colors = getLogoutButtonColour(),
+            colors = CommonViewComp.getSecondaryButtonColour(),
             onClick = {
                 Klog.line("BookMenuView", "logoutButton", "logout clicked")
                 val r = viewModel.logoutUser();
@@ -227,27 +215,4 @@ class BookMenuView {
             Text("Log Out")
         }
     }
-
-    @Composable
-    private fun getActionsButtonColour(): ButtonColors {
-        return ButtonDefaults.outlinedButtonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            disabledContentColor = MaterialTheme.colorScheme.onPrimary,
-            disabledContainerColor = MaterialTheme.colorScheme.primary
-
-        )
-    }
-
-    @Composable
-    private fun getLogoutButtonColour(): ButtonColors {
-        return ButtonDefaults.outlinedButtonColors(
-            containerColor = MaterialTheme.colorScheme.secondary,
-            contentColor = MaterialTheme.colorScheme.onSecondary,
-            disabledContentColor = MaterialTheme.colorScheme.onSecondary,
-            disabledContainerColor = MaterialTheme.colorScheme.secondary
-
-        )
-    }
-
 }
