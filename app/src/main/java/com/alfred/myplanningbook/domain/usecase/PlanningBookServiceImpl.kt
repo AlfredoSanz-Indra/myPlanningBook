@@ -3,6 +3,7 @@ package com.alfred.myplanningbook.domain.usecase
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.data.model.SimpleDataResponse
 import com.alfred.myplanningbook.domain.AppState
+import com.alfred.myplanningbook.domain.model.PlanningBook
 import com.alfred.myplanningbook.domain.model.SimpleResponse
 import com.alfred.myplanningbook.domain.repositoryapi.PlanningBookRepository
 import com.alfred.myplanningbook.domain.usecaseapi.PlanningBookService
@@ -26,27 +27,28 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
                 result.owner = respLO.owner
 
                 if(!respLO.owner!!.activePlanningBook.isNullOrBlank()) {
-                    Klog.line("PlanningBookServiceImpl", "loadState", "loading state PB -> respLO.owner!!.activePlanningBook!!: ${respLO.owner!!.activePlanningBook!!}")
+                    Klog.linedbg("PlanningBookServiceImpl", "loadState", "loading PB -> respLO.owner!!.activePlanningBook!!: ${respLO.owner!!.activePlanningBook!!}")
                     val respPB = loadPlanningBook(respLO.owner!!.activePlanningBook!!)
                     if(respPB.result) {
-                        AppState.planningBook = respPB.planningBook!!
+                        AppState.activePlanningBook = respPB.planningBook!!
+                        AppState.activePlanningBook!!.isActive = true
                         result.planningBook = respPB.planningBook
-                        Klog.line("PlanningBookServiceImpl", "loadState", "loading state PB -> result: $result")
+                        Klog.linedbg("PlanningBookServiceImpl", "loadState", "loaded PB -> result: $result")
                     }
                 }
-                Klog.line("PlanningBookServiceImpl", "loadState", "loading state all done -> result: $result")
+                Klog.linedbg("PlanningBookServiceImpl", "loadState", "loading state all done -> result: $result")
             }
             else if(respLO.code == 400 || respLO.code == 404) {
-                Klog.line("PlanningBookServiceImpl", "loadState", "Owner didn't found -> respLO: $respLO")
+                Klog.linedbg("PlanningBookServiceImpl", "loadState", "Owner didn't found -> respLO: $respLO")
                 val respCO = createOwner(email)
                 if(respCO.result) {
                     AppState.owner = respCO.owner!!
                     result = SimpleResponse(true, 200, "OK", "")
-                    Klog.line("PlanningBookServiceImpl", "loadState", "Owner created -> result: $result")
+                    Klog.linedbg("PlanningBookServiceImpl", "loadState", "Owner created -> result: $result")
                 }
                 else {
                     result = respCO
-                    Klog.line("PlanningBookServiceImpl", "loadState", "Owner not created -> result: $result")
+                    Klog.linedbg("PlanningBookServiceImpl", "loadState", "Owner not created -> result: $result")
                 }
             }
         }
@@ -111,14 +113,14 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
         return result
     }
 
-    private suspend fun loadPlanningBook(email: String): SimpleResponse {
+    private suspend fun loadPlanningBook(id: String): SimpleResponse {
 
         var result: SimpleResponse
-        Klog.line("PlanningBookServiceImpl", "loadPlanningBook", "loading planning book -> email: $email")
+        Klog.line("PlanningBookServiceImpl", "loadPlanningBook", "loading planning book -> id: $id")
 
         try {
-            val resp: SimpleDataResponse = planningBookRepository.getPlanningBook(email)
-            Klog.line("PlanningBookServiceImpl", "loadPlanningBook", "resp: $resp")
+            val resp: SimpleDataResponse = planningBookRepository.getPlanningBook(id)
+            Klog.linedbg("PlanningBookServiceImpl", "loadPlanningBook", "resp: $resp")
 
             if(!resp.result) {
                 result = SimpleResponse(false, resp.code, resp.message, "")
@@ -133,7 +135,33 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
             result = SimpleResponse(false, 500, e.localizedMessage, "" )
         }
 
-        Klog.line("PlanningBookServiceImpl", "loadPlanningBook", "result: $result")
+        Klog.linedbg("PlanningBookServiceImpl", "loadPlanningBook", "result: $result")
+        return result
+    }
+
+    override suspend fun loadPlanningBooks(plannings: List<String>): SimpleResponse {
+
+        var result = SimpleResponse(false, 400, "notLoaded", "")
+        Klog.line("PlanningBookServiceImpl", "loadPlanningBooks", "loading user planningBooks")
+
+        try {
+            val pbList: MutableList<PlanningBook> = mutableListOf()
+            plannings.forEach { id ->
+                val resp = loadPlanningBook(id)
+                if(resp.result && resp.code == 200) {
+                    pbList.add(resp.planningBook!!)
+                }
+            }
+            Klog.linedbg("PlanningBookServiceImpl", "loadPlanningBooks", "loaded all planning books -> number: ${pbList.size}")
+        }
+        catch(e: Exception) {
+            Klog.line("PlanningBookServiceImpl", "loadPlanningBooks", " Exception Message: ${e.message}")
+            Klog.stackTrace("PlanningBookServiceImpl", "loadPlanningBooks", e.stackTrace)
+
+            result = SimpleResponse(false, 500, e.localizedMessage, "" )
+        }
+
+        Klog.line("PlanningBookServiceImpl", "loadPlanningBooks", "result: $result")
         return result
     }
 }

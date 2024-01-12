@@ -10,8 +10,9 @@ import com.alfred.myplanningbook.domain.model.PlanningBook
 object AppState {
 
     var useremail: String? = null
-    lateinit var planningBook: PlanningBook
-    lateinit var owner: Owner
+    var owner: Owner? = null
+    var activePlanningBook: PlanningBook? = null
+    var planningBooks: MutableList<PlanningBook> = mutableListOf()
 
     /**
      * Can be set to null when log out.
@@ -19,4 +20,12 @@ object AppState {
     fun setUserEmail(_email: String?) {
         useremail = _email
     }
+
+    fun cleanState() {
+        useremail = null
+        owner = null
+        activePlanningBook = null
+        planningBooks = mutableListOf()
+    }
+
 }

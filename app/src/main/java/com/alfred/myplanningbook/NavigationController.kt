@@ -12,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.alfred.myplanningbook.AppRoutes.BOOKMENU_ROUTE
 import com.alfred.myplanningbook.AppRoutes.LOGIN_ROUTE
 import com.alfred.myplanningbook.AppRoutes.MAIN_ROUTE
+import com.alfred.myplanningbook.AppRoutes.PLANNINGBOOKMANAGER_ROUTE
 import com.alfred.myplanningbook.AppRoutes.REGISTER_ROUTE
 import com.alfred.myplanningbook.AppRoutes.RESETPWD_ROUTE
 import com.alfred.myplanningbook.core.log.Klog
@@ -121,8 +122,8 @@ fun NavigationGraph(
             val bookMenuView = ViewsStore.getBookMenuView()
             bookMenuView.createView(
                 onPlanningBooks = {
-                    Klog.line("NavigationController", "NavigationGraph", "navHost bookmenu go to PlanningBooks!")
-                    navActions.navigateToPlanningBook()
+                    Klog.line("NavigationController", "NavigationGraph", "navHost bookmenu go to PlanningBookManager!")
+                    navActions.navigateToPlanningManagerBook()
                 },
                 onTasks = {
                     Klog.line("NavigationController", "NavigationGraph", "navHost bookmenu go to Tasks!")
@@ -136,6 +137,17 @@ fun NavigationGraph(
                     Klog.line("NavigationController", "NavigationGraph", "navHost bookmenu go to logout!")
                     ViewsStore.cleanLoggedViews()
                     navActions.navigateToMain()
+                })
+        }
+
+        composable(PLANNINGBOOKMANAGER_ROUTE,
+            arguments = listOf()
+        ) {
+            val planningBookManagerView = ViewsStore.getPlanningBookManagerView()
+            planningBookManagerView.createView(
+                onCreatePlanning = {
+                    Klog.line("NavigationController", "NavigationGraph", "navHost planningBookManager go to Create Plannig book!")
+                    navActions.navigateToPlanningManagerBook()
                 })
         }
     }

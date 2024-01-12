@@ -31,6 +31,17 @@ object Klog {
         }
     }
 
+    /**
+     * print line only in debug mode
+     */
+    fun linedbg(kclass: String, kmethod: String, kmessage: String) {
+
+        when(level.name) {
+            KlogLevel.DEBUG.name ->
+                println("*** KLOG DEBUG - $kclass $kmethod -> $kmessage")
+        }
+    }
+
     fun stackTrace(kclass: String, kmethod: String, stack: Array<StackTraceElement>) {
         when(level.name) {
             KlogLevel.DEBUG.name ->

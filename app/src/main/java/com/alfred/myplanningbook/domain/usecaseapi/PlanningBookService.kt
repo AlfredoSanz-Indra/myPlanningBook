@@ -10,5 +10,6 @@ interface PlanningBookService {
 
     suspend fun loadState(email: String): SimpleResponse
 
+    suspend fun loadPlanningBooks(plannings: List<String>): SimpleResponse
 
 }

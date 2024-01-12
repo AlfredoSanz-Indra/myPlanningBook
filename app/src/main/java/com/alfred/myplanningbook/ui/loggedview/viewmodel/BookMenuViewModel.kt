@@ -21,10 +21,6 @@ import kotlinx.coroutines.launch
 data class BookMenuUiState(
     var generalError: Boolean = false,
     var generalErrorText: String = "",
-    var logoutAction: Boolean = false,
-    var planningbookAction: Boolean = false,
-    var tasksAction: Boolean = false,
-    var activitiesAction: Boolean = false,
     var currentPlanningBook: String = ""
 )
 class BookMenuViewModel(val usersService: UsersService,
@@ -79,35 +75,38 @@ class BookMenuViewModel(val usersService: UsersService,
         var result = false
         clearErrors()
 
-        var respo: SimpleResponse? = null
-        try {
-            viewModelScope.launch {
+        viewModelScope.launch {
+            try {
+                var respo: SimpleResponse? = null
                 val defer = viewModelScope.async {
                     val resp = usersService.logoutUser()
-                    Klog.line("BookMenuViewModel", "logoutUser", "resp: $resp")
+                    Klog.linedbg("BookMenuViewModel", "logoutUser", "resp: $resp")
 
                     return@async resp
                 }
                 respo = defer.await()
-            }
-        }
-        catch (e: Exception) {
-            Klog.stackTrace("BookMenuViewModel", "logoutUser", e.stackTrace)
-            Klog.line("BookMenuViewModel", "logoutUser", " Exception localizedMessage: ${e.localizedMessage}")
-            setGeneralError(" 500: ${e.message}, Couldn't log out!")
-        }
 
-        if(respo != null) {
-            if(respo!!.result) {
-                updateLogoutAction(true)
-                result = true
+                if (respo != null) {
+                    if (respo!!.result) {
+                        result = true
+                    }
+                    else {
+                        setGeneralError(" ${respo!!.code}: ${respo!!.message}")
+                    }
+                }
+                else {
+                    setGeneralError(" 500: Undefined Error, couldn't log out")
+                }
             }
-            else {
-                setGeneralError(" ${respo!!.code}: ${respo!!.message}")
+            catch (e: Exception) {
+                Klog.stackTrace("BookMenuViewModel", "logoutUser", e.stackTrace)
+                Klog.line(
+                    "BookMenuViewModel",
+                    "logoutUser",
+                    " Exception localizedMessage: ${e.localizedMessage}"
+                )
+                setGeneralError(" 500: ${e.message}, Couldn't log out!")
             }
-        }
-        else {
-            setGeneralError(" 500: Undefined Error, couldn't log out")
         }
 
         Klog.line("BookMenuViewModel", "logoutUser", "result: $result")
@@ -118,8 +117,8 @@ class BookMenuViewModel(val usersService: UsersService,
 
     }
 
-    fun planningbookView() {
-
+    fun planningbookView(): Boolean {
+        return true
     }
 
     fun activitiesView() {
@@ -129,30 +128,6 @@ class BookMenuViewModel(val usersService: UsersService,
     private fun updateCurrentPlanningBook(pbText: String) {
         _uiState.update {
             it.copy(currentPlanningBook = pbText)
-        }
-    }
-
-    private fun updateLogoutAction(action: Boolean) {
-        _uiState.update {
-            it.copy(logoutAction = action)
-        }
-    }
-
-    private fun updateplanningbookAction(action: Boolean) {
-        _uiState.update {
-            it.copy(planningbookAction = action)
-        }
-    }
-
-    private fun updateTasksAction(action: Boolean) {
-        _uiState.update {
-            it.copy(tasksAction = action)
-        }
-    }
-
-    private fun updateActivitiesAction(action: Boolean) {
-        _uiState.update {
-            it.copy(activitiesAction = action)
         }
     }
 
@@ -174,12 +149,5 @@ class BookMenuViewModel(val usersService: UsersService,
         _uiState.update {
             it.copy(generalErrorText = "")
         }
-    }
-
-    fun resetActions() {
-        updateLogoutAction(false)
-        updateplanningbookAction(false)
-        updateTasksAction(false)
-        updateActivitiesAction(false)
     }
 }

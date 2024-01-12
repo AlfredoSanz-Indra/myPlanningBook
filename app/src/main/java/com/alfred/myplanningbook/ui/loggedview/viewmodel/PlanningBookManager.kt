@@ -23,6 +23,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.ui.common.CommonViewComp
 import org.koin.androidx.compose.koinViewModel
 
@@ -39,7 +40,9 @@ class PlanningBookManager {
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
         LaunchedEffect(Unit) {
-            //viewModel.loadState()
+            viewModel.loadPlanningBooks()
+            Klog.line("PlanningBookManager", "createView", "currentPlanningBook:  ${uiState.currentPlanningBook}")
+            Klog.line("PlanningBookManager", "createView", "planningBookList:  ${uiState.planningBookList}")
         }
 
         MaterialTheme(colorScheme = MaterialTheme.colorScheme) {
@@ -53,11 +56,12 @@ class PlanningBookManager {
             ) {
                 if(uiState.currentPlanningBook.isEmpty()) {
                     Spacer(modifier = Modifier.height(30.dp))
-
+                    loading()
                 }
                 else {
                     Spacer(modifier = Modifier.height(30.dp))
                     errorGeneralField()
+                    currentPlanningBookActive()
 
                 }
             }
@@ -102,6 +106,21 @@ class PlanningBookManager {
         }
     }
 
+    @Composable
+    private fun currentPlanningBookActive() {
+
+        val viewModel: PlanningBookManagerViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+        Text(
+            uiState.currentPlanningBook,
+            color = Color.Blue,
+            style = TextStyle(
+                fontSize = 15.sp,
+                color = Color.Red
+            )
+        )
+    }
 
 
 }

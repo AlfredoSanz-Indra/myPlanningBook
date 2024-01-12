@@ -135,7 +135,7 @@ class BookMenuView {
     }
 
     @Composable
-    private fun planningBooksButton(onLogout: () -> Unit) {
+    private fun planningBooksButton(onPlanningBooks: () -> Unit) {
 
         val viewModel: BookMenuViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -146,15 +146,13 @@ class BookMenuView {
             colors = CommonViewComp.getActionsButtonColour(),
             onClick = {
                 Klog.line("BookMenuView", "planningBooksButton", "planningBooks button clicked")
-                viewModel.planningbookView();
+                val r = viewModel.planningbookView();
+                if(r) {
+                    onPlanningBooks()
+                }
             }
         ) {
             Text("Manage Planning Book")
-        }
-
-        if(uiState.planningbookAction) {
-            onLogout()
-            viewModel.resetActions()
         }
     }
 
@@ -175,11 +173,6 @@ class BookMenuView {
         ) {
             Text("Tasks")
         }
-
-        if(uiState.tasksAction) {
-            onTasks()
-            viewModel.resetActions()
-        }
     }
 
     @Composable
@@ -199,12 +192,8 @@ class BookMenuView {
         ) {
             Text("Activities")
         }
-
-        if(uiState.activitiesAction) {
-            onActivities()
-            viewModel.resetActions()
-        }
     }
+
     @Composable
     private fun logoutButton(onLogout: () -> Unit) {
 
