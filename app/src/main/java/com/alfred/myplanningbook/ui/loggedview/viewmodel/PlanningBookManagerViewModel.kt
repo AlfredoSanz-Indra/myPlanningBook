@@ -21,6 +21,8 @@ import kotlinx.coroutines.launch
 data class PlanningBookManagerUiState(
     var generalError: Boolean = false,
     var generalErrorText: String = "",
+    var pbName: String = "",
+    var isToCreatePB: Boolean = false,
     var currentPlanningBook: String = "",
     var planningBookList: MutableList<PlanningBook> = mutableListOf()
 )
@@ -55,9 +57,9 @@ class PlanningBookManagerViewModel(val planningBookService: PlanningBookService)
 
                     return@async r
                 }
-
                 val pbList: MutableList<PlanningBook>? = defer.await()
-                if(pbList.isNullOrEmpty()) {
+
+                if(!pbList.isNullOrEmpty()) {
                     currentPBs.addAll(pbList!!)
                 }
 
@@ -67,6 +69,56 @@ class PlanningBookManagerViewModel(val planningBookService: PlanningBookService)
             catch (e: Exception) {
                 Klog.stackTrace("PlanningBookManagerViewModel", "loadState", e.stackTrace)
                 Klog.line("PlanningBookManagerViewModel", "loadPlanningBooks", " Exception localizedMessage: ${e.localizedMessage}")
+                setGeneralError(" 500: ${e.message}, Error loading planning books, please login again!")
+            }
+        }
+    }
+
+    fun createPlanningBookButtonClicked() {
+
+        updateIsToCreatePB(true)
+    }
+
+    fun cancelCreatePlanningBookButtonClicked() {
+
+        updateIsToCreatePB(false)
+    }
+
+    fun createPlanningBook() {
+
+
+        viewModelScope.launch {
+            try {
+                val defer = viewModelScope.async {
+                    var r = mutableListOf<PlanningBook>()
+                    if (!AppState.owner!!.planningBooks.isNullOrEmpty()) {
+                        val resp: SimpleResponse =
+                            planningBookService.loadPlanningBooks(AppState.owner!!.planningBooks!!)
+                        Klog.linedbg(
+                            "PlanningBookManagerViewModel",
+                            "loadPlanningBooks",
+                            "resp: $resp"
+                        )
+
+                        if (resp.result && resp.code == 200) {
+                            r = resp.planningBookList!!
+                        }
+                    }
+
+                    return@async r
+                }
+                val pbList: MutableList<PlanningBook>? = defer.await()
+
+
+
+
+            } catch (e: Exception) {
+                Klog.stackTrace("PlanningBookManagerViewModel", "loadState", e.stackTrace)
+                Klog.line(
+                    "PlanningBookManagerViewModel",
+                    "loadPlanningBooks",
+                    " Exception localizedMessage: ${e.localizedMessage}"
+                )
                 setGeneralError(" 500: ${e.message}, Error loading planning books, please login again!")
             }
         }
@@ -91,6 +143,18 @@ class PlanningBookManagerViewModel(val planningBookService: PlanningBookService)
         }
         _uiState.update {
             it.copy(generalErrorText = txt)
+        }
+    }
+
+    fun updatePBName(txt: String) {
+        _uiState.update {
+            it.copy(pbName = txt)
+        }
+    }
+
+    fun updateIsToCreatePB(action: Boolean) {
+        _uiState.update {
+            it.copy(isToCreatePB = action)
         }
     }
 

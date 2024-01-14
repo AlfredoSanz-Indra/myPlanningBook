@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -104,18 +105,8 @@ class BookMenuView {
 
     @Composable
     private fun loading() {
-        val viewModel: BookMenuViewModel = koinViewModel()
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-        OutlinedButton(modifier = Modifier
-            .width(200.dp)
-            .height(70.dp),
-            colors = CommonViewComp.getActionsButtonColour(),
-            onClick = {
-            }
-        ) {
-            Text("Loading State!! Please Wait")
-        }
+        CircularProgressIndicator()
     }
 
     @Composable
