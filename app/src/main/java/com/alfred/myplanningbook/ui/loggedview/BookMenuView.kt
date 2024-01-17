@@ -42,8 +42,10 @@ class BookMenuView {
         val viewModel: BookMenuViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-        LaunchedEffect(Unit) {
-            viewModel.loadState()
+        LaunchedEffect(uiState.isStateLoaded) {
+            if(!uiState.isStateLoaded) {
+                viewModel.loadState()
+            }
         }
 
         MaterialTheme(colorScheme = MaterialTheme.colorScheme) {
@@ -137,13 +139,17 @@ class BookMenuView {
             colors = CommonViewComp.getActionsButtonColour(),
             onClick = {
                 Klog.line("BookMenuView", "planningBooksButton", "planningBooks button clicked")
-                val r = viewModel.planningbookView();
-                if(r) {
-                    onPlanningBooks()
-                }
+                viewModel.planningbookView();
             }
         ) {
             Text("Manage Planning Book")
+        }
+
+        LaunchedEffect(uiState.isToPlanningBookManager) {
+            if(uiState.isToPlanningBookManager) {
+                viewModel.clearFields()
+                onPlanningBooks()
+            }
         }
     }
 
@@ -197,13 +203,17 @@ class BookMenuView {
             colors = CommonViewComp.getSecondaryButtonColour(),
             onClick = {
                 Klog.line("BookMenuView", "logoutButton", "logout clicked")
-                val r = viewModel.logoutUser();
-                if(r) {
-                    onLogout()
-                }
+                viewModel.logoutUser()
             }
         ) {
             Text("Log Out")
+        }
+
+        LaunchedEffect(uiState.isToLogout) {
+            if(uiState.isToLogout) {
+                viewModel.clearFields()
+                onLogout()
+            }
         }
     }
 }

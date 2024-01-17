@@ -7,7 +7,6 @@ import com.alfred.myplanningbook.domain.AppState
 import com.alfred.myplanningbook.domain.model.SimpleResponse
 import com.alfred.myplanningbook.domain.usecaseapi.PlanningBookService
 import com.alfred.myplanningbook.domain.usecaseapi.UsersService
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,77 +20,74 @@ import kotlinx.coroutines.launch
 data class BookMenuUiState(
     var generalError: Boolean = false,
     var generalErrorText: String = "",
-    var currentPlanningBook: String = ""
+    var currentPlanningBook: String = "",
+    var isStateLoaded: Boolean = false,
+    var isToLogout: Boolean = false,
+    var isToPlanningBookManager: Boolean = false
 )
-class BookMenuViewModel(val usersService: UsersService,
-                        val planningBookService: PlanningBookService): ViewModel()  {
+class BookMenuViewModel(private val usersService: UsersService,
+                        private val planningBookService: PlanningBookService): ViewModel()  {
 
     private val _uiState = MutableStateFlow(BookMenuUiState())
     val uiState: StateFlow<BookMenuUiState> = _uiState.asStateFlow()
 
-    suspend fun loadState() {
+    fun loadState() {
+
         Klog.line("BookMenuViewModel", "loadState", "loading state")
         if(AppState.useremail == null) {
             setGeneralError(" 501: login was not successfull and user info was not loaded")
             return
         }
 
-        var respo: SimpleResponse? = null
-        try {
-            val defer = viewModelScope.async {
+        viewModelScope.launch {
+            try {
                 val resp: SimpleResponse = planningBookService.loadState(AppState.useremail!!)
                 Klog.line("BookMenuViewModel", "loadState", "resp: $resp")
 
-                return@async resp
-            }
-            respo = defer.await()
-        }
-        catch (e: Exception) {
-            Klog.stackTrace("BookMenuViewModel", "loadState", e.stackTrace)
-            Klog.line("BookMenuViewModel", "loadState", " Exception localizedMessage: ${e.localizedMessage}")
-            setGeneralError(" 500: ${e.message}, please make login again!")
-        }
+                if (resp!!.result) {
+                    updateIsStateLoaded(true)
 
-        if (respo!!.result) {
-            Klog.line("BookMenuViewModel", "loadState", "State Successfully loaded")
-            if(respo.planningBook != null) {
-                updateCurrentPlanningBook(respo.planningBook!!.name)
-            }
-            else {
-                updateCurrentPlanningBook("You don't have any Planning Book active yet")
-            }
+                    Klog.line("BookMenuViewModel", "loadState", "State Successfully loaded")
+                    if (resp.planningBook != null) {
+                        updateCurrentPlanningBook(resp.planningBook!!.name)
+                    }
+                    else {
+                        updateCurrentPlanningBook("You don't have any Planning Book active yet")
+                    }
 
-            if(respo.owner == null) {
-                setGeneralError(" Owner is not accessible, please make login again!")
+                    if (resp.owner == null) {
+                        setGeneralError(" Owner is not accessible, please log in again!")
+                        updateIsStateLoaded(false)
+                    }
+                }
+                else {
+                    setGeneralError(" ${resp.code}: ${resp.message}, please log in again!")
+                }
             }
-        }
-        else {
-            setGeneralError(" ${respo.code}: ${respo.message}, please make login again!")
+            catch (e: Exception) {
+                Klog.stackTrace("BookMenuViewModel", "loadState", e.stackTrace)
+                Klog.line("BookMenuViewModel","loadState"," Exception localizedMessage: ${e.localizedMessage}")
+                setGeneralError(" 500: ${e.message}, please log in again!")
+            }
         }
     }
 
-    fun logoutUser(): Boolean {
+    fun logoutUser() {
 
-        var result = false
         clearErrors()
+        clearFields()
 
         viewModelScope.launch {
             try {
-                var respo: SimpleResponse? = null
-                val defer = viewModelScope.async {
-                    val resp = usersService.logoutUser()
-                    Klog.linedbg("BookMenuViewModel", "logoutUser", "resp: $resp")
+                val resp = usersService.logoutUser()
+                Klog.linedbg("BookMenuViewModel", "logoutUser", "resp: $resp")
 
-                    return@async resp
-                }
-                respo = defer.await()
-
-                if (respo != null) {
-                    if (respo!!.result) {
-                        result = true
+                if (resp != null) {
+                    if (resp!!.result) {
+                        updateIsToLogout(true)
                     }
                     else {
-                        setGeneralError(" ${respo!!.code}: ${respo!!.message}")
+                        setGeneralError(" ${resp!!.code}: ${resp!!.message}")
                     }
                 }
                 else {
@@ -100,25 +96,19 @@ class BookMenuViewModel(val usersService: UsersService,
             }
             catch (e: Exception) {
                 Klog.stackTrace("BookMenuViewModel", "logoutUser", e.stackTrace)
-                Klog.line(
-                    "BookMenuViewModel",
-                    "logoutUser",
-                    " Exception localizedMessage: ${e.localizedMessage}"
-                )
+                Klog.line("BookMenuViewModel","logoutUser"," Exception localizedMessage: ${e.localizedMessage}")
                 setGeneralError(" 500: ${e.message}, Couldn't log out!")
             }
         }
-
-        Klog.line("BookMenuViewModel", "logoutUser", "result: $result")
-        return result
     }
 
     fun tasksView() {
 
     }
 
-    fun planningbookView(): Boolean {
-        return true
+    fun planningbookView() {
+
+        updateIsToPlanningBookManager(true)
     }
 
     fun activitiesView() {
@@ -128,6 +118,24 @@ class BookMenuViewModel(val usersService: UsersService,
     private fun updateCurrentPlanningBook(pbText: String) {
         _uiState.update {
             it.copy(currentPlanningBook = pbText)
+        }
+    }
+
+    private fun updateIsStateLoaded(action: Boolean) {
+        _uiState.update {
+            it.copy(isStateLoaded = action)
+        }
+    }
+
+    private fun updateIsToLogout(action: Boolean) {
+        _uiState.update {
+            it.copy(isToLogout = action)
+        }
+    }
+
+    private fun updateIsToPlanningBookManager(action: Boolean) {
+        _uiState.update {
+            it.copy(isToPlanningBookManager = action)
         }
     }
 
@@ -148,6 +156,17 @@ class BookMenuViewModel(val usersService: UsersService,
         }
         _uiState.update {
             it.copy(generalErrorText = "")
+        }
+    }
+
+    fun clearFields() {
+
+        _uiState.update {
+            it.copy(isToLogout = false)
+        }
+
+        _uiState.update {
+            it.copy(isToPlanningBookManager = false)
         }
     }
 }

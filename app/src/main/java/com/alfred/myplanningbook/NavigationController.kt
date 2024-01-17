@@ -145,9 +145,9 @@ fun NavigationGraph(
         ) {
             val planningBookManagerView = ViewsStore.getPlanningBookManagerView()
             planningBookManagerView.createView(
-                onCreatePlanning = {
-                    Klog.line("NavigationController", "NavigationGraph", "navHost planningBookManager go to Create Plannig book!")
-                    navActions.navigateToPlanningManagerBook()
+                onBack = {
+                    Klog.line("NavigationController", "NavigationGraph", "navHost planningBookManager go back!")
+                    navController.popBackStack()
                 })
         }
     }
