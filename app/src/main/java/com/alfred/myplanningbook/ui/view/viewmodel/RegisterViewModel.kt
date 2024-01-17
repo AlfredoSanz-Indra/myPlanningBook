@@ -62,10 +62,10 @@ class RegisterViewModel(val usersService: UsersService) : ViewModel() {
 
         clearErrors()
         if(!validateFields()) {
-            Klog.line("RegisterViewModel", "registerUser", "Validation was unsuccessfull")
+            Klog.linedbg("RegisterViewModel", "registerUser", "Validation was unsuccessfull")
             return
         }
-        Klog.line("RegisterViewModel", "registerUser", "Validation has been success")
+        Klog.linedbg("RegisterViewModel", "registerUser", "Validation has been success")
 
         viewModelScope.launch {
             val resp = usersService.newUserRegister(uiState.value.email.trim(), uiState.value.pwd01.trim())

@@ -19,7 +19,9 @@ import kotlinx.coroutines.launch
 
 data class MainUiState(
     var generalError: Boolean = false,
-    var generalErrorText: String = ""
+    var generalErrorText: String = "",
+    var isToLogin: Boolean = false,
+    var isToBook: Boolean = false
 )
 
 class MainViewModel(val usersService: UsersService) : ViewModel() {
@@ -27,13 +29,14 @@ class MainViewModel(val usersService: UsersService) : ViewModel() {
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
-    fun loginAction(): Boolean {
+    fun loginAction() {
 
+        clearFields()
         clearErrors()
 
-        var result = false
-
         viewModelScope.launch {
+            var result = false
+
             if(FirebaseSession.isUserSigned()) {
                 if(FirebaseSession.isUserSignedAndValidated()) {
                     Klog.line("MainViewModel", "loginAction", "user is signed and email validated")
@@ -47,10 +50,14 @@ class MainViewModel(val usersService: UsersService) : ViewModel() {
             else {
                 Klog.line("MainViewModel", "loginAction", "user is not signed")
             }
-        }
 
-        Klog.line("MainViewModel", "loginAction", "result: $result")
-        return result
+            if(result) {
+                updateIsToBook(true)
+            }
+            else {
+                updateIsToLogin(true)
+            }
+        }//launch
     }
 
     private fun setGeneralError(txt: String) {
@@ -62,6 +69,18 @@ class MainViewModel(val usersService: UsersService) : ViewModel() {
         }
     }
 
+    private fun updateIsToLogin(action: Boolean) {
+        _uiState.update {
+            it.copy(isToLogin = action)
+        }
+    }
+
+    private fun updateIsToBook(action: Boolean) {
+        _uiState.update {
+            it.copy(isToBook = action)
+        }
+    }
+
 
     private fun clearErrors() {
         _uiState.update {
@@ -69,6 +88,17 @@ class MainViewModel(val usersService: UsersService) : ViewModel() {
         }
         _uiState.update {
             it.copy(generalErrorText = "")
+        }
+    }
+
+    fun clearFields() {
+
+        _uiState.update {
+            it.copy(isToLogin = false)
+        }
+
+        _uiState.update {
+            it.copy(isToBook = false)
         }
     }
 }

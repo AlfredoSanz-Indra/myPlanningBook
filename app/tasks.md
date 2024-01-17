@@ -7,11 +7,11 @@ title: Tasks Model
 ---
 classDiagram
 
-    Task "0" --> "*" Activity
+    Task "1" --> "*" Activity
     Activity "*" --> "1" Person
     Task "*" --> "1" Person
     Task "*" --> "1" TaskType
-    Owner "*" --> "*" PlanningBook
+    Owner "1..*" --> "1..*" PlanningBook
     class PlanningBook {
         -String id
         +Number idOwner

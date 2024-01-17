@@ -2,7 +2,7 @@ package com.alfred.myplanningbook.ui
 
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.ui.loggedview.BookMenuView
-import com.alfred.myplanningbook.ui.loggedview.viewmodel.PlanningBookManager
+import com.alfred.myplanningbook.ui.loggedview.PlanningBookManagerView
 
 /**
  * @author Alfredo Sanz
@@ -11,7 +11,7 @@ import com.alfred.myplanningbook.ui.loggedview.viewmodel.PlanningBookManager
 object ViewsStore {
 
     private var bookMenuView: BookMenuView? = null
-    private var planningBookmangerView: PlanningBookManager? = null
+    private var planningBookmangerView: PlanningBookManagerView? = null
 
     fun getBookMenuView(): BookMenuView {
         if(bookMenuView == null) {
@@ -21,10 +21,10 @@ object ViewsStore {
         return bookMenuView!!
     }
 
-    fun getPlanningBookManagerView(): PlanningBookManager {
+    fun getPlanningBookManagerView(): PlanningBookManagerView {
         if(planningBookmangerView == null) {
             Klog.line("ViewsStore", "getPlanningBookManagerView", "creating planningBookmangerView!")
-            planningBookmangerView = PlanningBookManager()
+            planningBookmangerView = PlanningBookManagerView()
         }
         return planningBookmangerView!!
     }

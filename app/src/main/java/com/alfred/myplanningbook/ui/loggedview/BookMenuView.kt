@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -41,8 +42,10 @@ class BookMenuView {
         val viewModel: BookMenuViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-        LaunchedEffect(Unit) {
-            viewModel.loadState()
+        LaunchedEffect(uiState.isStateLoaded) {
+            if(!uiState.isStateLoaded) {
+                viewModel.loadState()
+            }
         }
 
         MaterialTheme(colorScheme = MaterialTheme.colorScheme) {
@@ -104,18 +107,8 @@ class BookMenuView {
 
     @Composable
     private fun loading() {
-        val viewModel: BookMenuViewModel = koinViewModel()
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-        OutlinedButton(modifier = Modifier
-            .width(200.dp)
-            .height(70.dp),
-            colors = CommonViewComp.getActionsButtonColour(),
-            onClick = {
-            }
-        ) {
-            Text("Loading State!! Please Wait")
-        }
+        CircularProgressIndicator()
     }
 
     @Composable
@@ -146,13 +139,17 @@ class BookMenuView {
             colors = CommonViewComp.getActionsButtonColour(),
             onClick = {
                 Klog.line("BookMenuView", "planningBooksButton", "planningBooks button clicked")
-                val r = viewModel.planningbookView();
-                if(r) {
-                    onPlanningBooks()
-                }
+                viewModel.planningbookView();
             }
         ) {
             Text("Manage Planning Book")
+        }
+
+        LaunchedEffect(uiState.isToPlanningBookManager) {
+            if(uiState.isToPlanningBookManager) {
+                viewModel.clearFields()
+                onPlanningBooks()
+            }
         }
     }
 
@@ -206,13 +203,17 @@ class BookMenuView {
             colors = CommonViewComp.getSecondaryButtonColour(),
             onClick = {
                 Klog.line("BookMenuView", "logoutButton", "logout clicked")
-                val r = viewModel.logoutUser();
-                if(r) {
-                    onLogout()
-                }
+                viewModel.logoutUser()
             }
         ) {
             Text("Log Out")
+        }
+
+        LaunchedEffect(uiState.isToLogout) {
+            if(uiState.isToLogout) {
+                viewModel.clearFields()
+                onLogout()
+            }
         }
     }
 }

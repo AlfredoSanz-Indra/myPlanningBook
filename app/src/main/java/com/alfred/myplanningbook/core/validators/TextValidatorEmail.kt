@@ -1,6 +1,7 @@
 package com.alfred.myplanningbook.core.validators
 
 import android.util.Patterns
+import androidx.core.util.PatternsCompat
 
 /**
  * @author Alfredo Sanz
@@ -16,7 +17,7 @@ class TextValidatorEmail: TextValidator {
             thetext == null ->
                 ValidatorResult.Error("The field value cannot be empty")
 
-            !Patterns.EMAIL_ADDRESS.matcher(thetext.trim()).matches() ->
+            !PatternsCompat.EMAIL_ADDRESS.matcher(thetext.trim()).matches() ->
                 ValidatorResult.Error("The email is not valid")
 
             else ->

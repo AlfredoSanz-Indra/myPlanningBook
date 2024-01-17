@@ -8,16 +8,14 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,7 +27,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.view.viewmodel.LoginViewModel
-import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 /**
@@ -150,33 +147,28 @@ class LoginView {
     private fun loginButton(onLogin: () -> Unit) {
 
         val viewModel: LoginViewModel = koinViewModel()
-        val scope = rememberCoroutineScope()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
         OutlinedButton(modifier = Modifier
             .width(200.dp)
             .height(70.dp),
             colors = CommonViewComp.getActionsButtonColour(),
             onClick = {
-                Klog.line("LoginView", "loginButton", "login clicked")
-                scope.launch {
-                    val r = viewModel.loginUser();
-                    if(r) {
-                        Klog.line("LoginView", "loginButton", "onLogin")
-                        onLogin()
-                    }
-                }
-
+                viewModel.loginUser();
             }
         ) {
             Text("Login")
+        }
+
+        LaunchedEffect(uiState.isToLogin) {
+            if(uiState.isToLogin) {
+                onLogin()
+            }
         }
     }
 
     @Composable
     private fun resetPasswordButton(onReset: () -> Unit) {
-
-        val viewModel: LoginViewModel = koinViewModel()
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
         TextButton(modifier = Modifier
             .width(150.dp)
