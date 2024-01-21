@@ -45,8 +45,6 @@ import org.koin.androidx.compose.koinViewModel
 class PlanningBookManagerView {
 
 
-
-
     @Composable
     fun createView(onBack: () -> Unit) {
 
@@ -78,10 +76,10 @@ class PlanningBookManagerView {
                     headerMessageOptional(uiState)
 
                     Spacer(modifier = Modifier.height(10.dp))
-                    PBCreationSection(onBack)
+                    PBHeaderSection(onBack)
 
                     Spacer(modifier = Modifier.height(10.dp))
-                    planningBookList()
+                    pbListSection()
                 }
             }
         }
@@ -138,7 +136,21 @@ class PlanningBookManagerView {
     }
 
     @Composable
-    private fun headerActions(onBack: () -> Unit) {
+    private fun PBHeaderSection(onBack: () -> Unit) {
+
+        val viewModel: PlanningBookManagerViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+        if(uiState.isToCreatePB) {
+            pbCreationSection()
+        }
+        else {
+            pbCreationActions(onBack)
+        }
+    }
+
+    @Composable
+    private fun pbCreationActions(onBack: () -> Unit) {
 
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
 
@@ -149,7 +161,7 @@ class PlanningBookManagerView {
                 colors = CommonViewComp.getActionsButtonColour(),
                 onClick = {
                     Klog.line("PlanningBookManagerView","headerActions","create Planning Book button clicked")
-                    viewModel.createPlanningBookButtonClicked(true);
+                    viewModel.showPBCreationSection(true);
                 }
             ) {
                 Text("Create Planning Book")
@@ -170,21 +182,15 @@ class PlanningBookManagerView {
     }
 
     @Composable
-    private fun PBCreationSection(onBack: () -> Unit) {
+    private fun pbCreationSection() {
 
-        val viewModel: PlanningBookManagerViewModel = koinViewModel()
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-        if(uiState.isToCreatePB) {
-            PBCreationActions()
-        }
-        else {
-            headerActions(onBack)
-        }
+        pbCreationActions()
+        Spacer(modifier = Modifier.height(10.dp))
+        pbCreationComponents()
     }
 
     @Composable
-    private fun PBCreationActions() {
+    private fun pbCreationActions() {
 
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -196,10 +202,9 @@ class PlanningBookManagerView {
                     .height(70.dp),
                     colors = CommonViewComp.getActionsButtonColour(),
                     onClick = {
-                        Klog.line("PlanningBookManagerView","PBCreationActions","create Planning Book button clicked")
+                        Klog.line("PlanningBookManagerView","PBCreationActions", "create Planning Book button clicked")
                         viewModel.createPlanningBook();
-                    }
-                ) {
+                    }) {
                     Text("Create")
                 }
 
@@ -209,47 +214,53 @@ class PlanningBookManagerView {
                     colors = CommonViewComp.getSecondaryButtonColour(),
                     onClick = {
                         Klog.line("PlanningBookManagerView","PBCreationActions","cancel create Planning Book button clicked")
-                        viewModel.createPlanningBookButtonClicked(false);
-                    }
-                ) {
+                        viewModel.showPBCreationSection(false);
+                    }) {
                     Text("Cancel")
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Row {
-                Column(Modifier
-                        .background(color = MaterialTheme.colorScheme.surface)
-                        .fillMaxWidth()
-                        .fillMaxHeight(),
-                    Arrangement.Top,
-                    Alignment.CenterHorizontally
-                ) {
-                    OutlinedTextField(
-                        value = uiState.pbName,
-                        onValueChange = { viewModel.updatePBName(it) },
-                        placeholder = { Text("Enter Planning Book Name") }
-                    )
-                    if (uiState.pbNameError) {
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        Text(
-                            uiState.pbNameErrorText,
-                            color = Color.Red,
-                            style = TextStyle(
-                                fontSize = 15.sp,
-                                color = Color.Red
-                            )
-                        )
-                    }
                 }
             }
         }
     }
 
     @Composable
-    private fun planningBookList() {
+    private fun pbCreationComponents() {
+
+        val viewModel: PlanningBookManagerViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+        Row {
+            Column(
+                Modifier
+                    .background(color = MaterialTheme.colorScheme.surface)
+                    .fillMaxWidth()
+                    .fillMaxHeight(),
+                Arrangement.Top,
+                Alignment.CenterHorizontally
+            ) {
+                OutlinedTextField(
+                    value = uiState.pbName,
+                    onValueChange = { viewModel.updatePBName(it) },
+                    placeholder = { Text("Enter Planning Book Name") }
+                )
+                if (uiState.pbNameError) {
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        uiState.pbNameErrorText,
+                        color = Color.Red,
+                        style = TextStyle(
+                            fontSize = 15.sp,
+                            color = Color.Red
+                        )
+                    )
+                }
+            }
+        }
+
+    }
+
+    @Composable
+    private fun pbListSection() {
 
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()

@@ -23,7 +23,9 @@ data class BookMenuUiState(
     var currentPlanningBook: String = "",
     var isStateLoaded: Boolean = false,
     var isToLogout: Boolean = false,
-    var isToPlanningBookManager: Boolean = false
+    var isToPlanningBookManager: Boolean = false,
+    var isToBack: Boolean = false,
+    var showBack: Boolean = false
 )
 class BookMenuViewModel(private val usersService: UsersService,
                         private val planningBookService: PlanningBookService): ViewModel()  {
@@ -62,6 +64,7 @@ class BookMenuViewModel(private val usersService: UsersService,
                 }
                 else {
                     setGeneralError(" ${resp.code}: ${resp.message}, please log in again!")
+                    updateShowBack(true)
                 }
             }
             catch (e: Exception) {
@@ -115,6 +118,11 @@ class BookMenuViewModel(private val usersService: UsersService,
 
     }
 
+    fun doBack() {
+
+        updateIsToBack(true)
+    }
+
     private fun updateCurrentPlanningBook(pbText: String) {
         _uiState.update {
             it.copy(currentPlanningBook = pbText)
@@ -139,6 +147,18 @@ class BookMenuViewModel(private val usersService: UsersService,
         }
     }
 
+    private fun updateIsToBack(action: Boolean) {
+        _uiState.update {
+            it.copy(isToBack = action)
+        }
+    }
+
+    private fun updateShowBack(action: Boolean) {
+        _uiState.update {
+            it.copy(showBack = action)
+        }
+    }
+
     private fun setGeneralError(txt: String) {
 
         _uiState.update {
@@ -157,6 +177,10 @@ class BookMenuViewModel(private val usersService: UsersService,
         _uiState.update {
             it.copy(generalErrorText = "")
         }
+
+        _uiState.update {
+            it.copy(showBack = false)
+        }
     }
 
     fun clearFields() {
@@ -167,6 +191,10 @@ class BookMenuViewModel(private val usersService: UsersService,
 
         _uiState.update {
             it.copy(isToPlanningBookManager = false)
+        }
+
+        _uiState.update {
+            it.copy(isToBack = false)
         }
     }
 }

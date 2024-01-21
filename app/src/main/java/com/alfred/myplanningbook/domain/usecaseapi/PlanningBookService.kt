@@ -12,4 +12,6 @@ interface PlanningBookService {
 
     suspend fun loadPlanningBooks(plannings: List<String>): SimpleResponse
 
+    suspend fun createPlanningBook(name: String): SimpleResponse
+
 }

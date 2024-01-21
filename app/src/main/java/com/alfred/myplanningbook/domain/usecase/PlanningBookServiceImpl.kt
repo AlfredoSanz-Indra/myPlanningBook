@@ -3,6 +3,7 @@ package com.alfred.myplanningbook.domain.usecase
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.data.model.SimpleDataResponse
 import com.alfred.myplanningbook.domain.AppState
+import com.alfred.myplanningbook.domain.model.Owner
 import com.alfred.myplanningbook.domain.model.PlanningBook
 import com.alfred.myplanningbook.domain.model.SimpleResponse
 import com.alfred.myplanningbook.domain.repositoryapi.PlanningBookRepository
@@ -44,6 +45,7 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
                 if(respCO.result) {
                     AppState.owner = respCO.owner!!
                     result = SimpleResponse(true, 200, "OK", "")
+                    result.owner = respCO.owner
                     Klog.linedbg("PlanningBookServiceImpl", "loadState", "Owner created -> result: $result")
                 }
                 else {
@@ -97,7 +99,7 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
             val resp = planningBookRepository.createOwner(email, name)
 
             if (resp.result && resp.code == 200) {
-                result = SimpleResponse(true, 200, "found", "")
+                result = SimpleResponse(true, 200, "created", "")
                 result.owner = resp.owner
             }
             else {
@@ -162,6 +164,132 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
         }
 
         Klog.line("PlanningBookServiceImpl", "loadPlanningBooks", "result: $result")
+        return result
+    }
+
+    override suspend fun createPlanningBook(name: String): SimpleResponse {
+
+        var result: SimpleResponse
+        Klog.line("PlanningBookServiceImpl", "createPlanningBooks", "creating PlanningBook -> name: $name")
+
+        if(AppState.owner == null) {
+            Klog.line("PlanningBookServiceImpl", "createPlanningBooks", "State hasn`t owner, can't create a PlanningBook")
+            result = SimpleResponse(false, 404, "Fail: Owner is not present in State!", "")
+            return result
+        }
+
+        try {
+            val resp = createPB(name)
+            if(!resp.result || resp.planningBook == null) {
+                Klog.line("PlanningBookServiceImpl", "createPlanningBooks", "creation of pb failed")
+                return SimpleResponse(false, resp.code, resp.message, "")
+            }
+            Klog.line("PlanningBookServiceImpl", "createPlanningBooks", "Planning Book Created")
+
+            AppState.owner!!.planningBooks!!.add(resp.planningBook!!.id)
+
+            val resp2 = updateOwnerPlanningBooks(AppState.owner!!)
+            if(!resp2.result) {
+                Klog.line("PlanningBookServiceImpl", "createPlanningBooks", "updating owner pblist failed")
+                return SimpleResponse(false, resp2.code, resp2.message, "")
+            }
+            Klog.line("PlanningBookServiceImpl", "createPlanningBooks", "Owner planning books updated")
+
+            if(AppState.owner!!.activePlanningBook == null) {
+                AppState.owner!!.activePlanningBook = resp.planningBook!!.id
+
+                val resp3 = updateOwnerActivePlanningBook(AppState.owner!!)
+                if(!resp3.result) {
+                    Klog.line("PlanningBookServiceImpl", "createPlanningBooks", "updating owner actrive pb failed")
+                    return SimpleResponse(false, resp.code, resp3.message, "")
+                }
+            }
+
+            result = SimpleResponse(true, 200, "Creation successful", "")
+            result.planningBook = resp.planningBook
+        }
+        catch(e: Exception) {
+            Klog.line("PlanningBookServiceImpl", "createPlanningBooks", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleResponse(false, 500, e.localizedMessage, "")
+        }
+
+        Klog.line("PlanningBookServiceImpl", "createPlanningBooks", "result: $result")
+        return result
+    }
+
+    private suspend fun createPB(name: String): SimpleResponse {
+
+        var result: SimpleResponse
+        Klog.line("PlanningBookServiceImpl", "createPB", "creating PB -> name: $name")
+
+        try {
+            val resp = planningBookRepository.createPlanningBook(name, AppState.owner!!.id)
+            Klog.linedbg("PlanningBookServiceImpl", "createPB", "created PB -> resp: $resp")
+
+            if (resp.result && resp.code == 200) {
+                result = SimpleResponse(true, 200, "created", "")
+                result.planningBook = resp.planningBook
+            }
+            else {
+                result = SimpleResponse(false, resp.code, "not created", resp.message)
+            }
+        }
+        catch(e: Exception) {
+            Klog.line("PlanningBookServiceImpl", "createPB", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleResponse(false, 500, e.localizedMessage, "")
+        }
+
+        Klog.linedbg("PlanningBookServiceImpl", "createPB", "created PB -> result: $result")
+        return result
+    }
+
+    private suspend fun updateOwnerPlanningBooks(owner: Owner): SimpleResponse {
+
+        var result: SimpleResponse
+        Klog.line("PlanningBookServiceImpl", "updateOwnerPlanningBooks", "Updating Owner PBs -> owner.id: $owner.id")
+
+        try {
+            val resp = planningBookRepository.updateOwnerPlanningBooks(owner.id, owner.planningBooks!!)
+            Klog.linedbg("PlanningBookServiceImpl", "updateOwnerPlanningBooks", "updated Owner -> resp: $resp")
+
+            if (resp.result && resp.code == 200) {
+                result = SimpleResponse(true, 200, "updated", "")
+            }
+            else {
+                result = SimpleResponse(false, resp.code, "not updated", resp.message)
+            }
+        }
+        catch(e: Exception) {
+            Klog.line("PlanningBookServiceImpl", "updateOwnerPlanningBooks", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleResponse(false, 500, e.localizedMessage, "")
+        }
+
+        Klog.linedbg("PlanningBookServiceImpl", "updateOwnerPlanningBooks", "updated owner -> result: $result")
+        return result
+    }
+
+    private suspend fun updateOwnerActivePlanningBook(owner: Owner): SimpleResponse {
+
+        var result: SimpleResponse
+        Klog.line("PlanningBookServiceImpl", "updateOwnerActivePlanningBook", "Updating Owner PBs -> owner.id: $owner.id")
+
+        try {
+            val resp = planningBookRepository.updateOwnerActivePlanningBook(owner.id, owner.activePlanningBook!!)
+            Klog.linedbg("PlanningBookServiceImpl", "updateOwnerActivePlanningBook", "updated Owner -> resp: $resp")
+
+            if (resp.result && resp.code == 200) {
+                result = SimpleResponse(true, 200, "updated", "")
+            }
+            else {
+                result = SimpleResponse(false, resp.code, "not updated", resp.message)
+            }
+        }
+        catch(e: Exception) {
+            Klog.line("PlanningBookServiceImpl", "updateOwnerActivePlanningBook", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleResponse(false, 500, e.localizedMessage, "")
+        }
+
+        Klog.linedbg("PlanningBookServiceImpl", "updateOwnerActivePlanningBook", "updated owner -> result: $result")
         return result
     }
 }

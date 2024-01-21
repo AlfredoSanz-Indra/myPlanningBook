@@ -8,5 +8,5 @@ data class Owner(val id: String,
                  val name: String,
                  val email: String,
                  var activePlanningBook: String?,
-                 var planningBooks: List<String>?) {
+                 var planningBooks: MutableList<String>?) {
 }

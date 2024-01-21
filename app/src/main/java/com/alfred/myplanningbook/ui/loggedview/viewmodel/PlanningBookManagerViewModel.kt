@@ -82,7 +82,7 @@ class PlanningBookManagerViewModel(val planningBookService: PlanningBookService)
         }
     }
 
-    fun createPlanningBookButtonClicked(action: Boolean) {
+    fun showPBCreationSection(action: Boolean) {
 
         clearErrors()
         updatePBName("")
@@ -93,47 +93,31 @@ class PlanningBookManagerViewModel(val planningBookService: PlanningBookService)
 
         clearErrors()
         if(!validateFields()) {
-            Klog.linedbg("PlanningBookManagerViewModel", "createPlanningBook", "Validation was unsuccessfull")
+            Klog.linedbg("PlanningBookManagerViewModel", "createPlanningBook", "Validation was unsuccessful")
             return
         }
         Klog.linedbg("PlanningBookManagerViewModel", "createPlanningBook", "Validation has been success")
 
-
         viewModelScope.launch {
             try {
-                val defer = viewModelScope.async {
-                    var r = mutableListOf<PlanningBook>()
-                    if (!AppState.owner!!.planningBooks.isNullOrEmpty()) {
-                        val resp: SimpleResponse =
-                            planningBookService.loadPlanningBooks(AppState.owner!!.planningBooks!!)
-                        Klog.linedbg(
-                            "PlanningBookManagerViewModel",
-                            "loadPlanningBooks",
-                            "resp: $resp"
-                        )
+                val resp: SimpleResponse = planningBookService.createPlanningBook(uiState.value.pbName.trim())
+                Klog.linedbg("PlanningBookManagerViewModel","createPlanningBook", "resp: $resp")
+                Klog.linedbg("PlanningBookManagerViewModel","createPlanningBook", "resp.planningBoo: ${resp.planningBook}")
 
-                        if (resp.result && resp.code == 200) {
-                            r = resp.planningBookList!!
-                        }
-                    }
-
-                    return@async r
+                if (resp.result && resp.code == 200) {
+                    val pb: PlanningBook = resp.planningBook!!
+                    showPBCreationSection(false)
                 }
-                val pbList: MutableList<PlanningBook>? = defer.await()
-
-
-
-
-            } catch (e: Exception) {
-                Klog.stackTrace("PlanningBookManagerViewModel", "loadState", e.stackTrace)
-                Klog.line(
-                    "PlanningBookManagerViewModel",
-                    "loadPlanningBooks",
-                    " Exception localizedMessage: ${e.localizedMessage}"
-                )
-                setGeneralError(" 500: ${e.message}, Error loading planning books, please login again!")
+                else {
+                    setGeneralError(" ${resp.code}: ${resp.message}")
+                }
             }
-        }
+            catch (e: Exception) {
+                Klog.stackTrace("PlanningBookManagerViewModel", "createPlanningBook", e.stackTrace)
+                Klog.line("PlanningBookManagerViewModel","createPlanningBook"," Exception localizedMessage: ${e.localizedMessage}")
+                setGeneralError(" 500: ${e.message}, Error creating planning books, please login again!")
+            }
+        }//launch
     }
 
     private fun validateFields(): Boolean {
@@ -181,7 +165,7 @@ class PlanningBookManagerViewModel(val planningBookService: PlanningBookService)
         }
     }
 
-    fun updatePBNameError(txt: String) {
+    private fun updatePBNameError(txt: String) {
         _uiState.update {
             it.copy(pbNameError = true)
         }
@@ -191,7 +175,7 @@ class PlanningBookManagerViewModel(val planningBookService: PlanningBookService)
         }
     }
 
-    fun updateIsToCreatePB(action: Boolean) {
+    private fun updateIsToCreatePB(action: Boolean) {
         _uiState.update {
             it.copy(isToCreatePB = action)
         }

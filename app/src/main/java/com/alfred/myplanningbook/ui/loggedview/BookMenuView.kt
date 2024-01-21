@@ -60,7 +60,12 @@ class BookMenuView {
                 if(uiState.currentPlanningBook.isEmpty()) {
                     Spacer(modifier = Modifier.height(30.dp))
                     errorGeneralField()
-                    loading()
+                    if(!uiState.showBack) {
+                        loading()
+                    }
+                    else {
+                        backButton(onLogout)
+                    }
                 }
                 else {
                     Spacer(modifier = Modifier.height(30.dp))
@@ -211,6 +216,32 @@ class BookMenuView {
 
         LaunchedEffect(uiState.isToLogout) {
             if(uiState.isToLogout) {
+                viewModel.clearFields()
+                onLogout()
+            }
+        }
+    }
+
+    @Composable
+    private fun backButton(onLogout: () -> Unit) {
+
+        val viewModel: BookMenuViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+        OutlinedButton(modifier = Modifier
+            .width(200.dp)
+            .height(70.dp),
+            colors = CommonViewComp.getSecondaryButtonColour(),
+            onClick = {
+                Klog.line("BookMenuView", "logoutButton", "back clicked")
+                viewModel.doBack()
+            }
+        ) {
+            Text("Back")
+        }
+
+        LaunchedEffect(uiState.isToBack) {
+            if(uiState.isToBack) {
                 viewModel.clearFields()
                 onLogout()
             }

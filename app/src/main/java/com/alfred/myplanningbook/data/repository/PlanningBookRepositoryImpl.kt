@@ -2,6 +2,7 @@ package com.alfred.myplanningbook.data.repository
 
 import com.alfred.myplanningbook.core.firebase.FirebaseSession
 import com.alfred.myplanningbook.core.log.Klog
+import com.alfred.myplanningbook.data.model.Collections
 import com.alfred.myplanningbook.data.model.SimpleDataResponse
 import com.alfred.myplanningbook.domain.model.Owner
 import com.alfred.myplanningbook.domain.model.PlanningBook
@@ -21,10 +22,47 @@ import kotlinx.coroutines.withContext
  */
 class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): PlanningBookRepository {
 
-    override suspend fun createPlanningBook(email: String, name: String): SimpleDataResponse {
-        var result = SimpleDataResponse(false, 100, "not created")
-        Klog.line("PlanningBookRepositoryImpl", "createPlanningBook", "email: $email")
+    /**
+     * Create a new PlanningBook
+     */
+    override suspend fun createPlanningBook(name: String, idOwner: String): SimpleDataResponse {
 
+        var result = SimpleDataResponse(false, 100, "not created")
+        Klog.line("PlanningBookRepositoryImpl", "createPlanningBook", "name: $name")
+
+        val pb = hashMapOf(
+            Collections.PLANNINGBOOK_IDOWNER to idOwner,
+            Collections.PLANNINGBOOK_NAME to name
+        )
+
+        withContext(ioDispatcher) {
+            val defer = async(ioDispatcher) {
+                val task: Task<DocumentReference> = FirebaseSession.db.collection(Collections.PLANNINGBOOK)
+                    .add(pb)
+                    .addOnSuccessListener {}
+
+                task.await()
+
+                var taskResp: SimpleDataResponse
+                if(task.isSuccessful) {
+                    Klog.line("PlanningBookRepositoryImpl", "createPlanningBook", "task is successful")
+                    taskResp = SimpleDataResponse(true, 200, "PlanningBook created - ${task.result.id}")
+                    taskResp.planningBook = PlanningBook(task.result.id, name, idOwner)
+                }
+                else {
+                    Klog.line("PlanningBookRepositoryImpl", "createPlanningBook", "error cause: ${task.exception?.cause}")
+                    Klog.line("PlanningBookRepositoryImpl", "createPlanningBook", "error message: ${task.exception?.message}")
+
+                    taskResp = SimpleDataResponse(false, 400, "Creating PlanningBook failed.")
+                }
+
+                return@async taskResp
+            }
+
+            result = defer.await()
+        }//scope
+
+        Klog.line("PlanningBookRepositoryImpl", "createPlanningBook", "result: $result")
         return result
     }
 
@@ -38,7 +76,7 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
 
         withContext(ioDispatcher) {
             val defer = async(ioDispatcher) {
-                val task: Task<QuerySnapshot> = FirebaseSession.db.collection("PLANNINGBOOK")
+                val task: Task<QuerySnapshot> = FirebaseSession.db.collection(Collections.PLANNINGBOOK)
                     .whereEqualTo("id", idPlanningBook)
                     .limit(1)
                     .get()
@@ -53,8 +91,8 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
                     for (document in task.result.documents) {
                         planningBook = PlanningBook(
                             document.id,
-                            document.get("idOwner") as String,
-                            document.get("name") as String
+                            document.get(Collections.PLANNINGBOOK_IDOWNER) as String,
+                            document.get(Collections.PLANNINGBOOK_NAME) as String
                         )
                     }
                     if(planningBook != null) {
@@ -82,14 +120,90 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
         return result
     }
 
+    /**
+     * Update the planningbook list of an owner
+     */
+    override suspend fun updateOwnerPlanningBooks(ownerid: String, pblist: MutableList<String>): SimpleDataResponse {
+
+        var result = SimpleDataResponse(false, 404, "not updated")
+        Klog.line("PlanningBookRepositoryImpl", "updateOwnerPlanningBooks", "ownerid: $ownerid")
+
+        withContext(ioDispatcher) {
+            val defer = async(ioDispatcher) {
+                val task: Task<Void> = FirebaseSession.db.collection(Collections.OWNER).document(ownerid)
+                    .update(Collections.OWNER_PLANNINGBOOKS, pblist)
+                    .addOnSuccessListener {}
+
+                task.await()
+
+                var taskResp: SimpleDataResponse
+                if(task.isSuccessful) {
+                    Klog.line("PlanningBookRepositoryImpl", "updateOwnerPlanningBooks", "task is successful")
+                    taskResp = SimpleDataResponse(true, 200, "Owner PlanningBooks updated")
+                }
+                else {
+                    Klog.line("PlanningBookRepositoryImpl", "updateOwnerPlanningBooks", "error cause: ${task.exception?.cause}")
+                    Klog.line("PlanningBookRepositoryImpl", "updateOwnerPlanningBooks", "error message: ${task.exception?.message}")
+
+                    taskResp = SimpleDataResponse(false, 400, "Updating owner PlanningBooks failed.")
+                }
+
+                return@async taskResp
+            }
+
+            result = defer.await()
+        }//scope
+
+        Klog.line("PlanningBookRepositoryImpl", "updateOwnerPlanningBooks", "result: $result")
+        return result
+    }
+
+    /**
+     * Update the owner current active planning book
+     */
+    override suspend fun updateOwnerActivePlanningBook(ownerid: String, planningbookID: String): SimpleDataResponse {
+
+        var result = SimpleDataResponse(false, 404, "not updated")
+        Klog.line("PlanningBookRepositoryImpl", "updateOwnerActivePlanningBook", "ownerid: $ownerid")
+
+        withContext(ioDispatcher) {
+            val defer = async(ioDispatcher) {
+                val task: Task<Void> = FirebaseSession.db.collection(Collections.OWNER).document(ownerid)
+                    .update(Collections.OWNER_ACTIVEPLANNINGBOOK, planningbookID)
+                    .addOnSuccessListener {}
+
+                task.await()
+
+                var taskResp: SimpleDataResponse
+                if(task.isSuccessful) {
+                    Klog.line("PlanningBookRepositoryImpl", "updateOwnerActivePlanningBook", "task is successful")
+                    taskResp = SimpleDataResponse(true, 200, "Owner activePlanningBook updated")
+                }
+                else {
+                    Klog.line("PlanningBookRepositoryImpl", "updateOwnerActivePlanningBook", "error cause: ${task.exception?.cause}")
+                    Klog.line("PlanningBookRepositoryImpl", "updateOwnerActivePlanningBook", "error message: ${task.exception?.message}")
+
+                    taskResp = SimpleDataResponse(false, 400, "Updating owner activePlanningBooks failed.")
+                }
+
+                return@async taskResp
+            }
+
+            result = defer.await()
+        }//scope
+
+        Klog.line("PlanningBookRepositoryImpl", "updateOwnerActivePlanningBook", "result: $result")
+        return result
+    }
+
     override suspend fun findOwner(email: String): SimpleDataResponse {
         var result = SimpleDataResponse(false, 404, "not found")
         Klog.line("PlanningBookRepositoryImpl", "findOwner", "email: $email")
 
         withContext(ioDispatcher) {
             val defer = async(ioDispatcher) {
-                val task: Task<QuerySnapshot> = FirebaseSession.db.collection("OWNER")
-                    .whereEqualTo("email", email)
+                val task: Task<QuerySnapshot> = FirebaseSession.db.collection(Collections.OWNER)
+                    .whereEqualTo(Collections.OWNER_EMAIL, email)
                     .limit(1)
                     .get()
                     .addOnSuccessListener {}
@@ -98,16 +212,25 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
 
                 var taskResp: SimpleDataResponse
                 if(task.isSuccessful) {
-                    Klog.line("PlanningBookRepositoryImpl", "findOwner", "task is successfull")
+                    Klog.line("PlanningBookRepositoryImpl", "findOwner", "task is successful")
                     //Klog.line("PlanningBookRepositoryImpl", "findOwner", "documents size: ${task.result.documents.size}")
                     var ownerFound: Owner? = null
                     for (document in task.result.documents) {
                         ownerFound = Owner(
                             document.id,
-                            document.get("name") as String,
-                            document.get("email") as String,
-                            document.get("activePlanningBook") as? String,
-                            mutableListOf())
+                            document.get(Collections.OWNER_NAME) as String,
+                            document.get(Collections.OWNER_EMAIL) as String,
+                            document.get(Collections.OWNER_ACTIVEPLANNINGBOOK) as? String,
+                            mutableListOf()
+                        )
+                        Klog.line("PlanningBookRepositoryImpl", "findOwner", "ownerFound: ${ownerFound}")
+
+                        val pbList: String? = document.get(Collections.OWNER_PLANNINGBOOKS) as? String
+                        Klog.line("PlanningBookRepositoryImpl", "findOwner", "pbList: ${pbList}")
+                        if(pbList != null) {
+                            ownerFound.planningBooks = pbList.split(",").toMutableList()
+                        }
+                        Klog.line("PlanningBookRepositoryImpl", "findOwner", "2 ownerFound: $ownerFound")
                     }
                     if(ownerFound != null) {
                         taskResp = SimpleDataResponse(true, 200, "Owner found - $ownerFound")
@@ -145,13 +268,13 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
         Klog.line("PlanningBookRepositoryImpl", "createOwner", "email: $email")
 
         val owner = hashMapOf(
-            "email" to email,
-            "name" to name
+            Collections.OWNER_EMAIL to email,
+            Collections.OWNER_NAME to name
         )
 
         withContext(ioDispatcher) {
             val defer = async(ioDispatcher) {
-                val task: Task<DocumentReference> = FirebaseSession.db.collection("OWNER")
+                val task: Task<DocumentReference> = FirebaseSession.db.collection(Collections.OWNER)
                     .add(owner)
                     .addOnSuccessListener {}
 
@@ -179,5 +302,4 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
         Klog.line("PlanningBookRepositoryImpl", "createOwner", "result: $result")
         return result
     }
-
 }
