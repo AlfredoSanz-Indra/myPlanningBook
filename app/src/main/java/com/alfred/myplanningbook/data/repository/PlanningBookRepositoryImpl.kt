@@ -8,8 +8,8 @@ import com.alfred.myplanningbook.domain.model.Owner
 import com.alfred.myplanningbook.domain.model.PlanningBook
 import com.alfred.myplanningbook.domain.repositoryapi.PlanningBookRepository
 import com.google.android.gms.tasks.Task
-import com.google.firebase.auth.AuthResult
 import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QuerySnapshot
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
@@ -62,7 +62,7 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
             result = defer.await()
         }//scope
 
-        Klog.line("PlanningBookRepositoryImpl", "createPlanningBook", "result: $result")
+        Klog.linedbg("PlanningBookRepositoryImpl", "createPlanningBook", "result: $result")
         return result
     }
 
@@ -76,30 +76,30 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
 
         withContext(ioDispatcher) {
             val defer = async(ioDispatcher) {
-                val task: Task<QuerySnapshot> = FirebaseSession.db.collection(Collections.PLANNINGBOOK)
-                    .whereEqualTo("id", idPlanningBook)
-                    .limit(1)
+                val task: Task<DocumentSnapshot> = FirebaseSession.db
+                    .collection(Collections.PLANNINGBOOK)
+                    .document(idPlanningBook)
                     .get()
                     .addOnSuccessListener {}
 
                 task.await()
 
                 var taskResp: SimpleDataResponse
+
                 if(task.isSuccessful) {
                     Klog.line("PlanningBookRepositoryImpl", "getPlanningBook", "task is successfull")
-                    var planningBook: PlanningBook? = null
-                    for (document in task.result.documents) {
-                        planningBook = PlanningBook(
-                            document.id,
-                            document.get(Collections.PLANNINGBOOK_IDOWNER) as String,
-                            document.get(Collections.PLANNINGBOOK_NAME) as String
+                    if(task.result != null) {
+                        val planningBook = PlanningBook(
+                            task.result.getId(),
+                            task.result.get(Collections.PLANNINGBOOK_NAME) as String,
+                            task.result.get(Collections.PLANNINGBOOK_IDOWNER)as String
                         )
-                    }
-                    if(planningBook != null) {
+
                         taskResp = SimpleDataResponse(true, 200, "Planning book found - $planningBook")
                         taskResp.planningBook = planningBook
                     }
                     else {
+                        Klog.linedbg("PlanningBookRepositoryImpl", "getPlanningBook", "task planning book didn't found")
                         taskResp = result
                     }
                 }
@@ -196,9 +196,10 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
         return result
     }
 
-    override suspend fun findOwner(email: String): SimpleDataResponse {
+    override suspend fun getOwner(email: String): SimpleDataResponse {
+
         var result = SimpleDataResponse(false, 404, "not found")
-        Klog.line("PlanningBookRepositoryImpl", "findOwner", "email: $email")
+        Klog.line("PlanningBookRepositoryImpl", "getOwner", "email: $email")
 
         withContext(ioDispatcher) {
             val defer = async(ioDispatcher) {
@@ -212,8 +213,7 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
 
                 var taskResp: SimpleDataResponse
                 if(task.isSuccessful) {
-                    Klog.line("PlanningBookRepositoryImpl", "findOwner", "task is successful")
-                    //Klog.line("PlanningBookRepositoryImpl", "findOwner", "documents size: ${task.result.documents.size}")
+                    Klog.line("PlanningBookRepositoryImpl", "getOwner", "task is successful")
                     var ownerFound: Owner? = null
                     for (document in task.result.documents) {
                         ownerFound = Owner(
@@ -223,14 +223,11 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
                             document.get(Collections.OWNER_ACTIVEPLANNINGBOOK) as? String,
                             mutableListOf()
                         )
-                        Klog.line("PlanningBookRepositoryImpl", "findOwner", "ownerFound: ${ownerFound}")
-
-                        val pbList: String? = document.get(Collections.OWNER_PLANNINGBOOKS) as? String
-                        Klog.line("PlanningBookRepositoryImpl", "findOwner", "pbList: ${pbList}")
-                        if(pbList != null) {
-                            ownerFound.planningBooks = pbList.split(",").toMutableList()
+                        val pbl: MutableList<String>? = document.get(Collections.OWNER_PLANNINGBOOKS) as? MutableList<String>
+                        if(pbl != null) {
+                            ownerFound.planningBooks = pbl
                         }
-                        Klog.line("PlanningBookRepositoryImpl", "findOwner", "2 ownerFound: $ownerFound")
+                        Klog.linedbg("PlanningBookRepositoryImpl", "getOwner", "ownerFound: $ownerFound")
                     }
                     if(ownerFound != null) {
                         taskResp = SimpleDataResponse(true, 200, "Owner found - $ownerFound")
@@ -241,8 +238,8 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
                     }
                 }
                 else {
-                    Klog.line("PlanningBookRepositoryImpl", "findOwner", "error cause: ${task.exception?.cause}")
-                    Klog.line("PlanningBookRepositoryImpl", "findOwner", "error message: ${task.exception?.message}")
+                    Klog.line("PlanningBookRepositoryImpl", "getOwner", "error cause: ${task.exception?.cause}")
+                    Klog.line("PlanningBookRepositoryImpl", "getOwner", "error message: ${task.exception?.message}")
 
                     taskResp = SimpleDataResponse(false, 400, "Find owner failed.")
                 }
@@ -253,7 +250,7 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
             result = defer.await()
         }//scope
 
-        Klog.line("PlanningBookRepositoryImpl", "findOwner", "result: $result")
+        Klog.line("PlanningBookRepositoryImpl", "getOwner", "result: $result")
         return result
     }
 
@@ -299,7 +296,7 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
             result = defer.await()
         }//scope
 
-        Klog.line("PlanningBookRepositoryImpl", "createOwner", "result: $result")
+        Klog.linedbg("PlanningBookRepositoryImpl", "createOwner", "result: $result")
         return result
     }
 }

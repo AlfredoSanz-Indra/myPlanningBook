@@ -51,10 +51,9 @@ class PlanningBookManagerView {
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-        LaunchedEffect(Unit) {
+        LaunchedEffect(uiState.currentPlanningBook) {
             viewModel.loadPlanningBooks()
             Klog.line("PlanningBookManagerView", "createView", "currentPlanningBook:  ${uiState.currentPlanningBook}")
-            Klog.line("PlanningBookManagerView", "createView", "planningBookList:  ${uiState.planningBookList}")
         }
 
         MaterialTheme(colorScheme = MaterialTheme.colorScheme) {
