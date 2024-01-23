@@ -50,8 +50,8 @@ class BookMenuViewModel(private val usersService: UsersService,
                     updateIsStateLoaded(true)
 
                     Klog.line("BookMenuViewModel", "loadState", "State Successfully loaded")
-                    if (resp.planningBook != null) {
-                        updateCurrentPlanningBook(resp.planningBook!!.name)
+                    if (AppState.activePlanningBook != null) {
+                        updateCurrentPlanningBook(AppState.activePlanningBook!!.name)
                     }
                     else {
                         updateCurrentPlanningBook("You don't have any Planning Book active yet")
@@ -72,6 +72,16 @@ class BookMenuViewModel(private val usersService: UsersService,
                 Klog.line("BookMenuViewModel","loadState"," Exception localizedMessage: ${e.localizedMessage}")
                 setGeneralError(" 500: ${e.message}, please log in again!")
             }
+        }
+    }
+
+    fun updateState() {
+
+        clearErrors()
+        clearFields()
+
+        if (AppState.activePlanningBook != null) {
+            updateCurrentPlanningBook(AppState.activePlanningBook!!.name)
         }
     }
 

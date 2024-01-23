@@ -32,10 +32,21 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
                     val respPB = loadPlanningBook(respLO.owner!!.activePlanningBook!!)
                     if(respPB.result) {
                         AppState.activePlanningBook = respPB.planningBook!!
-                        AppState.activePlanningBook!!.isActive = true
                         result.planningBook = respPB.planningBook
                         Klog.linedbg("PlanningBookServiceImpl", "loadState", "loaded PB -> result: $result")
                     }
+                }
+
+                if(respLO.owner!!.planningBooks!!.isNotEmpty()) {
+                    Klog.linedbg("PlanningBookServiceImpl", "loadState", "loaded PB -> loading owner planningBooks")
+                    respLO.owner!!.planningBooks!!.forEach { it ->
+                        val respPB = loadPlanningBook(it)
+                        if(respPB.result) {
+                            AppState.planningBooks.add(respPB.planningBook!!)
+                            Klog.linedbg("PlanningBookServiceImpl", "loadState", "loaded PB -> respPB: $respPB")
+                        }
+                    }
+                    Klog.linedbg("PlanningBookServiceImpl", "loadState", "loaded PBs -> AppState.planningBooks: ${AppState.planningBooks}")
                 }
                 Klog.linedbg("PlanningBookServiceImpl", "loadState", "loading state all done -> result: $result")
             }
@@ -71,7 +82,7 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
         Klog.line("PlanningBookServiceImpl", "loadOwner", "loading owner -> email: $email")
 
         try {
-            val resp: SimpleDataResponse = planningBookRepository.findOwner(email)
+            val resp: SimpleDataResponse = planningBookRepository.getOwner(email)
             if(resp.result && resp.code == 200) {
                 result = SimpleResponse(true,200, "found", "")
                 result.owner = resp.owner
@@ -167,6 +178,11 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
         return result
     }
 
+    /**
+     * Crea un nuevo Planning Book en BD.
+     * Lo añade a la lista del AppState y del Owner y actualiza Owner en BD.
+     * Si el owner no tenia PB Activo, lo añade como activo al AppState y al Owner y actualiza owner en BD.
+     */
     override suspend fun createPlanningBook(name: String): SimpleResponse {
 
         var result: SimpleResponse
@@ -187,6 +203,7 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
             Klog.line("PlanningBookServiceImpl", "createPlanningBooks", "Planning Book Created")
 
             AppState.owner!!.planningBooks!!.add(resp.planningBook!!.id)
+            AppState.planningBooks.add(resp.planningBook!!)
 
             val resp2 = updateOwnerPlanningBooks(AppState.owner!!)
             if(!resp2.result) {
@@ -197,6 +214,7 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
 
             if(AppState.owner!!.activePlanningBook == null) {
                 AppState.owner!!.activePlanningBook = resp.planningBook!!.id
+                AppState.activePlanningBook = resp.planningBook
 
                 val resp3 = updateOwnerActivePlanningBook(AppState.owner!!)
                 if(!resp3.result) {

@@ -46,6 +46,9 @@ class BookMenuView {
             if(!uiState.isStateLoaded) {
                 viewModel.loadState()
             }
+            else {
+                viewModel.updateState()
+            }
         }
 
         MaterialTheme(colorScheme = MaterialTheme.colorScheme) {
