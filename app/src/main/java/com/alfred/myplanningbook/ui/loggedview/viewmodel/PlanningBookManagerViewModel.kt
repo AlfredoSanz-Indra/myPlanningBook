@@ -11,7 +11,6 @@ import com.alfred.myplanningbook.domain.AppState
 import com.alfred.myplanningbook.domain.model.PlanningBook
 import com.alfred.myplanningbook.domain.model.SimpleResponse
 import com.alfred.myplanningbook.domain.usecaseapi.PlanningBookService
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -47,40 +46,7 @@ class PlanningBookManagerViewModel(val planningBookService: PlanningBookService)
             return
         }
 
-        updateCurrentPlanningBook(AppState.activePlanningBook!!.name)
-
-        /*
-        val currentPBs: MutableList<PlanningBook> = mutableListOf()
-        currentPBs.add(AppState.activePlanningBook!!)
-
-        viewModelScope.launch {
-            try {
-                var r = mutableListOf<PlanningBook>()
-                if (!AppState.owner!!.planningBooks.isNullOrEmpty()) {
-                    val resp: SimpleResponse = planningBookService.loadPlanningBooks(AppState.owner!!.planningBooks!!)
-                    Klog.linedbg("PlanningBookManagerViewModel","loadPlanningBooks","resp: $resp")
-
-                    if(resp.result && resp.code == 200) {
-                        r = resp.planningBookList!!
-                    }
-                }
-
-                val pbList: MutableList<PlanningBook>? =
-
-                if(!pbList.isNullOrEmpty()) {
-                    currentPBs.addAll(pbList!!)
-                }
-
-                AppState.planningBooks = currentPBs
-                updatePlanningBookList(currentPBs)
-            }
-            catch (e: Exception) {
-                Klog.stackTrace("PlanningBookManagerViewModel", "loadState", e.stackTrace)
-                Klog.line("PlanningBookManagerViewModel", "loadPlanningBooks", " Exception localizedMessage: ${e.localizedMessage}")
-                setGeneralError(" 500: ${e.message}, Error loading planning books, please login again!")
-            }
-        }
-         */
+        updateViewPlanningBooks()
     }
 
     fun showPBCreationSection(action: Boolean) {
@@ -90,6 +56,9 @@ class PlanningBookManagerViewModel(val planningBookService: PlanningBookService)
         updateIsToCreatePB(action)
     }
 
+    /**
+     * Create a new Planning book owned by me.
+     */
     fun createPlanningBook() {
 
         clearErrors()
@@ -107,7 +76,7 @@ class PlanningBookManagerViewModel(val planningBookService: PlanningBookService)
 
                 if (resp.result && resp.code == 200) {
                     showPBCreationSection(false)
-                    updateCurrentPlanningBook(AppState.activePlanningBook!!.name)
+                    updateViewPlanningBooks()
                 }
                 else {
                     setGeneralError(" ${resp.code}: ${resp.message}")
@@ -119,6 +88,59 @@ class PlanningBookManagerViewModel(val planningBookService: PlanningBookService)
                 setGeneralError(" 500: ${e.message}, Error creating planning books, please login again!")
             }
         }//launch
+    }
+
+    /**
+     * Check if the the planning book is currently active
+     */
+    fun isActivePlanningBook(pb: PlanningBook): Boolean {
+
+        var result = false
+        Klog.linedbg("PlanningBookManagerViewModel","isActivePlanningBook", "pb: $pb")
+        if(AppState.owner!!.activePlanningBook != null) {
+            if(AppState.owner!!.activePlanningBook == pb.id) {
+                result = true
+            }
+        }
+        return result
+    }
+
+    /**
+     * Check if the planning book is owned by me or if it is shared
+     * with me.
+     */
+    fun isSharedWithMePlanningBook(pb: PlanningBook): Boolean {
+
+        var result = true
+        if(pb.idOwner == AppState.owner!!.id) {
+            result = false
+        }
+
+        return result
+    }
+
+    /**
+     * When the planning book is owned by other user that has
+     * shared it with me and i want to remove it from my list.
+     */
+    fun forgetPlanningBook(pb: PlanningBook) {
+
+        Klog.linedbg("PlanningBookManagerViewModel","forgetPlanningBook", "planningBookID: $pb")
+    }
+
+    fun setActivePlanningBook(planningBookID: String) {
+
+        Klog.linedbg("PlanningBookManagerViewModel","setActivePlanningBook", "planningBookID: $planningBookID")
+    }
+
+    fun deletePlanningBook(planningBookID: String) {
+
+        Klog.linedbg("PlanningBookManagerViewModel","deletePlanningBook", "planningBookID: $planningBookID")
+    }
+
+    fun sharePlanningBook(pb: PlanningBook) {
+
+        Klog.linedbg("PlanningBookManagerViewModel","sharePlanningBook", "planningBookID: $pb")
     }
 
     private fun validateFields(): Boolean {
@@ -136,6 +158,16 @@ class PlanningBookManagerViewModel(val planningBookService: PlanningBookService)
         }
 
         return result
+    }
+
+    private fun updateViewPlanningBooks() {
+
+        if(AppState.activePlanningBook != null) {
+            updateCurrentPlanningBook(AppState.activePlanningBook!!.name)
+        }
+        if(AppState.planningBooks.isNotEmpty()) {
+            updatePlanningBookList(AppState.planningBooks)
+        }
     }
 
     private fun updateCurrentPlanningBook(pbText: String) {
