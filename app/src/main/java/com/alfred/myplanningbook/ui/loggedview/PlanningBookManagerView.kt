@@ -14,10 +14,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alfred.myplanningbook.core.log.Klog
+import com.alfred.myplanningbook.domain.model.PlanningBook
 import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.loggedview.viewmodel.BookMenuViewModel
 import com.alfred.myplanningbook.ui.loggedview.viewmodel.PlanningBookManagerUiState
@@ -239,7 +240,7 @@ class PlanningBookManagerView {
                 OutlinedTextField(
                     value = uiState.pbName,
                     onValueChange = { viewModel.updatePBName(it) },
-                    placeholder = { Text("Enter Planning Book Name") }
+                    placeholder = { Text("Enter Planning Book Name (5-20)") }
                 )
                 if (uiState.pbNameError) {
                     Spacer(modifier = Modifier.height(10.dp))
@@ -255,7 +256,6 @@ class PlanningBookManagerView {
                 }
             }
         }
-
     }
 
     @Composable
@@ -274,81 +274,174 @@ class PlanningBookManagerView {
                     .padding(15.dp)
                     .border(2.dp, color = Gray, shape = RoundedCornerShape(16.dp))
                     .fillMaxWidth()
-                    .height(350.dp)
-                    .padding(15.dp)
-            ) {
+                    .fillMaxHeight()
+            ){
                 Column(
                     modifier = Modifier
                         .fillMaxHeight()
                         .padding(horizontal = 10.dp)
                 ) {
-                    Card(
-                        modifier = Modifier
-                            .padding(vertical = 5.dp)
-                            .fillMaxWidth()
-                            .wrapContentHeight(),
-                        shape = MaterialTheme.shapes.medium,
-                        elevation = CardDefaults.cardElevation(),
-                    )
-                    {
-                        Column {
-                            Row {
-                                Column(
-                                    Modifier
-                                        .padding(4.dp)
-                                        .width(550.dp),
-                                    horizontalAlignment = Alignment.Start
-                                ) {
-                                    Text(
-                                        text = uiState.currentPlanningBook,
-                                        style = MaterialTheme.typography.headlineLarge,
-                                        color = MaterialTheme.colorScheme.onSecondary,
-                                    )
-                                }
-                                Column(
-                                    Modifier
-                                        .padding(4.dp)
-                                        .fillMaxWidth(),
-                                    horizontalAlignment = Alignment.End
-                                ) {
-                                    Text(
-                                        text = "row 1 c2",
-                                        style = MaterialTheme.typography.titleSmall,
-                                        color = MaterialTheme.colorScheme.onPrimary
-                                    )
-                                }
-                            }//Row
-
-                            Row {
-                                Column(
-                                    Modifier
-                                        .padding(8.dp)
-                                        .fillMaxWidth()
-                                ) {
-                                    Text(
-                                        text = "row 2 c1",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onSecondary,
-                                    )
-
-                                    Spacer(Modifier.height(8.dp))
-
-                                    Text(
-                                        text = "row 2 c1 txt2",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSecondary,
-                                    )
-                                }
-                            }//Row
-                        }//Column
-                    }//card
-                }//lazyColumn
+                    for(planningBook in uiState.planningBookList) {
+                        pbCardComponent(planningBook)
+                    }
+                }
             }//Box
         }
     }
 
 
+    @Composable
+    private fun pbCardComponent(planningBook: PlanningBook) {
+
+        val viewModel: PlanningBookManagerViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+        val isActivePB = viewModel.isActivePlanningBook(planningBook)
+        val isActiveTxt = if(isActivePB) "is Active" else ""
+        val isSharedWithMe = viewModel.isSharedWithMePlanningBook(planningBook)
+        Klog.line("PlanningBookManagerView","pbCardComponent","isActiveTxt: $isActiveTxt")
+
+        OutlinedCard(
+            modifier = Modifier
+                .padding(vertical = 5.dp)
+                .fillMaxWidth()
+                .height(110.dp)
+                .wrapContentHeight(),
+            shape = MaterialTheme.shapes.medium,
+            colors = CommonViewComp.gePlanningBookCardColour(),
+            elevation = CardDefaults.outlinedCardElevation(),
+            border = CardDefaults.outlinedCardBorder(),
+        )
+        {
+            Column(Modifier.padding(4.dp)
+                           .width(550.dp),
+                   horizontalAlignment = Alignment.Start)
+            {
+                pbCardComponentRowName(planningBook, isActivePB, isActiveTxt)
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                pbCardComponentRowButtons(planningBook, isSharedWithMe)
+            }//Column
+        }//card
+    }
+
+    @Composable
+    private fun pbCardComponentRowName(planningBook: PlanningBook,
+                                       isActivePB: Boolean,
+                                       isActiveTxt: String) {
+
+        Row (Modifier.fillMaxWidth(),
+             horizontalArrangement = Arrangement.SpaceBetween)
+        {
+            Klog.line("PlanningBookManagerView","pbCardComponentRowName","row 1")
+            Column(Modifier.padding(4.dp))
+            {
+                Text(
+                    text = planningBook.name,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+
+            }
+
+            Column(Modifier.padding(4.dp))
+            {
+                if(isActivePB) {
+                    pbCardComponentTxtActive(isActiveTxt)
+                }
+                else {
+                    pbCardComponentButtonActive(planningBook)
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun pbCardComponentTxtActive(isActiveTxt: String) {
+
+        Text(
+            text = isActiveTxt,
+            style = MaterialTheme.typography.titleMedium
+        )
+    }
+
+    @Composable
+    private fun pbCardComponentButtonActive(planningBook: PlanningBook) {
+
+        val viewModel: PlanningBookManagerViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+        OutlinedButton(modifier = Modifier
+            .width(110.dp)
+            .height(35.dp),
+            colors = CommonViewComp.getPlanningBookCardButtonPrimaryColour(),
+            onClick = {
+                Klog.line("PlanningBookManagerView","pbCardComponentButtonActive","set Active PlanningBook button clicked")
+                viewModel.setActivePlanningBook(planningBook.id)
+            }
+        ) {
+            Text(
+                "Activate",
+                style = MaterialTheme.typography.titleMedium,
+            )
+        }//button
+    }
+
+    @Composable
+    private fun pbCardComponentRowButtons(planningBook: PlanningBook, isSharedWithMe: Boolean) {
+
+        val viewModel: PlanningBookManagerViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
 
+        if(isSharedWithMe) {
+            Row ( Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                OutlinedButton(modifier = Modifier.width(110.dp).height(35.dp),
+                    colors = CommonViewComp.getPlanningBookCardButtonSecondaryColour(),
+                    onClick = {
+                        Klog.line("PlanningBookManagerView","pbCardComponentRowButtons", "forget PlanningBook button clicked")
+                        viewModel.forgetPlanningBook(planningBook)
+                    }) {
+                    Text(
+                        "Forget",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                } //OutlinedButton
+            }
+        }
+        else {
+            Row ( Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                OutlinedButton(modifier = Modifier.width(110.dp).height(35.dp),
+                    colors = CommonViewComp.getPlanningBookCardButtonPrimaryColour(),
+                    onClick = {
+                        Klog.line("PlanningBookManagerView","pbCardComponentRowButtons","share PlanningBook button clicked")
+                        viewModel.sharePlanningBook(planningBook)
+                    }) {
+                    Text(
+                        "Share",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                } //OutlinedButton
 
+                OutlinedButton(modifier = Modifier
+                    .width(110.dp)
+                    .height(35.dp),
+                    colors = CommonViewComp.getPlanningBookCardButtonSecondaryColour(),
+                    onClick = {
+                        Klog.line("PlanningBookManagerView","pbCardComponentRowButtons","delete PlanningBook button clicked")
+                        viewModel.deletePlanningBook(planningBook.id)
+                    }
+                ) {
+                    Text(
+                        "Remove",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }//OutlinedButton
+            }//Row
+        }
+    }
 }

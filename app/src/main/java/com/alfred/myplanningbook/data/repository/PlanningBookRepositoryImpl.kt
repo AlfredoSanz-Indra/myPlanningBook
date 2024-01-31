@@ -3,6 +3,7 @@ package com.alfred.myplanningbook.data.repository
 import com.alfred.myplanningbook.core.firebase.FirebaseSession
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.data.model.Collections
+import com.alfred.myplanningbook.data.model.Documents
 import com.alfred.myplanningbook.data.model.SimpleDataResponse
 import com.alfred.myplanningbook.domain.model.Owner
 import com.alfred.myplanningbook.domain.model.PlanningBook
@@ -31,8 +32,8 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
         Klog.line("PlanningBookRepositoryImpl", "createPlanningBook", "name: $name")
 
         val pb = hashMapOf(
-            Collections.PLANNINGBOOK_IDOWNER to idOwner,
-            Collections.PLANNINGBOOK_NAME to name
+            Documents.PLANNINGBOOK_IDOWNER to idOwner,
+            Documents.PLANNINGBOOK_NAME to name
         )
 
         withContext(ioDispatcher) {
@@ -91,8 +92,8 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
                     if(task.result != null) {
                         val planningBook = PlanningBook(
                             task.result.getId(),
-                            task.result.get(Collections.PLANNINGBOOK_NAME) as String,
-                            task.result.get(Collections.PLANNINGBOOK_IDOWNER)as String
+                            task.result.get(Documents.PLANNINGBOOK_NAME) as String,
+                            task.result.get(Documents.PLANNINGBOOK_IDOWNER)as String
                         )
 
                         taskResp = SimpleDataResponse(true, 200, "Planning book found - $planningBook")
@@ -131,7 +132,7 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
         withContext(ioDispatcher) {
             val defer = async(ioDispatcher) {
                 val task: Task<Void> = FirebaseSession.db.collection(Collections.OWNER).document(ownerid)
-                    .update(Collections.OWNER_PLANNINGBOOKS, pblist)
+                    .update(Documents.OWNER_PLANNINGBOOKS, pblist)
                     .addOnSuccessListener {}
 
                 task.await()
@@ -169,7 +170,7 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
         withContext(ioDispatcher) {
             val defer = async(ioDispatcher) {
                 val task: Task<Void> = FirebaseSession.db.collection(Collections.OWNER).document(ownerid)
-                    .update(Collections.OWNER_ACTIVEPLANNINGBOOK, planningbookID)
+                    .update(Documents.OWNER_ACTIVEPLANNINGBOOK, planningbookID)
                     .addOnSuccessListener {}
 
                 task.await()
@@ -204,7 +205,7 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
         withContext(ioDispatcher) {
             val defer = async(ioDispatcher) {
                 val task: Task<QuerySnapshot> = FirebaseSession.db.collection(Collections.OWNER)
-                    .whereEqualTo(Collections.OWNER_EMAIL, email)
+                    .whereEqualTo(Documents.OWNER_EMAIL, email)
                     .limit(1)
                     .get()
                     .addOnSuccessListener {}
@@ -218,16 +219,15 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
                     for (document in task.result.documents) {
                         ownerFound = Owner(
                             document.id,
-                            document.get(Collections.OWNER_NAME) as String,
-                            document.get(Collections.OWNER_EMAIL) as String,
-                            document.get(Collections.OWNER_ACTIVEPLANNINGBOOK) as? String,
+                            document.get(Documents.OWNER_NAME) as String,
+                            document.get(Documents.OWNER_EMAIL) as String,
+                            document.get(Documents.OWNER_ACTIVEPLANNINGBOOK) as? String,
                             mutableListOf()
                         )
-                        val pbl: MutableList<String>? = document.get(Collections.OWNER_PLANNINGBOOKS) as? MutableList<String>
+                        val pbl: MutableList<String>? = document.get(Documents.OWNER_PLANNINGBOOKS) as? MutableList<String>
                         if(pbl != null) {
                             ownerFound.planningBooks = pbl
                         }
-                        Klog.linedbg("PlanningBookRepositoryImpl", "getOwner", "ownerFound: $ownerFound")
                     }
                     if(ownerFound != null) {
                         taskResp = SimpleDataResponse(true, 200, "Owner found - $ownerFound")
@@ -265,8 +265,8 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
         Klog.line("PlanningBookRepositoryImpl", "createOwner", "email: $email")
 
         val owner = hashMapOf(
-            Collections.OWNER_EMAIL to email,
-            Collections.OWNER_NAME to name
+            Documents.OWNER_EMAIL to email,
+            Documents.OWNER_NAME to name
         )
 
         withContext(ioDispatcher) {

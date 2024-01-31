@@ -2,6 +2,7 @@ package com.alfred.myplanningbook.domain.usecase
 
 import com.alfred.myplanningbook.core.firebase.FirebaseSession
 import com.alfred.myplanningbook.core.log.Klog
+import com.alfred.myplanningbook.domain.AppState
 import com.alfred.myplanningbook.domain.model.SimpleResponse
 import com.alfred.myplanningbook.domain.repositoryapi.UsersRepository
 import com.alfred.myplanningbook.domain.usecaseapi.UsersService
@@ -80,6 +81,9 @@ class UsersServiceImpl(private val usersRepository: UsersRepository): UsersServi
         return result
     }
 
+    /**
+     * Logout from Firebase and clean AppState
+     */
     override suspend fun logoutUser(): SimpleResponse {
 
         var result: SimpleResponse
@@ -92,6 +96,8 @@ class UsersServiceImpl(private val usersRepository: UsersRepository): UsersServi
             else {
                 SimpleResponse(false, repoResponse.code, repoResponse.message, "")
             }
+
+            AppState.cleanState()
         }
         catch(e: FirebaseAuthException) {
             Klog.line("UsersServiceImpl", "logoutUser", "FirebaseAuthException localizedMessage: ${e.localizedMessage}")

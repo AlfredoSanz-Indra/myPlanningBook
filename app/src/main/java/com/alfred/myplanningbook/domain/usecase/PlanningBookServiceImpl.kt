@@ -28,12 +28,12 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
                 result.owner = respLO.owner
 
                 if(!respLO.owner!!.activePlanningBook.isNullOrBlank()) {
-                    Klog.linedbg("PlanningBookServiceImpl", "loadState", "loading PB -> respLO.owner!!.activePlanningBook!!: ${respLO.owner!!.activePlanningBook!!}")
+                    Klog.linedbg("PlanningBookServiceImpl", "loadState", "loading active PB -> respLO.owner!!.activePlanningBook!!: ${respLO.owner!!.activePlanningBook!!}")
                     val respPB = loadPlanningBook(respLO.owner!!.activePlanningBook!!)
                     if(respPB.result) {
                         AppState.activePlanningBook = respPB.planningBook!!
                         result.planningBook = respPB.planningBook
-                        Klog.linedbg("PlanningBookServiceImpl", "loadState", "loaded PB -> result: $result")
+                        Klog.linedbg("PlanningBookServiceImpl", "loadState", "Active PB loaded-> result: $result")
                     }
                 }
 
@@ -43,10 +43,8 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
                         val respPB = loadPlanningBook(it)
                         if(respPB.result) {
                             AppState.planningBooks.add(respPB.planningBook!!)
-                            Klog.linedbg("PlanningBookServiceImpl", "loadState", "loaded PB -> respPB: $respPB")
                         }
                     }
-                    Klog.linedbg("PlanningBookServiceImpl", "loadState", "loaded PBs -> AppState.planningBooks: ${AppState.planningBooks}")
                 }
                 Klog.linedbg("PlanningBookServiceImpl", "loadState", "loading state all done -> result: $result")
             }
@@ -61,7 +59,7 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
                 }
                 else {
                     result = respCO
-                    Klog.linedbg("PlanningBookServiceImpl", "loadState", "Owner not created -> result: $result")
+                    Klog.linedbg("PlanningBookServiceImpl", "loadState", "Owner couldn't be created -> result: $result")
                 }
             }
         }
@@ -218,9 +216,10 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
 
                 val resp3 = updateOwnerActivePlanningBook(AppState.owner!!)
                 if(!resp3.result) {
-                    Klog.line("PlanningBookServiceImpl", "createPlanningBooks", "updating owner actrive pb failed")
+                    Klog.line("PlanningBookServiceImpl", "createPlanningBooks", "updating owner active pb failed")
                     return SimpleResponse(false, resp.code, resp3.message, "")
                 }
+                Klog.line("PlanningBookServiceImpl", "createPlanningBooks", "owner active pb updated")
             }
 
             result = SimpleResponse(true, 200, "Creation successful", "")
@@ -231,7 +230,7 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
             result = SimpleResponse(false, 500, e.localizedMessage, "")
         }
 
-        Klog.line("PlanningBookServiceImpl", "createPlanningBooks", "result: $result")
+        Klog.linedbg("PlanningBookServiceImpl", "createPlanningBooks", "result: $result")
         return result
     }
 
@@ -242,7 +241,6 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
 
         try {
             val resp = planningBookRepository.createPlanningBook(name, AppState.owner!!.id)
-            Klog.linedbg("PlanningBookServiceImpl", "createPB", "created PB -> resp: $resp")
 
             if (resp.result && resp.code == 200) {
                 result = SimpleResponse(true, 200, "created", "")
@@ -268,7 +266,6 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
 
         try {
             val resp = planningBookRepository.updateOwnerPlanningBooks(owner.id, owner.planningBooks!!)
-            Klog.linedbg("PlanningBookServiceImpl", "updateOwnerPlanningBooks", "updated Owner -> resp: $resp")
 
             if (resp.result && resp.code == 200) {
                 result = SimpleResponse(true, 200, "updated", "")
@@ -293,7 +290,6 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
 
         try {
             val resp = planningBookRepository.updateOwnerActivePlanningBook(owner.id, owner.activePlanningBook!!)
-            Klog.linedbg("PlanningBookServiceImpl", "updateOwnerActivePlanningBook", "updated Owner -> resp: $resp")
 
             if (resp.result && resp.code == 200) {
                 result = SimpleResponse(true, 200, "updated", "")
