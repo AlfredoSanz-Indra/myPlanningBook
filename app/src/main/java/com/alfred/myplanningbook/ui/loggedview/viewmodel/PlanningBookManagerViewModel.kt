@@ -11,6 +11,7 @@ import com.alfred.myplanningbook.domain.AppState
 import com.alfred.myplanningbook.domain.model.PlanningBook
 import com.alfred.myplanningbook.domain.model.SimpleResponse
 import com.alfred.myplanningbook.domain.usecaseapi.PlanningBookService
+import com.alfred.myplanningbook.domain.usecaseapi.StateService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,7 +33,9 @@ data class PlanningBookManagerUiState(
     var planningBookList: MutableList<PlanningBook> = mutableListOf()
 )
 
-class PlanningBookManagerViewModel(val planningBookService: PlanningBookService): ViewModel() {
+class PlanningBookManagerViewModel(private val planningBookService: PlanningBookService,
+                                   private val stateService: StateService
+): ViewModel() {
 
     private val _uiState = MutableStateFlow(PlanningBookManagerUiState())
     val uiState: StateFlow<PlanningBookManagerUiState> = _uiState.asStateFlow()
@@ -71,8 +74,6 @@ class PlanningBookManagerViewModel(val planningBookService: PlanningBookService)
         viewModelScope.launch {
             try {
                 val resp: SimpleResponse = planningBookService.createPlanningBook(uiState.value.pbName.trim())
-                Klog.linedbg("PlanningBookManagerViewModel","createPlanningBook", "resp: $resp")
-                Klog.linedbg("PlanningBookManagerViewModel","createPlanningBook", "resp.planningBoo: ${resp.planningBook}")
 
                 if (resp.result && resp.code == 200) {
                     showPBCreationSection(false)
@@ -131,6 +132,31 @@ class PlanningBookManagerViewModel(val planningBookService: PlanningBookService)
     fun setActivePlanningBook(planningBookID: String) {
 
         Klog.linedbg("PlanningBookManagerViewModel","setActivePlanningBook", "planningBookID: $planningBookID")
+        clearErrors()
+        if(planningBookID.isNullOrBlank()) {
+            Klog.linedbg("PlanningBookManagerViewModel", "setActivePlanningBook", "Validation was unsuccessful")
+            return
+        }
+        Klog.linedbg("PlanningBookManagerViewModel", "setActivePlanningBook", "Validation has been successful")
+
+        viewModelScope.launch {
+            try {
+                val resp = stateService.updateState_activePlanningBook(planningBookID, AppState.owner!!.id)
+                Klog.linedbg("PlanningBookManagerViewModel", "setActivePlanningBook", " owner has been updated, resp: $resp")
+                if (resp.result && resp.code == 200) {
+                    updateViewPlanningBooks()
+                }
+                else {
+                    setGeneralError(" ${resp.code}: ${resp.message}")
+                }
+                Klog.linedbg("PlanningBookManagerViewModel", "setActivePlanningBook", "view data has been updated")
+            }
+            catch (e: Exception) {
+                Klog.stackTrace("PlanningBookManagerViewModel", "setActivePlanningBook", e.stackTrace)
+                Klog.line("PlanningBookManagerViewModel","setActivePlanningBook"," Exception localizedMessage: ${e.localizedMessage}")
+                setGeneralError(" 500: ${e.message}, Error creating planning books, please login again!")
+            }
+        }//launch
     }
 
     fun deletePlanningBook(planningBookID: String) {

@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.domain.AppState
 import com.alfred.myplanningbook.domain.model.SimpleResponse
-import com.alfred.myplanningbook.domain.usecaseapi.PlanningBookService
+import com.alfred.myplanningbook.domain.usecaseapi.StateService
 import com.alfred.myplanningbook.domain.usecaseapi.UsersService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +28,7 @@ data class BookMenuUiState(
     var showBack: Boolean = false
 )
 class BookMenuViewModel(private val usersService: UsersService,
-                        private val planningBookService: PlanningBookService): ViewModel()  {
+                        private val stateService: StateService): ViewModel()  {
 
     private val _uiState = MutableStateFlow(BookMenuUiState())
     val uiState: StateFlow<BookMenuUiState> = _uiState.asStateFlow()
@@ -43,7 +43,7 @@ class BookMenuViewModel(private val usersService: UsersService,
 
         viewModelScope.launch {
             try {
-                val resp: SimpleResponse = planningBookService.loadState(AppState.useremail!!)
+                val resp: SimpleResponse = stateService.loadState(AppState.useremail!!)
                 Klog.line("BookMenuViewModel", "loadState", "resp: $resp")
 
                 if (resp!!.result) {
