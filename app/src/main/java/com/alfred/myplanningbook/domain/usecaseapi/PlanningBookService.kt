@@ -8,10 +8,13 @@ import com.alfred.myplanningbook.domain.model.SimpleResponse
  */
 interface PlanningBookService {
 
-    suspend fun loadState(email: String): SimpleResponse
 
-    suspend fun loadPlanningBooks(plannings: List<String>): SimpleResponse
+
+    suspend fun getPlanningBook(id: String): SimpleResponse
+
+    suspend fun getPlanningBooks(plannings: List<String>): SimpleResponse
 
     suspend fun createPlanningBook(name: String): SimpleResponse
+
 
 }

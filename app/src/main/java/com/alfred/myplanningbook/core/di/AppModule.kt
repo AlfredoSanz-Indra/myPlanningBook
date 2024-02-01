@@ -1,12 +1,18 @@
 package com.alfred.myplanningbook.core.di
 
+import com.alfred.myplanningbook.data.repository.OwnerRepositoryImpl
 import com.alfred.myplanningbook.data.repository.PlanningBookRepositoryImpl
 import com.alfred.myplanningbook.data.repository.UsersRepositoryImpl
+import com.alfred.myplanningbook.domain.repositoryapi.OwnerRepository
 import com.alfred.myplanningbook.domain.repositoryapi.PlanningBookRepository
 import com.alfred.myplanningbook.domain.repositoryapi.UsersRepository
+import com.alfred.myplanningbook.domain.usecase.OwnerServiceImpl
 import com.alfred.myplanningbook.domain.usecase.PlanningBookServiceImpl
+import com.alfred.myplanningbook.domain.usecase.StateServiceImpl
 import com.alfred.myplanningbook.domain.usecase.UsersServiceImpl
+import com.alfred.myplanningbook.domain.usecaseapi.OwnerService
 import com.alfred.myplanningbook.domain.usecaseapi.PlanningBookService
+import com.alfred.myplanningbook.domain.usecaseapi.StateService
 import com.alfred.myplanningbook.domain.usecaseapi.UsersService
 import com.alfred.myplanningbook.ui.loggedview.viewmodel.BookMenuViewModel
 import com.alfred.myplanningbook.ui.loggedview.viewmodel.PlanningBookManagerViewModel
@@ -33,13 +39,25 @@ val appModule = module {
         PlanningBookRepositoryImpl(get(named("IODispatcher")))
     }
 
+    single<OwnerRepository> {
+        OwnerRepositoryImpl(get(named("IODispatcher")))
+    }
+
     //factoryOf(::UsersServiceImpl) { bind<UsersService>() }
     factory<UsersService> {
         UsersServiceImpl(get())
     }
 
     factory<PlanningBookService> {
-        PlanningBookServiceImpl(get())
+        PlanningBookServiceImpl(get(), get())
+    }
+
+    factory<OwnerService> {
+        OwnerServiceImpl(get())
+    }
+
+    factory<StateService> {
+        StateServiceImpl(get(), get())
     }
 
     viewModelOf(::MainViewModel)
