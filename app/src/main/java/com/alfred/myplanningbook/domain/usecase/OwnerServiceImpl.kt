@@ -112,4 +112,41 @@ class OwnerServiceImpl(private val ownerRepository: OwnerRepository): OwnerServi
         Klog.linedbg("OwnerServiceImpl", "updateOwnerActivePlanningBook", "updated owner -> result: $result")
         return result
     }
+
+    override suspend fun sharePlanningBookToOtherOwner(shareToEmail: String, pbID: String): SimpleResponse {
+
+        var result: SimpleResponse
+        Klog.line("OwnerServiceImpl", "sharePlanningBookToOtherOwner", "sharing PlanningBook -> pbID: $pbID")
+
+        try {
+
+            val respSharedToOwner = getOwner(shareToEmail)
+            Klog.line("OwnerServiceImpl", "sharePlanningBookToOtherOwner", "getting owner -> respSharedToOwner: $respSharedToOwner")
+
+            if(respSharedToOwner.result && respSharedToOwner.code == 200) {
+                val sharedToOwner: Owner = respSharedToOwner.owner!!
+
+                val pb: String? = sharedToOwner.planningBooks!!.find { it -> it == pbID }
+                if(null == pb) {
+                    sharedToOwner.planningBooks!!.add(pbID)
+                    updateOwnerPlanningBooks(sharedToOwner)
+
+                    result = SimpleResponse(true, 200, "SharedToOwner PlanningBook List updated", "")
+                }
+                else {
+                    result = SimpleResponse(true, 201, "SharedToOwner has the PlanningBook in its list yet", "")
+                }
+            }
+            else {
+                result = respSharedToOwner
+            }
+        }
+        catch(e: Exception) {
+            Klog.line("OwnerServiceImpl", "sharePlanningBookToOtherOwner", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleResponse(false, 500, e.localizedMessage, "")
+        }
+
+        Klog.linedbg("OwnerServiceImpl", "sharePlanningBookToOtherOwner", "result: $result")
+        return result
+    }
 }
