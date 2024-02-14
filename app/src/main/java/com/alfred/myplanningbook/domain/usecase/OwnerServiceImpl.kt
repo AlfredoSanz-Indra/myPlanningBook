@@ -7,7 +7,6 @@ import com.alfred.myplanningbook.domain.model.Owner
 import com.alfred.myplanningbook.domain.model.SimpleResponse
 import com.alfred.myplanningbook.domain.repositoryapi.OwnerRepository
 import com.alfred.myplanningbook.domain.usecaseapi.OwnerService
-import com.alfred.myplanningbook.domain.usecaseapi.PlanningBookService
 
 /**
  * @author Alfredo Sanz
@@ -68,7 +67,7 @@ class OwnerServiceImpl(private val ownerRepository: OwnerRepository): OwnerServi
     override suspend fun updateOwnerPlanningBooks(owner: Owner): SimpleResponse {
 
         var result: SimpleResponse
-        Klog.line("OwnerServiceImpl", "updateOwnerPlanningBooks", "Updating Owner PBs -> owner.id: $owner.id")
+        Klog.line("OwnerServiceImpl", "updateOwnerPlanningBooks", "Updating Owner PBs -> owner.id: ${owner.id}")
 
         try {
             val resp = ownerRepository.updateOwnerPlanningBooks(owner.id, owner.planningBooks!!)
@@ -147,6 +146,44 @@ class OwnerServiceImpl(private val ownerRepository: OwnerRepository): OwnerServi
         }
 
         Klog.linedbg("OwnerServiceImpl", "sharePlanningBookToOtherOwner", "result: $result")
+        return result
+    }
+
+    /**
+     * Elimina el PB de la lista de PBs del AppState.owner.
+     * Actualiza el Repositorio con la nueva lista de PBs del owner.
+     */
+    override suspend fun forgetSharedPlanningBook(pbID: String): SimpleResponse {
+
+        var result: SimpleResponse
+        Klog.line("OwnerServiceImpl", "forgetSharedPlanningBook", "Forgetting shared PlanningBook -> pbID: $pbID")
+
+        try {
+            val existsPB = AppState.owner!!.planningBooks!!.find { it == pbID }
+            Klog.line("OwnerServiceImpl", "forgetSharedPlanningBook", "existsPB: $existsPB")
+            if(!existsPB.isNullOrEmpty()) {
+                Klog.line("OwnerServiceImpl", "forgetSharedPlanningBook", "AppState.owner!!.planningBooks!!: ${ AppState.owner!!.planningBooks!! }")
+                AppState.owner!!.planningBooks!!.remove(pbID)
+                Klog.line("OwnerServiceImpl", "forgetSharedPlanningBook", "AppState.owner!!.planningBooks!!: ${ AppState.owner!!.planningBooks!! }")
+
+                val resp = ownerRepository.updateOwnerPlanningBooks(AppState.owner!!.id, AppState.owner!!.planningBooks!!)
+                if (resp.result && resp.code == 200) {
+                    result = SimpleResponse(true, 200, "updated", "")
+                }
+                else {
+                    result = SimpleResponse(false, resp.code, "not updated", resp.message)
+                }
+            }
+            else {
+                result = SimpleResponse(false, 404, "not updated", "Planning book doesn't exist")
+            }
+        }
+        catch(e: Exception) {
+            Klog.line("OwnerServiceImpl", "forgetSharedPlanningBook", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleResponse(false, 500, e.localizedMessage, "")
+        }
+
+        Klog.linedbg("OwnerServiceImpl", "forgetSharedPlanningBook", "updated owner -> result: $result")
         return result
     }
 }

@@ -128,14 +128,8 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
     }
 
     /**
-     * When the planning book is owned by other user that has
-     * shared it with me and i want to remove it from my list.
+     * When i want to set Active a planning book of my list.
      */
-    fun forgetPlanningBook(pb: PlanningBook) {
-
-        Klog.linedbg("PlanningBookManagerViewModel","forgetPlanningBook", "planningBookID: $pb")
-    }
-
     fun setActivePlanningBook(planningBookID: String) {
 
         Klog.linedbg("PlanningBookManagerViewModel","setActivePlanningBook", "planningBookID: $planningBookID")
@@ -190,6 +184,9 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
         updateShareToEmail("")
     }
 
+    /**
+     * When i want to share a planning book of my own with another user.
+     */
     fun sharePlanningBook(planningBook: PlanningBook) {
 
         Klog.linedbg("PlanningBookManagerViewModel","sharePlanningBook", "planningBook: $planningBook")
@@ -218,7 +215,35 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
             catch (e: Exception) {
                 Klog.stackTrace("PlanningBookManagerViewModel", "sharePlanningBook", e.stackTrace)
                 Klog.line("PlanningBookManagerViewModel","sharePlanningBook"," Exception localizedMessage: ${e.localizedMessage}")
-                setGeneralError(" 500: ${e.message}, Error sharing planning books!")
+                setGeneralError(" 500: ${e.message}, Error sharing planning book!")
+            }
+        }//launch
+    }
+
+    /**
+     * When the planning book is owned by other user that has
+     * shared it with me and i want to remove it from my list.
+     */
+    fun forgetPlanningBook(planningBook: PlanningBook) {
+
+        Klog.linedbg("PlanningBookManagerViewModel","forgetPlanningBook", "planningBook: $planningBook")
+
+        viewModelScope.launch {
+            try {
+                val resp = stateService.forgetSharedPlanningBook(planningBook.id)
+                Klog.linedbg("PlanningBookManagerViewModel", "forgetPlanningBook", " PlanningBook forgotten, resp: $resp")
+                if (resp.result && resp.code == 200) {
+                    updateViewPlanningBooks()
+                }
+                else {
+                    setGeneralError(" ${resp.code}: ${resp.message}")
+                }
+                Klog.linedbg("PlanningBookManagerViewModel", "forgetPlanningBook", "PlanningBook has been forgotten or not")
+            }
+            catch (e: Exception) {
+                Klog.stackTrace("PlanningBookManagerViewModel", "forgetPlanningBook", e.stackTrace)
+                Klog.line("PlanningBookManagerViewModel","forgetPlanningBook"," Exception localizedMessage: ${e.localizedMessage}")
+                setGeneralError(" 500: ${e.message}, Error forgetting planning book!")
             }
         }//launch
     }

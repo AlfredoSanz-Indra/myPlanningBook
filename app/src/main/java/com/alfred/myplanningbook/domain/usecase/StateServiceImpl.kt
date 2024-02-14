@@ -2,6 +2,7 @@ package com.alfred.myplanningbook.domain.usecase
 
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.domain.AppState
+import com.alfred.myplanningbook.domain.model.PlanningBook
 import com.alfred.myplanningbook.domain.model.SimpleResponse
 import com.alfred.myplanningbook.domain.usecaseapi.OwnerService
 import com.alfred.myplanningbook.domain.usecaseapi.PlanningBookService
@@ -103,6 +104,65 @@ class StateServiceImpl( private val ownerService: OwnerService,
         }
 
         Klog.linedbg("StateServiceImpl", "updateState_activePlanningBook", "updated Active PB -> result: $result")
+        return result
+    }
+
+    /**
+     * Forget an Owner planningBook and update the State
+     */
+    override suspend fun forgetSharedPlanningBook(pbID: String): SimpleResponse {
+
+        var result = SimpleResponse(true, 200, "forgotten", "")
+        Klog.line("StateServiceImpl", "forgetSharedPlanningBook", "forget a shared planningBook pbID: $pbID")
+
+        try {
+            //**FORGET OWNER PB
+            val resp = ownerService.forgetSharedPlanningBook(pbID)
+            if(!resp.result || resp.code != 200) {
+                return resp
+            }
+
+            //**UPDATE OWNER ACTIVE PB
+            if(AppState.activePlanningBook != null && AppState.activePlanningBook!!.id == pbID) {
+                if(AppState.owner!!.planningBooks!!.isNotEmpty()) {
+                    val id: String = AppState.owner!!.planningBooks!!.first()
+                    val pb: PlanningBook? = AppState.planningBooks.find { it.id == id }
+                    if(pb != null) {
+                        result = updateState_activePlanningBook(pb.id, AppState.owner!!.id)
+                    }
+                    AppState.activePlanningBook = pb
+                }
+                else {
+                    AppState.activePlanningBook = null
+                }
+            }
+            Klog.linedbg("StateServiceImpl", "forgetSharedPlanningBook", "AppState -> $AppState")
+
+            //**UPDATE THE AppState PLANNINGBOOK LIST
+            if(AppState.owner!!.planningBooks!!.isNotEmpty()) {
+                Klog.linedbg("StateServiceImpl", "forgetSharedPlanningBook", "reloading owner planningBooks")
+                val newPBList: MutableList<PlanningBook> = mutableListOf()
+
+                AppState.owner!!.planningBooks!!.forEach { it ->
+                    val respPB = planningBookService.getPlanningBook(it)
+                    if(respPB.result) {
+                        newPBList.add(respPB.planningBook!!)
+                    }
+                    else {
+                        result = respPB
+                    }
+                }
+                AppState.planningBooks = newPBList
+                Klog.linedbg("StateServiceImpl", "forgetSharedPlanningBook", "newPBList -> $newPBList")
+            }
+            Klog.linedbg("StateServiceImpl", "forgetSharedPlanningBook", "State completely updated")
+        }
+        catch(e: Exception) {
+            Klog.line("StateServiceImpl", "reloadPlanningBooks", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleResponse(false, 500, e.localizedMessage, "")
+        }
+
+        Klog.linedbg("StateServiceImpl", "forgetSharedPlanningBook", "planningbook forgotten")
         return result
     }
 }
