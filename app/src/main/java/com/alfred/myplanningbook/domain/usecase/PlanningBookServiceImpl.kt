@@ -156,4 +156,28 @@ class PlanningBookServiceImpl(private val planningBookRepository: PlanningBookRe
         Klog.linedbg("PlanningBookServiceImpl", "createPB", "created PB -> result: $result")
         return result
     }
+
+    override suspend fun removePlanningBook(id: String): SimpleResponse {
+
+        var result: SimpleResponse
+        Klog.line("PlanningBookServiceImpl", "removePlanningBook", "Removing PB -> id: $id")
+
+        try {
+            val resp = planningBookRepository.removePlanningBook(id)
+
+            result = if (resp.result && resp.code == 200) {
+                SimpleResponse(true, 200, "removed", "")
+            }
+            else {
+                SimpleResponse(false, resp.code, "not removed", resp.message)
+            }
+        }
+        catch(e: Exception) {
+            Klog.line("PlanningBookServiceImpl", "removePlanningBook", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleResponse(false, 500, e.localizedMessage, "")
+        }
+
+        Klog.linedbg("PlanningBookServiceImpl", "removePlanningBook", "removed PB -> result: $result")
+        return result
+    }
 }

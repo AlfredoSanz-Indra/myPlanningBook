@@ -9,6 +9,8 @@ import com.alfred.myplanningbook.data.model.SimpleDataResponse
 interface OwnerRepository {
     suspend fun getOwner(email: String): SimpleDataResponse
 
+    suspend fun listOwnersByContainPB(pbId: String): SimpleDataResponse
+
     suspend fun createOwner(email: String, name: String): SimpleDataResponse
 
     suspend fun updateOwnerPlanningBooks(ownerid: String, pblist: MutableList<String>): SimpleDataResponse

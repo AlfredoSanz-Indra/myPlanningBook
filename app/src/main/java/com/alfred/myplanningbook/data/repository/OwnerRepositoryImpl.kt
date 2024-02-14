@@ -77,6 +77,61 @@ class OwnerRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): OwnerR
         return result
     }
 
+    override suspend fun listOwnersByContainPB(pbId: String): SimpleDataResponse {
+
+        var result = SimpleDataResponse(false, 404, "not found")
+        Klog.line("PlanningBookRepositoryImpl", "listOwnersByContainPB", "Listing owners containing this planningBook: pbId $pbId")
+
+        withContext(ioDispatcher) {
+            val defer = async(ioDispatcher) {
+                val task: Task<QuerySnapshot> = FirebaseSession.db.collection(Collections.OWNER)
+                    .whereArrayContains(Documents.OWNER_PLANNINGBOOKS, pbId)
+                    .get()
+                    .addOnSuccessListener {}
+
+                task.await()
+
+                var taskResp: SimpleDataResponse
+                if(task.isSuccessful) {
+                    Klog.line("PlanningBookRepositoryImpl", "listOwnersByContainPB", "task is successful")
+                    var ownerList: MutableList<Owner> = mutableListOf()
+                    for (document in task.result.documents) {
+                        var ownerFound: Owner = Owner(
+                            document.id,
+                            document.get(Documents.OWNER_NAME) as String,
+                            document.get(Documents.OWNER_EMAIL) as String,
+                            document.get(Documents.OWNER_ACTIVEPLANNINGBOOK) as? String,
+                            mutableListOf()
+                        )
+                        val pbl: MutableList<String>? = document.get(Documents.OWNER_PLANNINGBOOKS) as? MutableList<String>
+                        if(pbl != null) {
+                            ownerFound.planningBooks = pbl
+                        }
+
+                        ownerList.add(ownerFound)
+                    }
+
+                    taskResp = SimpleDataResponse(true, 200, "Owner list - $ownerList")
+                    taskResp.ownerList = ownerList
+                }
+                else {
+                    Klog.line("PlanningBookRepositoryImpl", "listOwnersByContainPB", "error cause: ${task.exception?.cause}")
+                    Klog.line("PlanningBookRepositoryImpl", "listOwnersByContainPB", "error message: ${task.exception?.message}")
+
+                    taskResp = SimpleDataResponse(false, 400, "Listing owner failed.")
+                }
+
+                return@async taskResp
+            }
+
+            result = defer.await()
+        } //scope
+
+        Klog.line("PlanningBookRepositoryImpl", "listOwnersByContainPB", "result: $result")
+        return result
+    }
+
+
     /**
      * Create an owner in firestore
      *

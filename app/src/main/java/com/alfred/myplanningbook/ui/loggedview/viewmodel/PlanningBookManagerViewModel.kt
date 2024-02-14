@@ -163,6 +163,25 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
     fun deletePlanningBook(planningBookID: String) {
 
         Klog.linedbg("PlanningBookManagerViewModel","deletePlanningBook", "planningBookID: $planningBookID")
+
+        viewModelScope.launch {
+            try {
+                val resp = stateService.removePlanningBook(planningBookID)
+                Klog.linedbg("PlanningBookManagerViewModel", "deletePlanningBook", " PlanningBook forgotten, resp: $resp")
+                if (resp.result && resp.code == 200) {
+                    updateViewPlanningBooks()
+                }
+                else {
+                    setGeneralError(" ${resp.code}: ${resp.message}")
+                }
+                Klog.linedbg("PlanningBookManagerViewModel", "deletePlanningBook", "PlanningBook has been deleted or not")
+            }
+            catch (e: Exception) {
+                Klog.stackTrace("PlanningBookManagerViewModel", "deletePlanningBook", e.stackTrace)
+                Klog.line("PlanningBookManagerViewModel","deletePlanningBook"," Exception localizedMessage: ${e.localizedMessage}")
+                setGeneralError(" 500: ${e.message}, Error deleting planning book!")
+            }
+        }//launch
     }
 
     fun sharePlanningBook_ON(pbID: String) {
