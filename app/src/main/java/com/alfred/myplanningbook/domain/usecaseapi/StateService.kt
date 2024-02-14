@@ -12,4 +12,5 @@ interface StateService {
 
     suspend fun updateState_activePlanningBook(pbID: String, ownerID: String): SimpleResponse
 
+    suspend fun forgetSharedPlanningBook(pbID: String): SimpleResponse
 }

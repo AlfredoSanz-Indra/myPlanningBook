@@ -17,4 +17,7 @@ interface OwnerService {
 
     suspend fun updateOwnerActivePlanningBook(pbID: String, ownerID: String): SimpleResponse
 
+    suspend fun sharePlanningBookToOtherOwner(shareToEmail: String, pbID: String): SimpleResponse
+
+    suspend fun forgetSharedPlanningBook(pbID: String): SimpleResponse
 }

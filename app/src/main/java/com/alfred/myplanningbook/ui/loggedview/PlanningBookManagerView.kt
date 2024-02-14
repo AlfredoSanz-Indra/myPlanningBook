@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -305,7 +306,7 @@ class PlanningBookManagerView {
             modifier = Modifier
                 .padding(vertical = 5.dp)
                 .fillMaxWidth()
-                .height(110.dp)
+                .height(calcCardHeight(planningBook, uiState))
                 .wrapContentHeight(),
             shape = MaterialTheme.shapes.medium,
             colors = CommonViewComp.gePlanningBookCardColour(),
@@ -321,9 +322,29 @@ class PlanningBookManagerView {
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                pbCardComponentRowButtons(planningBook, isSharedWithMe)
+                if(uiState.isSharing && uiState.isSharingPB == planningBook.id)  {
+                    pbCardComponentSharingPB(planningBook)
+                }
+                else {
+                    pbCardComponentRowButtons(planningBook, isSharedWithMe)
+                }
             }//Column
         }//card
+    }
+
+    private fun calcCardHeight(planningBook: PlanningBook, uiState: PlanningBookManagerUiState): Dp {
+
+        var cardHeight: Dp
+
+        if(uiState.isSharing && uiState.isSharingPB == planningBook.id)
+            if(uiState.shareToEmailError)
+                cardHeight = 250.dp
+            else
+                cardHeight = 220.dp
+        else
+            cardHeight = 110.dp
+
+        return cardHeight
     }
 
     @Composable
@@ -341,7 +362,6 @@ class PlanningBookManagerView {
                     text = planningBook.name,
                     style = MaterialTheme.typography.titleMedium,
                 )
-
             }
 
             Column(Modifier.padding(4.dp))
@@ -396,8 +416,13 @@ class PlanningBookManagerView {
 
         if(isSharedWithMe) {
             Row ( Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
+                Text(
+                    text = "This planning book is shared",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
                 OutlinedButton(modifier = Modifier.width(110.dp).height(35.dp),
                     colors = CommonViewComp.getPlanningBookCardButtonSecondaryColour(),
                     onClick = {
@@ -419,7 +444,7 @@ class PlanningBookManagerView {
                     colors = CommonViewComp.getPlanningBookCardButtonPrimaryColour(),
                     onClick = {
                         Klog.line("PlanningBookManagerView","pbCardComponentRowButtons","share PlanningBook button clicked")
-                        viewModel.sharePlanningBook(planningBook)
+                        viewModel.sharePlanningBook_ON(planningBook.id)
                     }) {
                     Text(
                         "Share",
@@ -443,5 +468,71 @@ class PlanningBookManagerView {
                 }//OutlinedButton
             }//Row
         }
+    }
+
+    @Composable
+    private fun pbCardComponentSharingPB(planningBook: PlanningBook) {
+
+        val viewModel: PlanningBookManagerViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+        Box(
+            modifier = Modifier
+                .padding(15.dp)
+                .border(2.dp, color = Gray, shape = RoundedCornerShape(16.dp))
+                .fillMaxWidth()
+                .fillMaxHeight()
+        ) {
+            Column {
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Row(
+                    Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    OutlinedButton(
+                        modifier = Modifier.width(110.dp).height(35.dp),
+                        colors = CommonViewComp.getActionsButtonColour(),
+                        onClick = {
+                            Klog.line("PlanningBookManagerView", "pbCardComponentSharingRowSection", "share the planningBook to")
+                            viewModel.sharePlanningBook(planningBook);
+                        }) {
+                        Text("Share")
+                    }
+
+                    OutlinedButton(
+                        modifier = Modifier.width(110.dp).height(35.dp),
+                        colors = CommonViewComp.getSecondaryButtonColour(),
+                        onClick = {
+                            Klog.line("PlanningBookManagerView", "pbCardComponentSharingRowSection", "cancel sharing planningBook to")
+                            viewModel.sharePlanningBook_OFF()
+                        }) {
+                        Text("Cancel")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Row (
+                    Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Column {
+                        OutlinedTextField(
+                            value = uiState.shareToEmail,
+                            onValueChange = { viewModel.updateShareToEmail(it) },
+                            placeholder = { Text("Person Email to share with") })
+                        if(uiState.shareToEmailError) {
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Text(
+                                uiState.shareToEmailErrorText, color = Color.Red, style = TextStyle(
+                                    fontSize = 15.sp, color = Color.Red
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        }//Box
     }
 }
