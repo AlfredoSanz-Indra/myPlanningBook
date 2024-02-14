@@ -10,5 +10,6 @@ interface PlanningBookRepository {
 
     suspend fun createPlanningBook(email: String, name: String): SimpleDataResponse
     suspend fun getPlanningBook(id: String): SimpleDataResponse
+    suspend fun removePlanningBook(id: String): SimpleDataResponse
 }
 

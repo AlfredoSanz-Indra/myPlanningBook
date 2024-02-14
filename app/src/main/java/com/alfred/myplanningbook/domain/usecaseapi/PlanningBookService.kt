@@ -16,5 +16,5 @@ interface PlanningBookService {
 
     suspend fun createPlanningBook(name: String): SimpleResponse
 
-
+    suspend fun removePlanningBook(id: String): SimpleResponse
 }

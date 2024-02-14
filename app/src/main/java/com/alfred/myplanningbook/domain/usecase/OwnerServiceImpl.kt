@@ -186,4 +186,28 @@ class OwnerServiceImpl(private val ownerRepository: OwnerRepository): OwnerServi
         Klog.linedbg("OwnerServiceImpl", "forgetSharedPlanningBook", "updated owner -> result: $result")
         return result
     }
+
+    override suspend fun listOwnersContainingPlanningBook(pbID: String): SimpleResponse {
+
+        var result: SimpleResponse
+        Klog.line("OwnerServiceImpl", "listOwnersContainingPlanningBook", "getting owners that containg this PB-> pbID: $pbID")
+
+        try {
+            val resp: SimpleDataResponse = ownerRepository.listOwnersByContainPB(pbID)
+            if(resp.result && resp.code == 200) {
+                result = SimpleResponse(true,200, "found", "")
+                result.ownerList = resp.ownerList
+            }
+            else {
+                result = SimpleResponse(false, resp.code, "not found", resp.message)
+            }
+        }
+        catch(e: Exception) {
+            Klog.line("OwnerServiceImpl", "listOwnersContainingPlanningBook", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleResponse(false, 500, e.localizedMessage, "" )
+        }
+
+        Klog.line("OwnerServiceImpl", "listOwnersContainingPlanningBook", "result: $result")
+        return result
+    }
 }

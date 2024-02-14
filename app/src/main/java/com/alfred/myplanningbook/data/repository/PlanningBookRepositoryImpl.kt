@@ -120,4 +120,40 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
         Klog.line("PlanningBookRepositoryImpl", "getPlanningBook", "result: $result")
         return result
     }
+
+    override suspend fun removePlanningBook(id: String): SimpleDataResponse {
+
+        var result = SimpleDataResponse(false, 404, "not found")
+        Klog.line("PlanningBookRepositoryImpl", "removePlanningBook", "id: $id")
+
+        withContext(ioDispatcher) {
+            val defer = async(ioDispatcher) {
+                val task: Task<Void> = FirebaseSession.db
+                    .collection(Collections.PLANNINGBOOK)
+                    .document(id)
+                    .delete()
+                    .addOnSuccessListener {}
+
+                task.await()
+
+                var taskResp: SimpleDataResponse = if(task.isSuccessful) {
+                    Klog.line("PlanningBookRepositoryImpl", "removePlanningBook", "task is successfull")
+                    SimpleDataResponse(true, 200, "Planning book removed")
+                }
+                else {
+                    Klog.line("PlanningBookRepositoryImpl", "removePlanningBook", "error cause: ${task.exception?.cause}")
+                    Klog.line("PlanningBookRepositoryImpl", "removePlanningBook", "error message: ${task.exception?.message}")
+
+                    SimpleDataResponse(false, 400, "Removing planning book failed.")
+                }
+
+                return@async taskResp
+            }
+
+            result = defer.await()
+        }//scope
+
+        Klog.line("PlanningBookRepositoryImpl", "removePlanningBook", "result: $result")
+        return result
+    }
 }

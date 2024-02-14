@@ -113,7 +113,7 @@ class StateServiceImpl( private val ownerService: OwnerService,
     override suspend fun forgetSharedPlanningBook(pbID: String): SimpleResponse {
 
         var result = SimpleResponse(true, 200, "forgotten", "")
-        Klog.line("StateServiceImpl", "forgetSharedPlanningBook", "forget a shared planningBook pbID: $pbID")
+        Klog.line("StateServiceImpl", "forgetSharedPlanningBook", "Forgetting a shared planningBook, pbID: $pbID")
 
         try {
             //**FORGET OWNER PB
@@ -158,11 +158,71 @@ class StateServiceImpl( private val ownerService: OwnerService,
             Klog.linedbg("StateServiceImpl", "forgetSharedPlanningBook", "State completely updated")
         }
         catch(e: Exception) {
-            Klog.line("StateServiceImpl", "reloadPlanningBooks", " Exception localizedMessage: ${e.localizedMessage}")
+            Klog.line("StateServiceImpl", "forgetSharedPlanningBook", " Exception localizedMessage: ${e.localizedMessage}")
             result = SimpleResponse(false, 500, e.localizedMessage, "")
         }
 
         Klog.linedbg("StateServiceImpl", "forgetSharedPlanningBook", "planningbook forgotten")
+        return result
+    }
+
+    override suspend fun removePlanningBook(pbID: String): SimpleResponse {
+
+        var result = SimpleResponse(true, 200, "removed", "")
+        Klog.line("StateServiceImpl", "removePlanningBook", "Removing a planningBook, pbID: $pbID")
+
+        try {
+            //**REMOVE PB FROM REPO
+            val respPB = planningBookService.removePlanningBook(pbID)
+            if(!respPB.result || respPB.code != 200) {
+                return respPB
+            }
+            Klog.line("StateServiceImpl", "removePlanningBook", "PB removed from repo")
+
+            //**LIST OWNERS WITH THE PB IN ITS LIST
+            val respOw = ownerService.listOwnersContainingPlanningBook(pbID)
+            Klog.line("StateServiceImpl", "removePlanningBook", "Owners containing the PB -> ${respOw.ownerList!!.size}")
+            if(!respOw.result || respOw.code != 200) {
+                return respOw
+            }
+            if(respOw.ownerList!!.isEmpty()) {
+                return result
+            }
+
+            //**REMOVE THE PB FROM EVERY OWNER LIST
+            respOw.ownerList!!.forEach {
+                it.planningBooks!!.remove(pbID)
+                val respUP = ownerService.updateOwnerPlanningBooks(it)
+                if(!respUP.result || respUP.code != 200) {
+                    result = SimpleResponse(true, 400, "Error removing PB from an Owner", "${respUP.message}")
+                }
+            }
+            Klog.line("StateServiceImpl", "removePlanningBook", "PB removed from owners list")
+
+            //**UPDATING ACTIVE PB
+            respOw.ownerList!!.forEach {
+                if(it.activePlanningBook != null &&
+                   it.activePlanningBook == pbID &&
+                   it.planningBooks!!.isNotEmpty()) {
+
+                    val pb = it.planningBooks!!.first()
+                    val respAP = ownerService.updateOwnerActivePlanningBook(pb, it.id)
+                    if(!respAP.result || respAP.code != 200) {
+                        result = SimpleResponse(true, 401, "Error updating active planning book for owner ${it.id}, pb $pb", respAP.message)
+                    }
+                }
+            }
+            Klog.line("StateServiceImpl", "removePlanningBook", "PB active in owners updated")
+
+            AppState.cleanState_data()
+            loadState(AppState.useremail!!)
+        }
+        catch(e: Exception) {
+            Klog.line("StateServiceImpl", "removePlanningBook", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleResponse(false, 500, e.localizedMessage, "")
+        }
+
+        Klog.linedbg("StateServiceImpl", "removePlanningBook", "planningbook removed")
         return result
     }
 }

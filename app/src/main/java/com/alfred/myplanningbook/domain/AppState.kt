@@ -28,4 +28,9 @@ object AppState {
         planningBooks = mutableListOf()
     }
 
+    fun cleanState_data() {
+        owner = null
+        activePlanningBook = null
+        planningBooks = mutableListOf()
+    }
 }
