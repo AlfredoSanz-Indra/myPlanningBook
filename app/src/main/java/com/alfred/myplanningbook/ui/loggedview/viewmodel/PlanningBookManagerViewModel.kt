@@ -37,7 +37,9 @@ data class PlanningBookManagerUiState(
     var isSharingPB: String = "",
     var shareToEmail: String = "",
     var shareToEmailError: Boolean = false,
-    var shareToEmailErrorText: String = ""
+    var shareToEmailErrorText: String = "",
+    var isToDeletePB: Boolean = false,
+    var pbIDtoDelete: String = ""
 )
 
 class PlanningBookManagerViewModel(private val planningBookService: PlanningBookService,
@@ -160,16 +162,36 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
         }//launch
     }
 
-    fun deletePlanningBook(planningBookID: String) {
+    fun isToDeletePlanningBook(action: Boolean, pbIdToDelete: String) {
 
-        Klog.linedbg("PlanningBookManagerViewModel","deletePlanningBook", "planningBookID: $planningBookID")
+        Klog.linedbg("PlanningBookManagerViewModel","isToDeletePlanningBook", "click, action -> $action, pbIdToDelete -> $pbIdToDelete")
+        clearErrors()
+        val id = if(action)
+            pbIdToDelete
+        else
+            ""
+
+        updatePbIDtoDelete(id)
+        updateIsToDeletePB(action)
+    }
+
+    fun deletePlanningBook() {
+
+        Klog.linedbg("PlanningBookManagerViewModel","deletePlanningBook", "planningBookID: ${_uiState.value.pbIDtoDelete}")
+
+        if(_uiState.value.pbIDtoDelete.isNullOrEmpty()) {
+            Klog.linedbg("PlanningBookManagerViewModel","deletePlanningBook", "Planning Book id to delete is missing")
+            return
+        }
 
         viewModelScope.launch {
             try {
-                val resp = stateService.removePlanningBook(planningBookID)
+                val resp = stateService.removePlanningBook(_uiState.value.pbIDtoDelete)
                 Klog.linedbg("PlanningBookManagerViewModel", "deletePlanningBook", " PlanningBook forgotten, resp: $resp")
                 if (resp.result && resp.code == 200) {
                     updateViewPlanningBooks()
+                    updatePbIDtoDelete("")
+                    updateIsToDeletePB(false)
                 }
                 else {
                     setGeneralError(" ${resp.code}: ${resp.message}")
@@ -191,7 +213,6 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
         updateIsSharing(true)
         updateIsSharingPB(pbID)
         updateShareToEmail("")
-
     }
 
     fun sharePlanningBook_OFF() {
@@ -322,6 +343,20 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
 
         _uiState.update {
             it.copy(planningBookList = pbList)
+        }
+    }
+
+    private fun updateIsToDeletePB(action: Boolean) {
+
+        _uiState.update {
+            it.copy(isToDeletePB = action)
+        }
+    }
+
+    private fun updatePbIDtoDelete(id: String) {
+
+        _uiState.update {
+            it.copy(pbIDtoDelete = id)
         }
     }
 

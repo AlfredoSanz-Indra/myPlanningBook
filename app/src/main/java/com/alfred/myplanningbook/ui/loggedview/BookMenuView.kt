@@ -127,10 +127,10 @@ class BookMenuView {
 
         Text(
             uiState.currentPlanningBook,
-            color = Color.Blue,
+            color = CommonViewComp.c_card_buttonOneContent,
             style = TextStyle(
-                fontSize = 15.sp,
-                color = Color.Red
+                fontSize = 20.sp,
+                background = CommonViewComp.c_snow
             )
         )
     }

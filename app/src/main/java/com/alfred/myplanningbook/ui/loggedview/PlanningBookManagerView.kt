@@ -13,12 +13,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,6 +52,7 @@ import org.koin.androidx.compose.koinViewModel
 class PlanningBookManagerView {
 
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun createView(onBack: () -> Unit) {
 
@@ -56,6 +62,10 @@ class PlanningBookManagerView {
         LaunchedEffect(uiState.currentPlanningBook) {
             viewModel.loadPlanningBooks()
             Klog.line("PlanningBookManagerView", "createView", "currentPlanningBook:  ${uiState.currentPlanningBook}")
+        }
+
+        if(uiState.isToDeletePB) {
+            alertDialogDeletePB()
         }
 
         MaterialTheme(colorScheme = MaterialTheme.colorScheme) {
@@ -135,6 +145,70 @@ class PlanningBookManagerView {
             )
         }
     }
+
+    @ExperimentalMaterial3Api
+    @Composable
+    private fun alertDialogDeletePB() {
+
+        val viewModel: PlanningBookManagerViewModel = koinViewModel()
+
+        BasicAlertDialog(
+            onDismissRequest = {
+               viewModel.isToDeletePlanningBook(false, "")
+            }
+        ) {
+            Surface(
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .wrapContentHeight(),
+                shape = MaterialTheme.shapes.large,
+                tonalElevation = AlertDialogDefaults.TonalElevation
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "You are to delete a Planning Book.  Do you want to continue?",
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Row(
+                        Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        OutlinedButton(modifier = Modifier
+                            .width(110.dp)
+                            .height(35.dp),
+                            colors = CommonViewComp.getPlanningBookCardButtonPrimaryColour(),
+                            onClick = {
+                                Klog.line("PlanningBookManagerView","alertDialogDeletePB","confirm delete button clicked")
+                                viewModel.deletePlanningBook()
+                            }
+                        ) {
+                            Text(
+                                "Confirm",
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                        }//button
+
+                        OutlinedButton(modifier = Modifier
+                            .width(110.dp)
+                            .height(35.dp),
+                            colors = CommonViewComp.getPlanningBookCardButtonSecondaryColour(),
+                            onClick = {
+                                Klog.line("PlanningBookManagerView","alertDialogDeletePB","cancel delete button clicked")
+                                viewModel.isToDeletePlanningBook(false, "")
+                            }
+                        ) {
+                            Text(
+                                "Cancel",
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                        }//button
+                    }
+                }
+            }
+        }
+    }
+
 
     @Composable
     private fun PBHeaderSection(onBack: () -> Unit) {
@@ -458,7 +532,7 @@ class PlanningBookManagerView {
                     colors = CommonViewComp.getPlanningBookCardButtonSecondaryColour(),
                     onClick = {
                         Klog.line("PlanningBookManagerView","pbCardComponentRowButtons","delete PlanningBook button clicked")
-                        viewModel.deletePlanningBook(planningBook.id)
+                        viewModel.isToDeletePlanningBook(true, planningBook.id)
                     }
                 ) {
                     Text(
