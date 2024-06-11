@@ -15,6 +15,7 @@ import com.alfred.myplanningbook.AppRoutes.MAIN_ROUTE
 import com.alfred.myplanningbook.AppRoutes.PLANNINGBOOKMANAGER_ROUTE
 import com.alfred.myplanningbook.AppRoutes.REGISTER_ROUTE
 import com.alfred.myplanningbook.AppRoutes.RESETPWD_ROUTE
+import com.alfred.myplanningbook.AppRoutes.TASKS_ROUTE
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.ui.ViewsStore
 import com.alfred.myplanningbook.ui.view.LoginView
@@ -147,6 +148,17 @@ fun NavigationGraph(
             planningBookManagerView.createView(
                 onBack = {
                     Klog.line("NavigationController", "NavigationGraph", "navHost planningBookManager go back!")
+                    navController.popBackStack()
+                })
+        }
+
+        composable(TASKS_ROUTE,
+            arguments = listOf()
+        ) {
+            val tasksManagerViewModel = ViewsStore.getTasksManagerView()
+            tasksManagerViewModel.createView(
+                onBack = {
+                    Klog.line("NavigationController", "NavigationGraph", "navHost tasksManager go back!")
                     navController.popBackStack()
                 })
         }

@@ -178,6 +178,13 @@ class BookMenuView {
         ) {
             Text("Tasks")
         }
+
+        LaunchedEffect(uiState.isToTasksManager) {
+            if(uiState.isToTasksManager) {
+                viewModel.clearFields()
+                onTasks()
+            }
+        }
     }
 
     @Composable

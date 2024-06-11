@@ -99,7 +99,7 @@ class PlanningBookManagerView {
     @Composable
     private fun errorGeneralField() {
 
-        val viewModel: BookMenuViewModel = koinViewModel()
+        val viewModel: PlanningBookManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
         if(uiState.generalError) {
@@ -220,12 +220,12 @@ class PlanningBookManagerView {
             pbCreationSection()
         }
         else {
-            pbCreationActions(onBack)
+            pbMainControlsSection(onBack)
         }
     }
 
     @Composable
-    private fun pbCreationActions(onBack: () -> Unit) {
+    private fun pbMainControlsSection(onBack: () -> Unit) {
 
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
 

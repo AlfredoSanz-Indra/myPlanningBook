@@ -24,6 +24,7 @@ data class BookMenuUiState(
     var isStateLoaded: Boolean = false,
     var isToLogout: Boolean = false,
     var isToPlanningBookManager: Boolean = false,
+    var isToTasksManager: Boolean = false,
     var isToBack: Boolean = false,
     var showBack: Boolean = false
 )
@@ -96,11 +97,11 @@ class BookMenuViewModel(private val usersService: UsersService,
                 Klog.linedbg("BookMenuViewModel", "logoutUser", "resp: $resp")
 
                 if (resp != null) {
-                    if (resp!!.result) {
+                    if (resp.result) {
                         updateIsToLogout(true)
                     }
                     else {
-                        setGeneralError(" ${resp!!.code}: ${resp!!.message}")
+                        setGeneralError(" ${resp.code}: ${resp.message}")
                     }
                 }
                 else {
@@ -117,6 +118,7 @@ class BookMenuViewModel(private val usersService: UsersService,
 
     fun tasksView() {
 
+        updateIsToTasksManager(true)
     }
 
     fun planningbookView() {
@@ -154,6 +156,12 @@ class BookMenuViewModel(private val usersService: UsersService,
     private fun updateIsToPlanningBookManager(action: Boolean) {
         _uiState.update {
             it.copy(isToPlanningBookManager = action)
+        }
+    }
+
+    private fun updateIsToTasksManager(action: Boolean) {
+        _uiState.update {
+            it.copy(isToTasksManager = action)
         }
     }
 
@@ -201,6 +209,10 @@ class BookMenuViewModel(private val usersService: UsersService,
 
         _uiState.update {
             it.copy(isToPlanningBookManager = false)
+        }
+
+        _uiState.update {
+            it.copy(isToTasksManager = false)
         }
 
         _uiState.update {

@@ -13,7 +13,7 @@ import org.koin.core.context.GlobalContext.startKoin
 /**
  * @author Alfredo Sanz
  * @time 2023
- * @version 1.2.11
+ * @version 1.3.0
  */
 class MyPlanningBookApp  : Application() {
 
@@ -24,7 +24,7 @@ class MyPlanningBookApp  : Application() {
             initApp()
         }
         catch(e: Exception){
-            println("*** Error initializating ${e.localizedMessage}")
+            println("*** Error  initializating ${e.localizedMessage}")
             throw e
         }
 
