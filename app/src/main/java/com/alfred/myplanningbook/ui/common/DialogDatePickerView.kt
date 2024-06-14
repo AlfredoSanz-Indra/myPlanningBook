@@ -9,7 +9,6 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.ui.common.viewmodel.DialogDatePickerViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -25,11 +24,9 @@ class DialogDatePickerView(onClose: () -> Unit,
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun openView(inititalDate: Long) {
+    fun openView(initialDate: Long) {
         val viewModel: DialogDatePickerViewModel = koinViewModel()
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-        viewModel.onStart(inititalDate)
+        viewModel.onStart(initialDate)
 
         calendarSection()
     }

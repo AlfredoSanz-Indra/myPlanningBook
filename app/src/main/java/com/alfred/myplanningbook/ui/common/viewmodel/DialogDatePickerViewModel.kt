@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.update
  */
 data class DialogDatePickerUiState(
     val date: Long? = 0,
-    val isPickerVisible: Boolean = false,
 )
 
 class DialogDatePickerViewModel(): ViewModel() {
@@ -22,24 +21,15 @@ class DialogDatePickerViewModel(): ViewModel() {
 
     fun onStart(initialDate: Long) {
         updateDate(initialDate)
-        updateIsPickerVisible(true)
     }
 
     fun onClosing() {
         Klog.line("DialogDatePickerViewModel", "onClosing", "onClosing")
-        updateIsPickerVisible(false)
     }
 
     fun onConfirmationClick(date: Long?) {
         Klog.line("DialogDatePickerViewModel", "onConfirmationClick", "date")
         updateDate(date)
-        updateIsPickerVisible(false)
-    }
-
-    private fun updateIsPickerVisible(makeVisible: Boolean) {
-        _uiState.update {
-            it.copy(isPickerVisible = makeVisible)
-        }
     }
 
     private fun updateDate(theDate: Long?) {

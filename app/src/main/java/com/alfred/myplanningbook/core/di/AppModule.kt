@@ -22,6 +22,7 @@ import com.alfred.myplanningbook.ui.view.viewmodel.MainViewModel
 import com.alfred.myplanningbook.ui.view.viewmodel.RegisterViewModel
 import com.alfred.myplanningbook.ui.view.viewmodel.ResetPwdViewModel
 import com.alfred.myplanningbook.ui.common.viewmodel.DialogDatePickerViewModel
+import com.alfred.myplanningbook.ui.common.viewmodel.DialogTimePickerViewModel
 import kotlinx.coroutines.Dispatchers
 import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.core.qualifier.named
@@ -70,4 +71,5 @@ val appModule = module {
     viewModelOf(::PlanningBookManagerViewModel)
     viewModelOf(::TasksManagerViewModel)
     viewModelOf(::DialogDatePickerViewModel)
+    viewModelOf(::DialogTimePickerViewModel)
 }

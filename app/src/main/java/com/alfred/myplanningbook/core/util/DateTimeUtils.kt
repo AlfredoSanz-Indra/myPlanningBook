@@ -1,8 +1,11 @@
 package com.alfred.myplanningbook.core.util
 
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+
 
 /**
  * @author Alfredo Sanz
@@ -37,5 +40,24 @@ object DateTimeUtils {
 
     fun currentDateFormatted(): String {
         return Instant.now().asShortString()
+    }
+
+    fun currentHour(): Int {
+        val instant = Instant.now()
+        val ldt = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+
+        return ldt.hour
+    }
+
+    fun currentTimeFormatted(): String {
+        val instant = Instant.now()
+        val ldt = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+        val result = ldt.hour.toString() + ":" + "00"
+
+        return result
+    }
+
+    fun formatTime(hour: Int, min: Int): String {
+        return "$hour:$min"
     }
 }
