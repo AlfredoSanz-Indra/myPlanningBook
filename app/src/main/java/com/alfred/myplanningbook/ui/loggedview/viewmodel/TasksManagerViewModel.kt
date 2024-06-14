@@ -3,6 +3,9 @@ package com.alfred.myplanningbook.ui.loggedview.viewmodel
 import androidx.lifecycle.ViewModel
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.core.util.DateTimeUtils
+import com.alfred.myplanningbook.core.validators.ChainTextValidator
+import com.alfred.myplanningbook.core.validators.TextValidatorLength
+import com.alfred.myplanningbook.core.validators.ValidatorResult
 import com.alfred.myplanningbook.domain.AppState
 import com.alfred.myplanningbook.domain.usecaseapi.OwnerService
 import com.alfred.myplanningbook.domain.usecaseapi.PlanningBookService
@@ -32,6 +35,12 @@ data class TaskManagerUiState(
     var taskDateError: Boolean = false,
     var taskDateErrorTxt: String = "",
     var openCalendarDialog: Boolean = false,
+    var taskHour: Int = 0,
+    var taskMinute: Int = 0,
+    var taskTimeFormatted: String = "",
+    var taskTimeError: Boolean = false,
+    var taskTimeErrorTxt: String = "",
+    var openTimeDialog: Boolean = false,
 )
 
 class TasksManagerViewModel(private val planningBookService: PlanningBookService,
@@ -57,7 +66,9 @@ class TasksManagerViewModel(private val planningBookService: PlanningBookService
 
     fun showTaskCreationSection(action: Boolean) {
         clearErrors()
+        clearState()
         updateTaskDate(DateTimeUtils.currentDate(), DateTimeUtils.currentDateFormatted())
+        updateTaskTime(DateTimeUtils.currentHour(), 0, DateTimeUtils.currentTimeFormatted())
         updateIsToCreateTask(action)
     }
 
@@ -66,20 +77,63 @@ class TasksManagerViewModel(private val planningBookService: PlanningBookService
     }
 
     fun closeCalendarDi() {
-        Klog.line("TasksManagerViewModel", "closeCalendarDi", "closeCalendarDi")
         updateOpenCalendarDialog(false)
     }
 
     fun onDateSelected(dateInMill: Long) {
-        Klog.line("TasksManagerViewModel", "onDateSelected", "dateInMill: ${dateInMill}")
-
         val dateFormatted = DateTimeUtils.formatDate(dateInMill)
         updateTaskDate(dateInMill, dateFormatted)
         updateOpenCalendarDialog(false)
     }
 
-    fun createTask() {
+    fun openTimeDi() {
+        updateOpenTimeDialog(true)
+    }
 
+    fun closeTimeDi() {
+        updateOpenTimeDialog(false)
+    }
+
+    fun onTimeSelected(hour: Int, min: Int) {
+        val timeFormatted = DateTimeUtils.formatTime(hour, min)
+        updateTaskTime(hour, min, timeFormatted)
+        updateOpenTimeDialog(false)
+    }
+
+    fun createTask() {
+        Klog.line("TasksManagerViewModel", "createTask", "-")
+
+        if(!validateFields()) {
+            Klog.linedbg("TasksManagerViewModel", "createTask", "Validation was unsuccessfull")
+            return
+        }
+
+        Klog.linedbg("TasksManagerViewModel", "createTask", "Validation OOKK")
+    }
+
+    private fun validateFields(): Boolean {
+
+        val chainTxtValName = ChainTextValidator(
+            TextValidatorLength(5, 30)
+        )
+        val chainTxtValDesc = ChainTextValidator(
+            TextValidatorLength(5, 100)
+        )
+
+        val valResultName = chainTxtValName.validate(uiState.value.taskName.trim())
+        val valResultDesc = chainTxtValDesc.validate(uiState.value.taskDesc.trim())
+
+        var result = true
+        if(valResultName is ValidatorResult.Error) {
+            updateTaskNameError(valResultName.message)
+            result = false
+        }
+        if(valResultDesc is ValidatorResult.Error) {
+            updateTaskDescError(valResultDesc.message)
+            result = false
+        }
+
+        return result
     }
 
 
@@ -106,6 +160,12 @@ class TasksManagerViewModel(private val planningBookService: PlanningBookService
             it.copy(openCalendarDialog = action)
         }
     }
+    private fun updateOpenTimeDialog(action: Boolean) {
+        _uiState.update {
+            it.copy(openTimeDialog = action)
+        }
+    }
+
 
     fun updateTaskName(txt: String) {
         Klog.line("TasksManagerViewModel", "updateTaskName", "txt size: ${txt.length}")
@@ -161,8 +221,56 @@ class TasksManagerViewModel(private val planningBookService: PlanningBookService
         }
 
         _uiState.update {
-            it.copy(taskDateError = false)
+            it.copy(taskDateError = true)
         }
+    }
+
+    private fun updateTaskTime(hour: Int, min: Int, timeFormatted: String) {
+        _uiState.update {
+            it.copy(taskHour = hour)
+        }
+
+        _uiState.update {
+            it.copy(taskMinute = min)
+        }
+
+        _uiState.update {
+            it.copy(taskTimeFormatted = timeFormatted)
+        }
+    }
+
+    private fun updateTaskHour(hour: Int) {
+        _uiState.update {
+            it.copy(taskHour = hour)
+        }
+    }
+
+    private fun updateTaskMinute(minute: Int) {
+        _uiState.update {
+            it.copy(taskMinute = minute)
+        }
+    }
+
+    private fun updateTaskTimeFormatted(timeFormatted: String) {
+        _uiState.update {
+            it.copy(taskTimeFormatted = timeFormatted)
+        }
+    }
+
+
+    private fun updateTaskTimeError(txt: String) {
+        _uiState.update {
+            it.copy(taskTimeErrorTxt = txt)
+        }
+
+        _uiState.update {
+            it.copy(taskTimeError = true)
+        }
+    }
+
+    private fun clearState() {
+        updateTaskName("")
+        updateTaskDesc("")
     }
 
     private fun clearErrors() {
@@ -189,6 +297,12 @@ class TasksManagerViewModel(private val planningBookService: PlanningBookService
         }
         _uiState.update {
             it.copy(taskDateErrorTxt = "")
+        }
+        _uiState.update {
+            it.copy(taskTimeError = false)
+        }
+        _uiState.update {
+            it.copy(taskTimeErrorTxt = "")
         }
     }
 }

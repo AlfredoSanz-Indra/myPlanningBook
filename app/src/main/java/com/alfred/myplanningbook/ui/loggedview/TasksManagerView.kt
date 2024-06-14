@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,6 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.common.DialogDatePickerView
+import com.alfred.myplanningbook.ui.common.DialogTimePickerView
 import com.alfred.myplanningbook.ui.loggedview.viewmodel.TaskManagerUiState
 import com.alfred.myplanningbook.ui.loggedview.viewmodel.TasksManagerViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -197,10 +199,10 @@ class TasksManagerView {
                     .height(70.dp),
                     colors = CommonViewComp.getActionsButtonColour(),
                     onClick = {
-                        Klog.line("TasksManagerView","taskCreationActions", "create Task button clicked")
+                        Klog.line("TasksManagerView","taskCreationActions", "Save Task button clicked")
                         viewModel.createTask();
                     }) {
-                    Text("Create")
+                    Text("Save")
                 }
 
                 OutlinedButton(modifier = Modifier
@@ -224,6 +226,7 @@ class TasksManagerView {
             taskCreationComponents_taskName()
             taskCreationComponents_taskDesc()
             taskCreationComponents_Datepicker()
+            taskCreationComponents_Timepicker()
         }
     }
     @OptIn(ExperimentalMaterial3Api::class)
@@ -283,7 +286,7 @@ class TasksManagerView {
                         .fillMaxSize(0.8f)
                         .padding(10.dp)
                         .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(8.dp)),
-                    placeholder = { Text("Enter Task Description (0-100)") },
+                    placeholder = { Text("Enter Task Description (5-100)") },
                     singleLine = false,
                     maxLines = 3
                 )
@@ -306,7 +309,7 @@ class TasksManagerView {
         val viewModel: TasksManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-        var ddpv = DialogDatePickerView(
+        var dialogPicker = DialogDatePickerView(
             onClose = {
                 viewModel.closeCalendarDi()
             },
@@ -356,7 +359,67 @@ class TasksManagerView {
         }
 
         if(uiState.openCalendarDialog) {
-            ddpv.openView(uiState.taskDate)
+            dialogPicker.openView(uiState.taskDate)
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    private fun taskCreationComponents_Timepicker() {
+        val viewModel: TasksManagerViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+        var dialogPicker = DialogTimePickerView(
+            onClose = {
+                viewModel.closeTimeDi()
+            },
+            onTimeSelected = { hour: Int, min: Int ->
+                viewModel.onTimeSelected(hour, min)
+            }
+        )
+
+        Row {
+            Column(
+                Modifier.background(color = MaterialTheme.colorScheme.surface)
+                    .fillMaxWidth(),
+                Arrangement.Top,
+                Alignment.CenterHorizontally
+            ) {
+                Text("Task time")
+
+                OutlinedTextField(
+                    modifier = Modifier
+                        .height(80.dp)
+                        .fillMaxSize(0.8f)
+                        .padding(10.dp),
+                    value = uiState.taskTimeFormatted,
+                    onValueChange = {},
+                    readOnly = true,
+                    leadingIcon = {
+                        IconButton(
+                            onClick = {
+                                viewModel.openTimeDi()
+                            }
+                        ) {
+                            Icon(imageVector = Icons.Filled.Schedule, contentDescription = null)
+                        }
+                    }
+                )
+
+                if(uiState.taskTimeError) {
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        uiState.taskTimeErrorTxt, color = Color.Red, style = TextStyle(
+                            fontSize = 15.sp, color = Color.Red
+                        )
+                    )
+                }
+            }
+        }
+
+        if(uiState.openTimeDialog) {
+            dialogPicker.openView(uiState.taskHour, uiState.taskMinute)
         }
     }
 }
