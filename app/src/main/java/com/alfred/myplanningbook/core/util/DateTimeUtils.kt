@@ -21,6 +21,18 @@ object DateTimeUtils {
         return format("dd/MM/yyyy")
     }
 
+    private fun Instant.asYearNumber(): Int {
+        return format("yyyy").toInt()
+    }
+
+    private fun Instant.asMonthNumber(): Int {
+        return format("MM").toInt()
+    }
+
+    private fun Instant.asDayNumber(): Int {
+        return format("dd").toInt()
+    }
+
     private fun Instant.asMonthAndDayString(): String {
         return format("MMM dd").replaceFirstChar { it.titlecase() }
     }
@@ -33,6 +45,18 @@ object DateTimeUtils {
     }
 
     private fun Long?.asInstant(): Instant? = this?.let { Instant.ofEpochMilli(it) }
+
+    fun dateToYear(date: Long): Int {
+        return date?.asInstant()?.asYearNumber() ?: 1900
+    }
+
+    fun dateToMonth(date: Long): Int {
+        return date?.asInstant()?.asMonthNumber() ?: 1
+    }
+
+    fun dateToDay(date: Long): Int {
+        return date?.asInstant()?.asDayNumber() ?: 1
+    }
 
     fun currentDate(): Long {
         return Instant.now().toEpochMilli()

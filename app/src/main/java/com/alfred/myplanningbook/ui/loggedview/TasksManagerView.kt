@@ -157,7 +157,6 @@ class TasksManagerView {
                 .height(70.dp),
                 colors = CommonViewComp.getActionsButtonColour(),
                 onClick = {
-                    Klog.line("TasksManagerView","tasksMainControlsSection","show create Task button clicked")
                     viewModel.showTaskCreationSection(true);
                 }
             ) {
@@ -169,7 +168,6 @@ class TasksManagerView {
                 .height(70.dp),
                 colors = CommonViewComp.getSecondaryButtonColour(),
                 onClick = {
-                    Klog.line("TasksManagerView", "tasksMainControlsSection", "back Button clicked")
                     onBack()
                 }
             ) {
@@ -199,7 +197,6 @@ class TasksManagerView {
                     .height(70.dp),
                     colors = CommonViewComp.getActionsButtonColour(),
                     onClick = {
-                        Klog.line("TasksManagerView","taskCreationActions", "Save Task button clicked")
                         viewModel.createTask();
                     }) {
                     Text("Save")
@@ -210,7 +207,6 @@ class TasksManagerView {
                     .height(70.dp),
                     colors = CommonViewComp.getSecondaryButtonColour(),
                     onClick = {
-                        Klog.line("TasksManagerView","taskCreationActions","cancel create Task button clicked")
                         viewModel.showTaskCreationSection(false);
                     }) {
                     Text("Cancel")

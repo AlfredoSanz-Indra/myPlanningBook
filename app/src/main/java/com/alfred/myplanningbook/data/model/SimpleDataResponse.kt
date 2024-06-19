@@ -2,6 +2,7 @@ package com.alfred.myplanningbook.data.model
 
 import com.alfred.myplanningbook.domain.model.Owner
 import com.alfred.myplanningbook.domain.model.PlanningBook
+import com.alfred.myplanningbook.domain.model.TaskBook
 
 /**
  * @author Alfredo Sanz
@@ -14,4 +15,5 @@ data class SimpleDataResponse(val result: Boolean,
     var planningBook: PlanningBook? = null
     var owner: Owner? = null
     var ownerList: MutableList<Owner>? = null
+    var task: TaskBook? = null
 }
