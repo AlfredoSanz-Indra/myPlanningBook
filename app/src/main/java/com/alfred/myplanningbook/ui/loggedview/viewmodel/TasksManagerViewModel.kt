@@ -43,6 +43,8 @@ data class TaskManagerUiState(
     var taskTimeError: Boolean = false,
     var taskTimeErrorTxt: String = "",
     var openTimeDialog: Boolean = false,
+    var tasksBook: MutableList<TaskBook> = mutableListOf(),
+    var isTaskBookListLoaded: Boolean = false
 )
 
 class TasksManagerViewModel(private val taskService: TaskService,
@@ -54,12 +56,27 @@ class TasksManagerViewModel(private val taskService: TaskService,
     val taskDesc_maxLength = 100
 
     fun loadTasks() {
-
         clearErrors();
 
         if(AppState.activePlanningBook == null) {
             updateCurrentPlanningBook("You don't have any planning book yet")
             return
+        }
+
+        Klog.line("TasksManagerViewModel", "loadTasks", "${AppState.activePlanningBook!!.id}")
+        updateCurrentPlanningBook(AppState.activePlanningBook!!.id)
+
+        viewModelScope.launch {
+            val resp = taskService.getTaskList(AppState.activePlanningBook!!.id,)
+            if(resp.result) {
+                clearErrors()
+                clearState()
+                updateIsToCreateTask(false)
+                updateIsTaskBookListLodaded(true)
+            }
+            else {
+                setGeneralError(" ${resp.code}: ${resp.message}")
+            }
         }
 
         updateViewTasks()
@@ -133,6 +150,7 @@ class TasksManagerViewModel(private val taskService: TaskService,
                 clearErrors()
                 clearState()
                 updateIsToCreateTask(false)
+                updateIsTaskBookListLodaded(false)
             }
             else {
                 setGeneralError(" ${resp.code}: ${resp.message}")
@@ -286,7 +304,6 @@ class TasksManagerViewModel(private val taskService: TaskService,
         }
     }
 
-
     private fun updateTaskTimeError(txt: String) {
         _uiState.update {
             it.copy(taskTimeErrorTxt = txt)
@@ -294,6 +311,12 @@ class TasksManagerViewModel(private val taskService: TaskService,
 
         _uiState.update {
             it.copy(taskTimeError = true)
+        }
+    }
+
+    private fun updateIsTaskBookListLodaded(action: Boolean) {
+        _uiState.update {
+            it.copy(isTaskBookListLoaded = action)
         }
     }
 

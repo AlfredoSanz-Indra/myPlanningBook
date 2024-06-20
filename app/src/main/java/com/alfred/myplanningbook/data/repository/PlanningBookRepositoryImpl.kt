@@ -77,8 +77,7 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
 
         withContext(ioDispatcher) {
             val defer = async(ioDispatcher) {
-                val task: Task<DocumentSnapshot> = FirebaseSession.db
-                    .collection(Collections.PLANNINGBOOK)
+                val task: Task<DocumentSnapshot> = FirebaseSession.db.collection(Collections.PLANNINGBOOK)
                     .document(idPlanningBook)
                     .get()
                     .addOnSuccessListener {}
@@ -128,8 +127,7 @@ class PlanningBookRepositoryImpl(private val ioDispatcher: CoroutineDispatcher):
 
         withContext(ioDispatcher) {
             val defer = async(ioDispatcher) {
-                val task: Task<Void> = FirebaseSession.db
-                    .collection(Collections.PLANNINGBOOK)
+                val task: Task<Void> = FirebaseSession.db.collection(Collections.PLANNINGBOOK)
                     .document(id)
                     .delete()
                     .addOnSuccessListener {}

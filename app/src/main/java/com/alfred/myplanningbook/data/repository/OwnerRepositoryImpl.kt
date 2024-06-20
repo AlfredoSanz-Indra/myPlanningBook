@@ -23,7 +23,7 @@ class OwnerRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): OwnerR
     override suspend fun getOwner(email: String): SimpleDataResponse {
 
         var result = SimpleDataResponse(false, 404, "not found")
-        Klog.line("PlanningBookRepositoryImpl", "getOwner", "email: $email")
+        Klog.line("OwnerRepositoryImpl", "getOwner", "email: $email")
 
         withContext(ioDispatcher) {
             val defer = async(ioDispatcher) {
@@ -37,7 +37,7 @@ class OwnerRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): OwnerR
 
                 var taskResp: SimpleDataResponse
                 if(task.isSuccessful) {
-                    Klog.line("PlanningBookRepositoryImpl", "getOwner", "task is successful")
+                    Klog.line("OwnerRepositoryImpl", "getOwner", "task is successful")
                     var ownerFound: Owner? = null
                     for (document in task.result.documents) {
                         ownerFound = Owner(
@@ -61,8 +61,8 @@ class OwnerRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): OwnerR
                     }
                 }
                 else {
-                    Klog.line("PlanningBookRepositoryImpl", "getOwner", "error cause: ${task.exception?.cause}")
-                    Klog.line("PlanningBookRepositoryImpl", "getOwner", "error message: ${task.exception?.message}")
+                    Klog.line("OwnerRepositoryImpl", "getOwner", "error cause: ${task.exception?.cause}")
+                    Klog.line("OwnerRepositoryImpl", "getOwner", "error message: ${task.exception?.message}")
 
                     taskResp = SimpleDataResponse(false, 400, "Find owner failed.")
                 }
@@ -73,14 +73,14 @@ class OwnerRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): OwnerR
             result = defer.await()
         } //scope
 
-        Klog.line("PlanningBookRepositoryImpl", "getOwner", "result: $result")
+        Klog.line("OwnerRepositoryImpl", "getOwner", "result: $result")
         return result
     }
 
     override suspend fun listOwnersByContainPB(pbId: String): SimpleDataResponse {
 
         var result = SimpleDataResponse(false, 404, "not found")
-        Klog.line("PlanningBookRepositoryImpl", "listOwnersByContainPB", "Listing owners containing this planningBook: pbId $pbId")
+        Klog.line("OwnerRepositoryImpl", "listOwnersByContainPB", "Listing owners containing this planningBook: pbId $pbId")
 
         withContext(ioDispatcher) {
             val defer = async(ioDispatcher) {
@@ -93,7 +93,7 @@ class OwnerRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): OwnerR
 
                 var taskResp: SimpleDataResponse
                 if(task.isSuccessful) {
-                    Klog.line("PlanningBookRepositoryImpl", "listOwnersByContainPB", "task is successful")
+                    Klog.line("OwnerRepositoryImpl", "listOwnersByContainPB", "task is successful")
                     var ownerList: MutableList<Owner> = mutableListOf()
                     for (document in task.result.documents) {
                         var ownerFound: Owner = Owner(
@@ -115,8 +115,8 @@ class OwnerRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): OwnerR
                     taskResp.ownerList = ownerList
                 }
                 else {
-                    Klog.line("PlanningBookRepositoryImpl", "listOwnersByContainPB", "error cause: ${task.exception?.cause}")
-                    Klog.line("PlanningBookRepositoryImpl", "listOwnersByContainPB", "error message: ${task.exception?.message}")
+                    Klog.line("OwnerRepositoryImpl", "listOwnersByContainPB", "error cause: ${task.exception?.cause}")
+                    Klog.line("OwnerRepositoryImpl", "listOwnersByContainPB", "error message: ${task.exception?.message}")
 
                     taskResp = SimpleDataResponse(false, 400, "Listing owner failed.")
                 }
@@ -127,7 +127,7 @@ class OwnerRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): OwnerR
             result = defer.await()
         } //scope
 
-        Klog.line("PlanningBookRepositoryImpl", "listOwnersByContainPB", "result: $result")
+        Klog.line("OwnerRepositoryImpl", "listOwnersByContainPB", "result: $result")
         return result
     }
 
@@ -140,7 +140,7 @@ class OwnerRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): OwnerR
     override suspend fun createOwner(email: String, name: String): SimpleDataResponse {
 
         var result = SimpleDataResponse(false, 404, "not created")
-        Klog.line("PlanningBookRepositoryImpl", "createOwner", "email: $email")
+        Klog.line("OwnerRepositoryImpl", "createOwner", "email: $email")
 
         val owner = hashMapOf(
             Documents.OWNER_EMAIL to email,
@@ -157,13 +157,13 @@ class OwnerRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): OwnerR
 
                 var taskResp: SimpleDataResponse
                 if(task.isSuccessful) {
-                    Klog.line("PlanningBookRepositoryImpl", "createOwner", "task is successful")
+                    Klog.line("OwnerRepositoryImpl", "createOwner", "task is successful")
                     taskResp = SimpleDataResponse(true, 200, "Owner created - ${task.result.id}")
                     taskResp.owner = Owner(task.result.id, name, email, null, null)
                 }
                 else {
-                    Klog.line("PlanningBookRepositoryImpl", "createOwner", "error cause: ${task.exception?.cause}")
-                    Klog.line("PlanningBookRepositoryImpl", "createOwner", "error message: ${task.exception?.message}")
+                    Klog.line("OwnerRepositoryImpl", "createOwner", "error cause: ${task.exception?.cause}")
+                    Klog.line("OwnerRepositoryImpl", "createOwner", "error message: ${task.exception?.message}")
 
                     taskResp = SimpleDataResponse(false, 400, "Creating owner failed.")
                 }
@@ -174,7 +174,7 @@ class OwnerRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): OwnerR
             result = defer.await()
         }//scope
 
-        Klog.linedbg("PlanningBookRepositoryImpl", "createOwner", "result: $result")
+        Klog.linedbg("OwnerRepositoryImpl", "createOwner", "result: $result")
         return result
     }
 
@@ -184,7 +184,7 @@ class OwnerRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): OwnerR
     override suspend fun updateOwnerPlanningBooks(ownerid: String, pblist: MutableList<String>): SimpleDataResponse {
 
         var result = SimpleDataResponse(false, 404, "not updated")
-        Klog.line("PlanningBookRepositoryImpl", "updateOwnerPlanningBooks", "ownerid: $ownerid")
+        Klog.line("OwnerRepositoryImpl", "updateOwnerPlanningBooks", "ownerid: $ownerid")
 
         withContext(ioDispatcher) {
             val defer = async(ioDispatcher) {
@@ -196,12 +196,12 @@ class OwnerRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): OwnerR
 
                 var taskResp: SimpleDataResponse
                 if(task.isSuccessful) {
-                    Klog.line("PlanningBookRepositoryImpl", "updateOwnerPlanningBooks", "task is successful")
+                    Klog.line("OwnerRepositoryImpl", "updateOwnerPlanningBooks", "task is successful")
                     taskResp = SimpleDataResponse(true, 200, "Owner PlanningBooks updated")
                 }
                 else {
-                    Klog.line("PlanningBookRepositoryImpl", "updateOwnerPlanningBooks", "error cause: ${task.exception?.cause}")
-                    Klog.line("PlanningBookRepositoryImpl", "updateOwnerPlanningBooks", "error message: ${task.exception?.message}")
+                    Klog.line("OwnerRepositoryImpl", "updateOwnerPlanningBooks", "error cause: ${task.exception?.cause}")
+                    Klog.line("OwnerRepositoryImpl", "updateOwnerPlanningBooks", "error message: ${task.exception?.message}")
 
                     taskResp = SimpleDataResponse(false, 400, "Updating owner PlanningBooks failed.")
                 }
@@ -212,7 +212,7 @@ class OwnerRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): OwnerR
             result = defer.await()
         }//scope
 
-        Klog.line("PlanningBookRepositoryImpl", "updateOwnerPlanningBooks", "result: $result")
+        Klog.line("OwnerRepositoryImpl", "updateOwnerPlanningBooks", "result: $result")
         return result
     }
 
@@ -222,7 +222,7 @@ class OwnerRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): OwnerR
     override suspend fun updateOwnerActivePlanningBook(ownerid: String, planningbookID: String): SimpleDataResponse {
 
         var result = SimpleDataResponse(false, 404, "not updated")
-        Klog.line("PlanningBookRepositoryImpl", "updateOwnerActivePlanningBook", "ownerid: $ownerid")
+        Klog.line("OwnerRepositoryImpl", "updateOwnerActivePlanningBook", "ownerid: $ownerid")
 
         withContext(ioDispatcher) {
             val defer = async(ioDispatcher) {
@@ -234,12 +234,12 @@ class OwnerRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): OwnerR
 
                 var taskResp: SimpleDataResponse
                 if(task.isSuccessful) {
-                    Klog.line("PlanningBookRepositoryImpl", "updateOwnerActivePlanningBook", "task is successful")
+                    Klog.line("OwnerRepositoryImpl", "updateOwnerActivePlanningBook", "task is successful")
                     taskResp = SimpleDataResponse(true, 200, "Owner activePlanningBook updated")
                 }
                 else {
-                    Klog.line("PlanningBookRepositoryImpl", "updateOwnerActivePlanningBook", "error cause: ${task.exception?.cause}")
-                    Klog.line("PlanningBookRepositoryImpl", "updateOwnerActivePlanningBook", "error message: ${task.exception?.message}")
+                    Klog.line("OwnerRepositoryImpl", "updateOwnerActivePlanningBook", "error cause: ${task.exception?.cause}")
+                    Klog.line("OwnerRepositoryImpl", "updateOwnerActivePlanningBook", "error message: ${task.exception?.message}")
 
                     taskResp = SimpleDataResponse(false, 400, "Updating owner activePlanningBooks failed.")
                 }
@@ -250,7 +250,7 @@ class OwnerRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): OwnerR
             result = defer.await()
         }//scope
 
-        Klog.line("PlanningBookRepositoryImpl", "updateOwnerActivePlanningBook", "result: $result")
+        Klog.line("OwnerRepositoryImpl", "updateOwnerActivePlanningBook", "result: $result")
         return result
     }
 }

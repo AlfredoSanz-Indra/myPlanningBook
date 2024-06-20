@@ -16,4 +16,5 @@ data class SimpleDataResponse(val result: Boolean,
     var owner: Owner? = null
     var ownerList: MutableList<Owner>? = null
     var task: TaskBook? = null
+    var taskBookList: MutableList<TaskBook>? = null
 }

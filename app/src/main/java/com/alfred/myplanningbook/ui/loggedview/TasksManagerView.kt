@@ -33,7 +33,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.common.DialogDatePickerView
 import com.alfred.myplanningbook.ui.common.DialogTimePickerView
@@ -52,9 +51,10 @@ class TasksManagerView {
         val viewModel: TasksManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-        LaunchedEffect(uiState.currentPlanningBook) {
-            viewModel.loadTasks()
-            Klog.line("TasksManagerView", "createView", "currentPlanningBook:  ${uiState.currentPlanningBook}")
+        LaunchedEffect(uiState.isTaskBookListLoaded) {
+            if(!uiState.isTaskBookListLoaded) {
+                viewModel.loadTasks()
+            }
         }
 
         MaterialTheme(colorScheme = MaterialTheme.colorScheme) {

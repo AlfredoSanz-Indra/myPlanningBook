@@ -13,7 +13,7 @@ import org.koin.core.context.GlobalContext.startKoin
 /**
  * @author Alfredo Sanz
  * @time 2023
- * @version 1.3.2
+ * @version 1.3.3
  */
 class MyPlanningBookApp  : Application() {
 

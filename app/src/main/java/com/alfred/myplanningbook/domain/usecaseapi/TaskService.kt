@@ -10,4 +10,6 @@ import com.alfred.myplanningbook.domain.model.TaskBook
 interface TaskService {
 
     suspend fun createTask(task: TaskBook): SimpleResponse
+
+    suspend fun getTaskList(planningBookId: String): SimpleResponse
 }
