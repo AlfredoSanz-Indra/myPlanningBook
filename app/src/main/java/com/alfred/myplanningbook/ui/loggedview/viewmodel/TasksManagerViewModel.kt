@@ -1,19 +1,21 @@
 package com.alfred.myplanningbook.ui.loggedview.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.core.util.DateTimeUtils
 import com.alfred.myplanningbook.core.validators.ChainTextValidator
 import com.alfred.myplanningbook.core.validators.TextValidatorLength
 import com.alfred.myplanningbook.core.validators.ValidatorResult
 import com.alfred.myplanningbook.domain.AppState
-import com.alfred.myplanningbook.domain.usecaseapi.OwnerService
-import com.alfred.myplanningbook.domain.usecaseapi.PlanningBookService
+import com.alfred.myplanningbook.domain.model.TaskBook
 import com.alfred.myplanningbook.domain.usecaseapi.StateService
+import com.alfred.myplanningbook.domain.usecaseapi.TaskService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 /**
  * @author Alfredo Sanz
@@ -41,10 +43,11 @@ data class TaskManagerUiState(
     var taskTimeError: Boolean = false,
     var taskTimeErrorTxt: String = "",
     var openTimeDialog: Boolean = false,
+    var tasksBook: MutableList<TaskBook> = mutableListOf(),
+    var isTaskBookListLoaded: Boolean = false
 )
 
-class TasksManagerViewModel(private val planningBookService: PlanningBookService,
-                            private val ownerService: OwnerService,
+class TasksManagerViewModel(private val taskService: TaskService,
                             private val stateService: StateService): ViewModel() {
 
     private val _uiState = MutableStateFlow(TaskManagerUiState())
@@ -53,12 +56,27 @@ class TasksManagerViewModel(private val planningBookService: PlanningBookService
     val taskDesc_maxLength = 100
 
     fun loadTasks() {
-
         clearErrors();
 
         if(AppState.activePlanningBook == null) {
             updateCurrentPlanningBook("You don't have any planning book yet")
             return
+        }
+
+        Klog.line("TasksManagerViewModel", "loadTasks", "${AppState.activePlanningBook!!.id}")
+        updateCurrentPlanningBook(AppState.activePlanningBook!!.id)
+
+        viewModelScope.launch {
+            val resp = taskService.getTaskList(AppState.activePlanningBook!!.id,)
+            if(resp.result) {
+                clearErrors()
+                clearState()
+                updateIsToCreateTask(false)
+                updateIsTaskBookListLodaded(true)
+            }
+            else {
+                setGeneralError(" ${resp.code}: ${resp.message}")
+            }
         }
 
         updateViewTasks()
@@ -106,6 +124,37 @@ class TasksManagerViewModel(private val planningBookService: PlanningBookService
         if(!validateFields()) {
             Klog.linedbg("TasksManagerViewModel", "createTask", "Validation was unsuccessfull")
             return
+        }
+        Klog.linedbg("TasksManagerViewModel", "createTask", "Validation has been success")
+
+        if(AppState.activePlanningBook == null) {
+            updateCurrentPlanningBook("You don't have any planning book yet")
+            return
+        }
+
+        val taskbook = TaskBook(null,
+                                AppState.activePlanningBook!!.id,
+                                uiState.value.taskName,
+                                uiState.value.taskDesc,
+                                uiState.value.taskDate,
+                                DateTimeUtils.dateToYear(uiState.value.taskDate),
+                                DateTimeUtils.dateToMonth(uiState.value.taskDate),
+                                DateTimeUtils.dateToDay(uiState.value.taskDate),
+                                uiState.value.taskHour,
+                                uiState.value.taskMinute)
+
+        viewModelScope.launch {
+            val resp = taskService.createTask(taskbook)
+            Klog.line("TasksManagerViewModel", "createTask", "resp: $resp")
+            if(resp.result) {
+                clearErrors()
+                clearState()
+                updateIsToCreateTask(false)
+                updateIsTaskBookListLodaded(false)
+            }
+            else {
+                setGeneralError(" ${resp.code}: ${resp.message}")
+            }
         }
 
         Klog.linedbg("TasksManagerViewModel", "createTask", "Validation OOKK")
@@ -168,7 +217,6 @@ class TasksManagerViewModel(private val planningBookService: PlanningBookService
 
 
     fun updateTaskName(txt: String) {
-        Klog.line("TasksManagerViewModel", "updateTaskName", "txt size: ${txt.length}")
         if(txt.length <= taskName_maxLength) {
             _uiState.update {
                 it.copy(taskName = txt)
@@ -187,7 +235,6 @@ class TasksManagerViewModel(private val planningBookService: PlanningBookService
     }
 
     fun updateTaskDesc(txt: String) {
-        Klog.line("TasksManagerViewModel", "updateTaskDesc", "txt size: ${txt.length}")
         if(txt.length < taskDesc_maxLength) {
             _uiState.update {
                 it.copy(taskDesc = txt)
@@ -257,7 +304,6 @@ class TasksManagerViewModel(private val planningBookService: PlanningBookService
         }
     }
 
-
     private fun updateTaskTimeError(txt: String) {
         _uiState.update {
             it.copy(taskTimeErrorTxt = txt)
@@ -268,9 +314,24 @@ class TasksManagerViewModel(private val planningBookService: PlanningBookService
         }
     }
 
+    private fun updateIsTaskBookListLodaded(action: Boolean) {
+        _uiState.update {
+            it.copy(isTaskBookListLoaded = action)
+        }
+    }
+
     private fun clearState() {
         updateTaskName("")
         updateTaskDesc("")
+    }
+
+    private fun setGeneralError(txt: String) {
+        _uiState.update {
+            it.copy(generalError = true)
+        }
+        _uiState.update {
+            it.copy(generalErrorText = txt)
+        }
     }
 
     private fun clearErrors() {

@@ -33,7 +33,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.common.DialogDatePickerView
 import com.alfred.myplanningbook.ui.common.DialogTimePickerView
@@ -52,9 +51,10 @@ class TasksManagerView {
         val viewModel: TasksManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-        LaunchedEffect(uiState.currentPlanningBook) {
-            viewModel.loadTasks()
-            Klog.line("TasksManagerView", "createView", "currentPlanningBook:  ${uiState.currentPlanningBook}")
+        LaunchedEffect(uiState.isTaskBookListLoaded) {
+            if(!uiState.isTaskBookListLoaded) {
+                viewModel.loadTasks()
+            }
         }
 
         MaterialTheme(colorScheme = MaterialTheme.colorScheme) {
@@ -157,7 +157,6 @@ class TasksManagerView {
                 .height(70.dp),
                 colors = CommonViewComp.getActionsButtonColour(),
                 onClick = {
-                    Klog.line("TasksManagerView","tasksMainControlsSection","show create Task button clicked")
                     viewModel.showTaskCreationSection(true);
                 }
             ) {
@@ -169,7 +168,6 @@ class TasksManagerView {
                 .height(70.dp),
                 colors = CommonViewComp.getSecondaryButtonColour(),
                 onClick = {
-                    Klog.line("TasksManagerView", "tasksMainControlsSection", "back Button clicked")
                     onBack()
                 }
             ) {
@@ -199,7 +197,6 @@ class TasksManagerView {
                     .height(70.dp),
                     colors = CommonViewComp.getActionsButtonColour(),
                     onClick = {
-                        Klog.line("TasksManagerView","taskCreationActions", "Save Task button clicked")
                         viewModel.createTask();
                     }) {
                     Text("Save")
@@ -210,7 +207,6 @@ class TasksManagerView {
                     .height(70.dp),
                     colors = CommonViewComp.getSecondaryButtonColour(),
                     onClick = {
-                        Klog.line("TasksManagerView","taskCreationActions","cancel create Task button clicked")
                         viewModel.showTaskCreationSection(false);
                     }) {
                     Text("Cancel")

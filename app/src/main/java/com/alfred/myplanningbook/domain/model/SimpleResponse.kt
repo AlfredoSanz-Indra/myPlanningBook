@@ -7,6 +7,8 @@ data class SimpleResponse(val result: Boolean,
 
     var planningBook: PlanningBook? = null
     var planningBookList: MutableList<PlanningBook>? = null
+    var task: TaskBook? = null
+    var taskBookList: MutableList<TaskBook>? = null
     var owner: Owner? = null
     var ownerList: MutableList<Owner>? = null
 }

@@ -6,6 +6,7 @@ package com.alfred.myplanningbook.data.model
  */
 object Collections {
 
+    const val TASKBOOK: String = "TASKBOOK"
     const val PLANNINGBOOK: String = "PLANNINGBOOK"
     const val OWNER: String = "OWNER"
 }
