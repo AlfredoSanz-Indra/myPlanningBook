@@ -41,6 +41,31 @@ class TaskServiceImpl(private val taskRepository: TaskRepository): TaskService {
         return result
     }
 
+    override suspend fun updateTask(task: TaskBook): SimpleResponse {
+        var result: SimpleResponse
+        Klog.line("TaskServiceImpl", "updateTask", "creating Task -> name: ${task.name}")
+
+        try {
+            val resp: SimpleDataResponse = taskRepository.updateTask(task)
+            Klog.linedbg("TaskServiceImpl", "updateTask", "resp: $resp")
+
+            if(!resp.result) {
+                result = SimpleResponse(false, resp.code, resp.message, "")
+            }
+            else {
+                result = SimpleResponse(true, 200, "got it", "")
+                result.task = resp.task
+            }
+        }
+        catch(e: Exception) {
+            Klog.line("TaskServiceImpl", "updateTask", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleResponse(false, 500, e.localizedMessage, "" )
+        }
+
+        Klog.linedbg("TaskServiceImpl", "updateTask", "result: $result")
+        return result
+    }
+
     override suspend fun getTaskList(planningBookId: String, fromDate: Long): SimpleResponse {
 
         var result: SimpleResponse

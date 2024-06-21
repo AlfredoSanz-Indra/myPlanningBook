@@ -26,6 +26,7 @@ data class TaskManagerUiState(
     var generalErrorText: String = "",
     var currentPlanningBook: String = "",
     var isToCreateTask: Boolean = false,
+    var isToUpdateTask: Boolean = false,
     var taskName: String = "",
     var taskDesc: String = "",
     var taskDate: Long = 0,
@@ -45,6 +46,7 @@ data class TaskManagerUiState(
     var openTimeDialog: Boolean = false,
     var taskBookList: MutableList<TaskBook> = mutableListOf(),
     var isTaskBookListLoaded: Boolean = false,
+    var taskBookSelectedId: String = ""
 )
 
 class TasksManagerViewModel(private val taskService: TaskService,
@@ -90,6 +92,34 @@ class TasksManagerViewModel(private val taskService: TaskService,
         updateTaskDate(DateTimeUtils.currentDate(), DateTimeUtils.currentDateFormatted())
         updateTaskTime(DateTimeUtils.currentHour(), 0, DateTimeUtils.currentTimeFormatted())
         updateIsToCreateTask(action)
+    }
+
+    fun showTaskUpdateSection(taskBook: TaskBook) {
+        clearErrors()
+        clearState()
+
+        updateTaskBookSelectedId(taskBook.id!!)
+        updateTaskName(taskBook.name)
+        updateTaskDesc(taskBook.description ?: "")
+        updateTaskDate(taskBook.dateInMillis, DateTimeUtils.formatDate(taskBook.dateInMillis))
+        updateTaskTime(taskBook.hour, taskBook.minute, DateTimeUtils.formatTime(taskBook.hour, taskBook.minute))
+
+        updateIsToUpdateTask(true)
+    }
+
+    fun hideTaskUpdateSection() {
+        clearErrors()
+        clearState()
+
+        updateIsToUpdateTask(false)
+    }
+
+    fun formatTaskDateTime(taskBook: TaskBook): String {
+
+        var result: String = DateTimeUtils.formatDate(taskBook.day, taskBook.month, taskBook.year)
+        result += " - ${DateTimeUtils.formatTime(taskBook.hour, taskBook.minute)}"
+
+        return result
     }
 
     fun openCalendarDi() {
@@ -159,11 +189,56 @@ class TasksManagerViewModel(private val taskService: TaskService,
             }
         }
 
-        Klog.linedbg("TasksManagerViewModel", "createTask", "Validation OOKK")
+        Klog.linedbg("TasksManagerViewModel", "createTask", "is created")
+    }
+
+    fun updateTask() {
+        Klog.line("TasksManagerViewModel", "updateTask", "-")
+
+        if(!validateFields()) {
+            Klog.linedbg("TasksManagerViewModel", "updateTask", "Validation was unsuccessfull")
+            return
+        }
+        Klog.linedbg("TasksManagerViewModel", "updateTask", "Validation has been success")
+
+        if(AppState.activePlanningBook == null) {
+            updateCurrentPlanningBook("You don't have any planning book yet")
+            return
+        }
+
+        val taskbook = TaskBook(uiState.value.taskBookSelectedId,
+            AppState.activePlanningBook!!.id,
+            uiState.value.taskName,
+            uiState.value.taskDesc,
+            uiState.value.taskDate,
+            DateTimeUtils.dateToYear(uiState.value.taskDate),
+            DateTimeUtils.dateToMonth(uiState.value.taskDate),
+            DateTimeUtils.dateToDay(uiState.value.taskDate),
+            uiState.value.taskHour,
+            uiState.value.taskMinute)
+
+        viewModelScope.launch {
+            val resp = taskService.updateTask(taskbook)
+            Klog.line("TasksManagerViewModel", "updateTask", "resp: $resp")
+            if(resp.result) {
+                clearErrors()
+                clearState()
+                updateIsToUpdateTask(false)
+                updateIsTaskBookListLodaded(false)
+            }
+            else {
+                setGeneralError(" ${resp.code}: ${resp.message}")
+            }
+        }
+
+        Klog.linedbg("TasksManagerViewModel", "updateTask", "is updated")
+    }
+
+    fun cloneTask() {
+
     }
 
     private fun validateFields(): Boolean {
-
         clearErrors()
 
         val chainTxtValName = ChainTextValidator(
@@ -195,6 +270,18 @@ class TasksManagerViewModel(private val taskService: TaskService,
         }
     }
 
+    private fun updateIsToUpdateTask(action: Boolean) {
+        _uiState.update {
+            it.copy(isToUpdateTask = action)
+        }
+    }
+
+    private fun updateTaskBookSelectedId(id: String) {
+        _uiState.update {
+            it.copy(taskBookSelectedId = id)
+        }
+    }
+
     private fun updateCurrentPlanningBook(pbText: String) {
         _uiState.update {
             it.copy(currentPlanningBook = pbText)
@@ -211,7 +298,6 @@ class TasksManagerViewModel(private val taskService: TaskService,
             it.copy(openTimeDialog = action)
         }
     }
-
 
     fun updateTaskName(txt: String) {
         if(txt.length <= taskName_maxLength) {
@@ -260,9 +346,6 @@ class TasksManagerViewModel(private val taskService: TaskService,
     }
 
     private fun updateTaskTime(hour: Int, min: Int, timeFormatted: String) {
-        Klog.linedbg("TasksManagerViewModel", "updateTaskTime", "hour: $hour")
-        Klog.linedbg("TasksManagerViewModel", "updateTaskTime", "min: $min")
-        Klog.linedbg("TasksManagerViewModel", "updateTaskTime", "timeFormatted $timeFormatted")
         _uiState.update {
             it.copy(taskHour = hour)
         }
@@ -291,6 +374,9 @@ class TasksManagerViewModel(private val taskService: TaskService,
     private fun clearState() {
         updateTaskName("")
         updateTaskDesc("")
+        updateTaskDate(0, "")
+        updateTaskTime(0, 0, "")
+        updateTaskBookSelectedId("")
     }
 
     private fun setGeneralError(txt: String) {
