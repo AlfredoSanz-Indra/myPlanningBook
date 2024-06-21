@@ -84,7 +84,27 @@ object DateTimeUtils {
         return result
     }
 
+    fun formatDate(year: Int, month: Int, day: Int): String {
+        var formateDay = day.toString()
+        if(day < 10) {
+            formateDay = "0$formateDay"
+        }
+        var formatedMonth = month.toString()
+        if(month < 10) {
+            formatedMonth = "0$formatedMonth"
+        }
+        return "$formateDay/$formatedMonth/${year.toString()}"
+    }
+
     fun formatTime(hour: Int, min: Int): String {
-        return "$hour:$min"
+        var formatedMin = min.toString()
+        if(min < 10) {
+            formatedMin = "0$formatedMin"
+        }
+        var formatedHour = hour.toString()
+        if(hour < 10) {
+            formatedHour = "0$formatedHour"
+        }
+        return "$formatedHour:$formatedMin"
     }
 }

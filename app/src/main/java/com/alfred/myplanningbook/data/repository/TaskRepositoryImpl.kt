@@ -68,6 +68,52 @@ class TaskRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): TaskRep
         return result
     }
 
+    override suspend fun updateTask(taskbook: TaskBook): SimpleDataResponse {
+        var result = SimpleDataResponse(false, 100, "not updated")
+        Klog.line("TaskRepositoryImpl", "updateTask", "name: ${taskbook.name}")
+
+        val taskBookData = hashMapOf(
+            Documents.TASKBOOK_NAME to taskbook.name,
+            Documents.TASKBOOK_PLANNINGBOOK_ID to taskbook.idPlanningbook,
+            Documents.TASKBOOK_DESC to taskbook.description,
+            Documents.TASKBOOK_DATE_MILLIS to taskbook.dateInMillis,
+            Documents.TASKBOOK_YEAR to taskbook.year,
+            Documents.TASKBOOK_MONTH to taskbook.month,
+            Documents.TASKBOOK_DAY to taskbook.day,
+            Documents.TASKBOOK_HOUR to taskbook.hour,
+            Documents.TASKBOOK_MINUTE to taskbook.minute,
+        )
+
+        withContext(ioDispatcher) {
+            val defer = async(ioDispatcher) {
+                val task: Task<Void> = FirebaseSession.db.collection(Collections.TASKBOOK).document(taskbook.id!!)
+                    .set(taskBookData)
+                    .addOnSuccessListener {}
+
+                task.await()
+
+                var taskResp: SimpleDataResponse
+                if(task.isSuccessful) {
+                    Klog.line("TaskRepositoryImpl", "updateTask", "task is successful")
+                    taskResp = SimpleDataResponse(true, 200, "Task update - ${taskbook.id}")
+                }
+                else {
+                    Klog.line("TaskRepositoryImpl", "updateTask", "error cause: ${task.exception?.cause}")
+                    Klog.line("TaskRepositoryImpl", "updateTask", "error message: ${task.exception?.message}")
+
+                    taskResp = SimpleDataResponse(false, 400, "Updating Task failed.")
+                }
+
+                return@async taskResp
+            }
+
+            result = defer.await()
+        } //scope
+
+        Klog.linedbg("TaskRepositoryImpl", "updateTask", "result: $result")
+        return result
+    }
+
     override suspend fun getTaskList(planningBookId: String, fromDate: Long): SimpleDataResponse {
         var result = SimpleDataResponse(false, 404, "not found")
         Klog.line("TaskRepositoryImpl", "getTaskList", "Listing tasksBook from the planningBook: pbId $planningBookId")
