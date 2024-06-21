@@ -43,8 +43,8 @@ data class TaskManagerUiState(
     var taskTimeError: Boolean = false,
     var taskTimeErrorTxt: String = "",
     var openTimeDialog: Boolean = false,
-    var tasksBook: MutableList<TaskBook> = mutableListOf(),
-    var isTaskBookListLoaded: Boolean = false
+    var taskBookList: MutableList<TaskBook> = mutableListOf(),
+    var isTaskBookListLoaded: Boolean = false,
 )
 
 class TasksManagerViewModel(private val taskService: TaskService,
@@ -64,11 +64,14 @@ class TasksManagerViewModel(private val taskService: TaskService,
         }
 
         Klog.line("TasksManagerViewModel", "loadTasks", "${AppState.activePlanningBook!!.id}")
-        updateCurrentPlanningBook(AppState.activePlanningBook!!.id)
+        updateCurrentPlanningBook(AppState.activePlanningBook!!.name)
+
+        val todayDate: Long = DateTimeUtils.currentDate()
 
         viewModelScope.launch {
-            val resp = taskService.getTaskList(AppState.activePlanningBook!!.id,)
+            val resp = taskService.getTaskList(AppState.activePlanningBook!!.id, todayDate)
             if(resp.result) {
+                updateTaskBookList(resp.taskBookList ?: mutableListOf())
                 clearErrors()
                 clearState()
                 updateIsToCreateTask(false)
@@ -78,13 +81,12 @@ class TasksManagerViewModel(private val taskService: TaskService,
                 setGeneralError(" ${resp.code}: ${resp.message}")
             }
         }
-
-        updateViewTasks()
     }
 
     fun showTaskCreationSection(action: Boolean) {
         clearErrors()
         clearState()
+
         updateTaskDate(DateTimeUtils.currentDate(), DateTimeUtils.currentDateFormatted())
         updateTaskTime(DateTimeUtils.currentHour(), 0, DateTimeUtils.currentTimeFormatted())
         updateIsToCreateTask(action)
@@ -162,11 +164,13 @@ class TasksManagerViewModel(private val taskService: TaskService,
 
     private fun validateFields(): Boolean {
 
+        clearErrors()
+
         val chainTxtValName = ChainTextValidator(
-            TextValidatorLength(5, 30)
+            TextValidatorLength(5, taskName_maxLength)
         )
         val chainTxtValDesc = ChainTextValidator(
-            TextValidatorLength(5, 100)
+            TextValidatorLength(5, taskDesc_maxLength)
         )
 
         val valResultName = chainTxtValName.validate(uiState.value.taskName.trim())
@@ -183,13 +187,6 @@ class TasksManagerViewModel(private val taskService: TaskService,
         }
 
         return result
-    }
-
-
-    private fun updateViewTasks() {
-        if(AppState.activePlanningBook != null) {
-            updateCurrentPlanningBook(AppState.activePlanningBook!!.name)
-        }
     }
 
     private fun updateIsToCreateTask(action: Boolean) {
@@ -230,7 +227,7 @@ class TasksManagerViewModel(private val taskService: TaskService,
         }
 
         _uiState.update {
-            it.copy(taskNameError = false)
+            it.copy(taskNameError = true)
         }
     }
 
@@ -248,7 +245,7 @@ class TasksManagerViewModel(private val taskService: TaskService,
         }
 
         _uiState.update {
-            it.copy(taskDescError = false)
+            it.copy(taskDescError = true)
         }
     }
 
@@ -262,17 +259,10 @@ class TasksManagerViewModel(private val taskService: TaskService,
         }
     }
 
-    private fun updateTaskDateError(txt: String) {
-        _uiState.update {
-            it.copy(taskDateErrorTxt = txt)
-        }
-
-        _uiState.update {
-            it.copy(taskDateError = true)
-        }
-    }
-
     private fun updateTaskTime(hour: Int, min: Int, timeFormatted: String) {
+        Klog.linedbg("TasksManagerViewModel", "updateTaskTime", "hour: $hour")
+        Klog.linedbg("TasksManagerViewModel", "updateTaskTime", "min: $min")
+        Klog.linedbg("TasksManagerViewModel", "updateTaskTime", "timeFormatted $timeFormatted")
         _uiState.update {
             it.copy(taskHour = hour)
         }
@@ -286,37 +276,15 @@ class TasksManagerViewModel(private val taskService: TaskService,
         }
     }
 
-    private fun updateTaskHour(hour: Int) {
-        _uiState.update {
-            it.copy(taskHour = hour)
-        }
-    }
-
-    private fun updateTaskMinute(minute: Int) {
-        _uiState.update {
-            it.copy(taskMinute = minute)
-        }
-    }
-
-    private fun updateTaskTimeFormatted(timeFormatted: String) {
-        _uiState.update {
-            it.copy(taskTimeFormatted = timeFormatted)
-        }
-    }
-
-    private fun updateTaskTimeError(txt: String) {
-        _uiState.update {
-            it.copy(taskTimeErrorTxt = txt)
-        }
-
-        _uiState.update {
-            it.copy(taskTimeError = true)
-        }
-    }
-
     private fun updateIsTaskBookListLodaded(action: Boolean) {
         _uiState.update {
             it.copy(isTaskBookListLoaded = action)
+        }
+    }
+
+    private fun updateTaskBookList(_taskBookList: MutableList<TaskBook>) {
+        _uiState.update {
+            it.copy(taskBookList = _taskBookList)
         }
     }
 

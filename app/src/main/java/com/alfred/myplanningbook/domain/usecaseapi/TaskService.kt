@@ -11,5 +11,5 @@ interface TaskService {
 
     suspend fun createTask(task: TaskBook): SimpleResponse
 
-    suspend fun getTaskList(planningBookId: String): SimpleResponse
+    suspend fun getTaskList(planningBookId: String, fromDate: Long): SimpleResponse
 }

@@ -55,7 +55,6 @@ class PlanningBookManagerView {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun createView(onBack: () -> Unit) {
-
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -98,7 +97,6 @@ class PlanningBookManagerView {
 
     @Composable
     private fun errorGeneralField() {
-
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -120,7 +118,6 @@ class PlanningBookManagerView {
 
     @Composable
     private fun loading() {
-
         OutlinedButton(modifier = Modifier
             .width(200.dp)
             .height(70.dp),
@@ -149,7 +146,6 @@ class PlanningBookManagerView {
     @ExperimentalMaterial3Api
     @Composable
     private fun alertDialogDeletePB() {
-
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
 
         BasicAlertDialog(
@@ -212,7 +208,6 @@ class PlanningBookManagerView {
 
     @Composable
     private fun PBHeaderSection(onBack: () -> Unit) {
-
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -226,7 +221,6 @@ class PlanningBookManagerView {
 
     @Composable
     private fun pbMainControlsSection(onBack: () -> Unit) {
-
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
 
         Row {
@@ -258,7 +252,6 @@ class PlanningBookManagerView {
 
     @Composable
     private fun pbCreationSection() {
-
         pbCreationActions()
         Spacer(modifier = Modifier.height(10.dp))
         pbCreationComponents()
@@ -266,7 +259,6 @@ class PlanningBookManagerView {
 
     @Composable
     private fun pbCreationActions() {
-
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -299,7 +291,6 @@ class PlanningBookManagerView {
 
     @Composable
     private fun pbCreationComponents() {
-
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -335,7 +326,6 @@ class PlanningBookManagerView {
 
     @Composable
     private fun pbListSection() {
-
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -367,7 +357,6 @@ class PlanningBookManagerView {
 
     @Composable
     private fun pbCardComponent(planningBook: PlanningBook) {
-
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -407,7 +396,6 @@ class PlanningBookManagerView {
     }
 
     private fun calcCardHeight(planningBook: PlanningBook, uiState: PlanningBookManagerUiState): Dp {
-
         var cardHeight: Dp
 
         if(uiState.isSharing && uiState.isSharingPB == planningBook.id)
@@ -425,11 +413,9 @@ class PlanningBookManagerView {
     private fun pbCardComponentRowName(planningBook: PlanningBook,
                                        isActivePB: Boolean,
                                        isActiveTxt: String) {
-
         Row (Modifier.fillMaxWidth(),
              horizontalArrangement = Arrangement.SpaceBetween)
         {
-            Klog.line("PlanningBookManagerView","pbCardComponentRowName","row 1")
             Column(Modifier.padding(4.dp))
             {
                 Text(
@@ -452,7 +438,6 @@ class PlanningBookManagerView {
 
     @Composable
     private fun pbCardComponentTxtActive(isActiveTxt: String) {
-
         Text(
             text = isActiveTxt,
             style = MaterialTheme.typography.titleMedium
@@ -461,9 +446,7 @@ class PlanningBookManagerView {
 
     @Composable
     private fun pbCardComponentButtonActive(planningBook: PlanningBook) {
-
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
         OutlinedButton(modifier = Modifier
             .width(110.dp)
@@ -483,10 +466,8 @@ class PlanningBookManagerView {
 
     @Composable
     private fun pbCardComponentRowButtons(planningBook: PlanningBook, isSharedWithMe: Boolean) {
-
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
 
         if(isSharedWithMe) {
             Row ( Modifier.fillMaxWidth(),
@@ -546,7 +527,6 @@ class PlanningBookManagerView {
 
     @Composable
     private fun pbCardComponentSharingPB(planningBook: PlanningBook) {
-
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
