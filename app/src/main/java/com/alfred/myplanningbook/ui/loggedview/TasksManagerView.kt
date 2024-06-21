@@ -3,6 +3,7 @@ package com.alfred.myplanningbook.ui.loggedview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,10 +32,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.alfred.myplanningbook.domain.model.TaskBook
 import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.common.DialogDatePickerView
 import com.alfred.myplanningbook.ui.common.DialogTimePickerView
@@ -47,7 +54,6 @@ import org.koin.androidx.compose.koinViewModel
 class TasksManagerView {
     @Composable
     fun createView(onBack: () -> Unit) {
-
         val viewModel: TasksManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -84,7 +90,6 @@ class TasksManagerView {
 
     @Composable
     private fun errorGeneralField() {
-
         val viewModel: TasksManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -106,7 +111,6 @@ class TasksManagerView {
 
     @Composable
     private fun loading() {
-
         OutlinedButton(modifier = Modifier
             .width(200.dp)
             .height(70.dp),
@@ -134,7 +138,6 @@ class TasksManagerView {
 
     @Composable
     private fun tasksHeaderSection(onBack: () -> Unit) {
-
         val viewModel: TasksManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -143,12 +146,12 @@ class TasksManagerView {
         }
         else {
             tasksHeaderActions(onBack)
+            taskListSection()
         }
     }
 
     @Composable
     private fun tasksHeaderActions(onBack: () -> Unit) {
-
         val viewModel: TasksManagerViewModel = koinViewModel()
 
         Row {
@@ -177,8 +180,114 @@ class TasksManagerView {
     }
 
     @Composable
-    private fun taskCreationSection() {
+    private fun taskListSection() {
+        val viewModel: TasksManagerViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+        Column(
+            Modifier
+                .padding(4.dp)
+                .fillMaxWidth()
+        ) {
+            Box(
+                modifier = Modifier
+                    .padding(15.dp)
+                    .border(2.dp, color = Gray, shape = RoundedCornerShape(16.dp))
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+            ){
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .padding(horizontal = 10.dp)
+                ) {
+                    //@see https://developer.android.com/codelabs/basic-android-compose-training-add-scrollable-list?hl=es-419#2
+                    items( uiState.taskBookList.size, itemContent = { item ->
+                        val taskBook = uiState.taskBookList[item]
+                        taskListCardComponent(taskBook)
+                    })
+                }//lazy
+            } //Box
+        }
+    }
+
+    @Composable
+    private fun taskListCardComponent(taskBook: TaskBook) {
+        OutlinedCard(
+            modifier = Modifier
+                .padding(vertical = 5.dp)
+                .fillMaxWidth()
+                .height(140.dp)
+                .wrapContentHeight(),
+            shape = MaterialTheme.shapes.medium,
+            colors = CommonViewComp.gePlanningBookCardColour(),
+            elevation = CardDefaults.outlinedCardElevation(),
+            border = CardDefaults.outlinedCardBorder(),
+        )
+        {
+            Column(Modifier.padding(4.dp)
+                .fillMaxWidth(),
+                //.width(550.dp),
+                horizontalAlignment = Alignment.Start)
+            {
+                taskListCardComponentRowName(taskBook)
+
+                Spacer(modifier = Modifier.height(10.dp))
+                taskListCardComponentRowDesc(taskBook)
+
+                Spacer(modifier = Modifier.height(10.dp))
+                taskListCardComponentRowDate(taskBook)
+            }//Column
+        } //card
+    }
+
+    @Composable
+    private fun taskListCardComponentRowName(taskBook: TaskBook) {
+        Row (Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween)
+        {
+            Column(Modifier.padding(4.dp))
+            {
+                Text(
+                    text = taskBook.name,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun taskListCardComponentRowDesc(taskBook: TaskBook) {
+        Row (Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween)
+        {
+            Column(Modifier.padding(4.dp))
+            {
+                Text(
+                    text = taskBook.description ?: "-",
+                    style = MaterialTheme.typography.titleSmall,
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun taskListCardComponentRowDate(taskBook: TaskBook) {
+        Row (Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween)
+        {
+            Column(Modifier.padding(4.dp))
+            {
+                Text(
+                    text = " ${taskBook.day}/${taskBook.month}/${taskBook.year} - ${taskBook.hour}:${taskBook.minute}",
+                    style = MaterialTheme.typography.titleSmall,
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun taskCreationSection() {
         taskCreationActions()
         Spacer(modifier = Modifier.height(10.dp))
         taskCreationComponents()
@@ -186,9 +295,7 @@ class TasksManagerView {
 
     @Composable
     private fun taskCreationActions() {
-
         val viewModel: TasksManagerViewModel = koinViewModel()
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
         Column {
             Row {
@@ -248,6 +355,7 @@ class TasksManagerView {
                     placeholder = { Text("Enter Task Name (5-30)") },
                     singleLine = true,
                     maxLines = 1)
+
                 if(uiState.taskNameError) {
                     Spacer(modifier = Modifier.height(10.dp))
 

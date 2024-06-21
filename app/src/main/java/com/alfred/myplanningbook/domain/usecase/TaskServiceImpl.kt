@@ -41,7 +41,7 @@ class TaskServiceImpl(private val taskRepository: TaskRepository): TaskService {
         return result
     }
 
-    override suspend fun getTaskList(planningBookId: String): SimpleResponse {
+    override suspend fun getTaskList(planningBookId: String, fromDate: Long): SimpleResponse {
 
         var result: SimpleResponse
         Klog.line("TaskServiceImpl", "getTaskList", "getting the taskbook list from planningbook -> pb_id: ${planningBookId}")
@@ -53,7 +53,7 @@ class TaskServiceImpl(private val taskRepository: TaskRepository): TaskService {
         }
 
         try {
-            val resp = taskRepository.getTaskList(planningBookId)
+            val resp = taskRepository.getTaskList(planningBookId, fromDate)
 
             if(resp.result && resp.code == 200) {
                 result = SimpleResponse(true,200, "found", "")

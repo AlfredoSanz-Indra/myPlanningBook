@@ -68,7 +68,7 @@ class TaskRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): TaskRep
         return result
     }
 
-    override suspend fun getTaskList(planningBookId: String): SimpleDataResponse {
+    override suspend fun getTaskList(planningBookId: String, fromDate: Long): SimpleDataResponse {
         var result = SimpleDataResponse(false, 404, "not found")
         Klog.line("TaskRepositoryImpl", "getTaskList", "Listing tasksBook from the planningBook: pbId $planningBookId")
 
@@ -76,6 +76,10 @@ class TaskRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): TaskRep
             val defer = async(ioDispatcher) {
                 val task: Task<QuerySnapshot> = FirebaseSession.db.collection(Collections.TASKBOOK)
                     .whereEqualTo(Documents.TASKBOOK_PLANNINGBOOK_ID, planningBookId)
+                    .whereGreaterThanOrEqualTo(Documents.TASKBOOK_DATE_MILLIS, fromDate)
+                    .orderBy(Documents.TASKBOOK_DATE_MILLIS)
+                    .orderBy(Documents.TASKBOOK_HOUR)
+                    .orderBy(Documents.TASKBOOK_MINUTE)
                     .get()
                     .addOnSuccessListener {}
 

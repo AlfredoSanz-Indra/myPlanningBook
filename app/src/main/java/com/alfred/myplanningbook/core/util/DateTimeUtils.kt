@@ -2,8 +2,9 @@ package com.alfred.myplanningbook.core.util
 
 import java.time.Instant
 import java.time.LocalDateTime
-import java.time.ZoneId
+import java.time.LocalTime
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 
@@ -59,23 +60,25 @@ object DateTimeUtils {
     }
 
     fun currentDate(): Long {
-        return Instant.now().toEpochMilli()
+        val zdtNow = ZonedDateTime.now()
+        return zdtNow.with(LocalTime.MIDNIGHT).toInstant().toEpochMilli()
     }
 
     fun currentDateFormatted(): String {
-        return Instant.now().asShortString()
+        val zdtNow = ZonedDateTime.now()
+        return zdtNow.with(LocalTime.MIDNIGHT).toInstant().asShortString()
     }
 
     fun currentHour(): Int {
-        val instant = Instant.now()
-        val ldt = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+        val zdtNow = ZonedDateTime.now()
+        val ldt = LocalDateTime.ofInstant(zdtNow.toInstant(), ZoneOffset.systemDefault())
 
         return ldt.hour
     }
 
     fun currentTimeFormatted(): String {
-        val instant = Instant.now()
-        val ldt = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+        val zdtNow = ZonedDateTime.now()
+        val ldt = LocalDateTime.ofInstant(zdtNow.toInstant(), ZoneOffset.systemDefault())
         val result = ldt.hour.toString() + ":" + "00"
 
         return result
