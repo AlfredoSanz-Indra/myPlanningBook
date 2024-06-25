@@ -3,9 +3,11 @@ package com.alfred.myplanningbook.ui.loggedview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,11 +29,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.alfred.myplanningbook.domain.model.TaskBook
 import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.common.DialogDatePickerView
 import com.alfred.myplanningbook.ui.common.DialogTimePickerView
@@ -43,7 +45,7 @@ import org.koin.androidx.compose.koinViewModel
 fun taskCreationSection() {
     taskCreationActions()
     Spacer(modifier = Modifier.height(10.dp))
-    taskCreationComponents()
+    taskDataFieldsComponents()
 }
 
 @Composable
@@ -75,22 +77,11 @@ private fun taskCreationActions() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun taskCreationComponents() {
-    Column {
-        taskCreationComponents_taskName()
-        taskCreationComponents_taskDesc()
-        taskCreationComponents_Datepicker()
-        taskCreationComponents_Timepicker()
-    }
-}
-
 @Composable
 fun taskUpdateSection() {
     taskUpdateActions()
     Spacer(modifier = Modifier.height(10.dp))
-    taskUpdateComponents()
+    taskDataFieldsComponents()
 }
 
 @Composable
@@ -139,12 +130,20 @@ private fun taskUpdateActions() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun taskUpdateComponents() {
-    Column {
-        taskCreationComponents_taskName()
-        taskCreationComponents_taskDesc()
-        taskCreationComponents_Datepicker()
-        taskCreationComponents_Timepicker()
+private fun taskDataFieldsComponents() {
+    Box(
+        modifier = Modifier
+            .padding(15.dp)
+            .border(2.dp, color = Gray, shape = RoundedCornerShape(16.dp))
+            .fillMaxWidth()
+            .fillMaxHeight()
+    ) {
+        Column {
+            taskCreationComponents_taskName()
+            taskCreationComponents_taskDesc()
+            taskCreationComponents_Datepicker()
+            taskCreationComponents_Timepicker()
+        }
     }
 }
 
