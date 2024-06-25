@@ -1,5 +1,6 @@
 package com.alfred.myplanningbook.core.util
 
+import com.alfred.myplanningbook.core.log.Klog
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -32,10 +33,6 @@ object DateTimeUtils {
 
     private fun Instant.asDayNumber(): Int {
         return format("dd").toInt()
-    }
-
-    private fun Instant.asMonthAndDayString(): String {
-        return format("MMM dd").replaceFirstChar { it.titlecase() }
     }
 
     private fun Instant.format(pattern: String): String {

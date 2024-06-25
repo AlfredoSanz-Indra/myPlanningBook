@@ -4,6 +4,7 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+//minSdk <= targetSdk <= compileSdk.
 android {
     namespace = "com.alfred.myPlanningbook"
     compileSdk = 34
@@ -14,7 +15,7 @@ android {
         //noinspection EditedTargetSdkVersion
         targetSdk = 34
         versionCode = 1
-        versionName = "1.3.4"
+        versionName = "1.3.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

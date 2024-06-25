@@ -116,7 +116,7 @@ class TasksManagerViewModel(private val taskService: TaskService,
 
     fun formatTaskDateTime(taskBook: TaskBook): String {
 
-        var result: String = DateTimeUtils.formatDate(taskBook.day, taskBook.month, taskBook.year)
+        var result: String = DateTimeUtils.formatDate(taskBook.year, taskBook.month, taskBook.day)
         result += " - ${DateTimeUtils.formatTime(taskBook.hour, taskBook.minute)}"
 
         return result
@@ -164,19 +164,10 @@ class TasksManagerViewModel(private val taskService: TaskService,
             return
         }
 
-        val taskbook = TaskBook(null,
-                                AppState.activePlanningBook!!.id,
-                                uiState.value.taskName,
-                                uiState.value.taskDesc,
-                                uiState.value.taskDate,
-                                DateTimeUtils.dateToYear(uiState.value.taskDate),
-                                DateTimeUtils.dateToMonth(uiState.value.taskDate),
-                                DateTimeUtils.dateToDay(uiState.value.taskDate),
-                                uiState.value.taskHour,
-                                uiState.value.taskMinute)
+        val taskBook = fillTaskBookObj()
 
         viewModelScope.launch {
-            val resp = taskService.createTask(taskbook)
+            val resp = taskService.createTask(taskBook)
             Klog.line("TasksManagerViewModel", "createTask", "resp: $resp")
             if(resp.result) {
                 clearErrors()
@@ -206,19 +197,11 @@ class TasksManagerViewModel(private val taskService: TaskService,
             return
         }
 
-        val taskbook = TaskBook(uiState.value.taskBookSelectedId,
-            AppState.activePlanningBook!!.id,
-            uiState.value.taskName,
-            uiState.value.taskDesc,
-            uiState.value.taskDate,
-            DateTimeUtils.dateToYear(uiState.value.taskDate),
-            DateTimeUtils.dateToMonth(uiState.value.taskDate),
-            DateTimeUtils.dateToDay(uiState.value.taskDate),
-            uiState.value.taskHour,
-            uiState.value.taskMinute)
+        val taskBook = fillTaskBookObj()
+        taskBook.id = uiState.value.taskBookSelectedId
 
         viewModelScope.launch {
-            val resp = taskService.updateTask(taskbook)
+            val resp = taskService.updateTask(taskBook)
             Klog.line("TasksManagerViewModel", "updateTask", "resp: $resp")
             if(resp.result) {
                 clearErrors()
@@ -235,7 +218,25 @@ class TasksManagerViewModel(private val taskService: TaskService,
     }
 
     fun cloneTask() {
+        Klog.line("TasksManagerViewModel", "cloneTask", "-")
+        createTask()
+        updateIsToUpdateTask(false)
+        Klog.linedbg("TasksManagerViewModel", "cloneTask", "is cloned")
+    }
 
+    private fun fillTaskBookObj(): TaskBook {
+        val result = TaskBook(null,
+            AppState.activePlanningBook!!.id,
+            uiState.value.taskName,
+            uiState.value.taskDesc,
+            uiState.value.taskDate,
+            DateTimeUtils.dateToYear(uiState.value.taskDate),
+            DateTimeUtils.dateToMonth(uiState.value.taskDate),
+            DateTimeUtils.dateToDay(uiState.value.taskDate),
+            uiState.value.taskHour,
+            uiState.value.taskMinute)
+
+        return result
     }
 
     private fun validateFields(): Boolean {
