@@ -1,18 +1,22 @@
 package com.alfred.myplanningbook.core.di
 
+import com.alfred.myplanningbook.data.repository.ActivityRepositoryImpl
 import com.alfred.myplanningbook.data.repository.OwnerRepositoryImpl
 import com.alfred.myplanningbook.data.repository.PlanningBookRepositoryImpl
 import com.alfred.myplanningbook.data.repository.TaskRepositoryImpl
 import com.alfred.myplanningbook.data.repository.UsersRepositoryImpl
+import com.alfred.myplanningbook.domain.repositoryapi.ActivityRepository
 import com.alfred.myplanningbook.domain.repositoryapi.OwnerRepository
 import com.alfred.myplanningbook.domain.repositoryapi.PlanningBookRepository
 import com.alfred.myplanningbook.domain.repositoryapi.TaskRepository
 import com.alfred.myplanningbook.domain.repositoryapi.UsersRepository
+import com.alfred.myplanningbook.domain.usecase.ActivityServiceImpl
 import com.alfred.myplanningbook.domain.usecase.OwnerServiceImpl
 import com.alfred.myplanningbook.domain.usecase.PlanningBookServiceImpl
 import com.alfred.myplanningbook.domain.usecase.StateServiceImpl
 import com.alfred.myplanningbook.domain.usecase.TaskServiceImpl
 import com.alfred.myplanningbook.domain.usecase.UsersServiceImpl
+import com.alfred.myplanningbook.domain.usecaseapi.ActivityService
 import com.alfred.myplanningbook.domain.usecaseapi.OwnerService
 import com.alfred.myplanningbook.domain.usecaseapi.PlanningBookService
 import com.alfred.myplanningbook.domain.usecaseapi.StateService
@@ -21,6 +25,7 @@ import com.alfred.myplanningbook.domain.usecaseapi.UsersService
 import com.alfred.myplanningbook.ui.loggedview.viewmodel.BookMenuViewModel
 import com.alfred.myplanningbook.ui.loggedview.viewmodel.PlanningBookManagerViewModel
 import com.alfred.myplanningbook.ui.loggedview.viewmodel.TasksManagerViewModel
+import com.alfred.myplanningbook.ui.loggedview.viewmodel.ActivitiesManagerViewModel
 import com.alfred.myplanningbook.ui.view.viewmodel.LoginViewModel
 import com.alfred.myplanningbook.ui.view.viewmodel.MainViewModel
 import com.alfred.myplanningbook.ui.view.viewmodel.RegisterViewModel
@@ -54,6 +59,10 @@ val appModule = module {
         TaskRepositoryImpl(get(named("IODispatcher")))
     }
 
+    single<ActivityRepository> {
+        ActivityRepositoryImpl(get(named("IODispatcher")))
+    }
+
     //factoryOf(::UsersServiceImpl) { bind<UsersService>() }
     factory<UsersService> {
         UsersServiceImpl(get())
@@ -75,6 +84,10 @@ val appModule = module {
         TaskServiceImpl(get())
     }
 
+    factory<ActivityService> {
+        ActivityServiceImpl(get())
+    }
+
     viewModelOf(::MainViewModel)
     viewModelOf(::ResetPwdViewModel)
     viewModelOf(::RegisterViewModel)
@@ -84,4 +97,5 @@ val appModule = module {
     viewModelOf(::TasksManagerViewModel)
     viewModelOf(::DialogDatePickerViewModel)
     viewModelOf(::DialogTimePickerViewModel)
+    viewModelOf(::ActivitiesManagerViewModel)
 }

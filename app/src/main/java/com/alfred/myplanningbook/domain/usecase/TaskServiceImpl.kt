@@ -2,11 +2,9 @@ package com.alfred.myplanningbook.domain.usecase
 
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.data.model.SimpleDataResponse
-import com.alfred.myplanningbook.domain.AppState
 import com.alfred.myplanningbook.domain.model.SimpleResponse
 import com.alfred.myplanningbook.domain.model.TaskBook
 import com.alfred.myplanningbook.domain.repositoryapi.TaskRepository
-import com.alfred.myplanningbook.domain.usecaseapi.OwnerService
 import com.alfred.myplanningbook.domain.usecaseapi.TaskService
 
 /**

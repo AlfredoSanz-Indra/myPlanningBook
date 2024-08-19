@@ -26,15 +26,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.alfred.myplanningbook.domain.model.TaskBook
+import com.alfred.myplanningbook.domain.model.ActivityBook
 import com.alfred.myplanningbook.ui.common.CommonViewComp
-import com.alfred.myplanningbook.ui.loggedview.viewmodel.TasksManagerViewModel
+import com.alfred.myplanningbook.ui.loggedview.viewmodel.ActivitiesManagerViewModel
 import org.koin.androidx.compose.koinViewModel
 
 
 @Composable
-fun taskListSection() {
-    val viewModel: TasksManagerViewModel = koinViewModel()
+fun activitiesListSection() {
+    val viewModel: ActivitiesManagerViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Column(
@@ -55,9 +55,9 @@ fun taskListSection() {
                     .padding(horizontal = 10.dp)
             ) {
                 //@see https://developer.android.com/codelabs/basic-android-compose-training-add-scrollable-list?hl=es-419#2
-                items( uiState.taskBookList.size, itemContent = { item ->
-                    val taskBook = uiState.taskBookList[item]
-                    activityListCardComponent(taskBook)
+                items( uiState.activityBookList.size, itemContent = { item ->
+                    val activityBook = uiState.activityBookList[item]
+                    activityListCardComponent(activityBook)
                 })
             } //lazy
         } //Box
@@ -65,7 +65,7 @@ fun taskListSection() {
 }
 
 @Composable
-private fun activityListCardComponent(taskBook: TaskBook) {
+private fun activityListCardComponent(activityBook: ActivityBook) {
     OutlinedCard(
         modifier = Modifier
             .padding(vertical = 5.dp)
@@ -84,19 +84,19 @@ private fun activityListCardComponent(taskBook: TaskBook) {
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.Start)
         {
-            activityListCardComponentRowName(taskBook)
+            activityListCardComponentRowName(activityBook)
 
             Spacer(modifier = Modifier.height(10.dp))
-            activityListCardComponentRowDesc(taskBook)
+            activityListCardComponentRowDesc(activityBook)
 
             Spacer(modifier = Modifier.height(10.dp))
-            activityListCardComponentRowDate(taskBook)
+            activityListCardComponentRowDate(activityBook)
         } //Column
     } //card
 }
 
 @Composable
-private fun activityListCardComponentRowName(taskBook: TaskBook) {
+private fun activityListCardComponentRowName(activityBook: ActivityBook) {
     Row (
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween)
@@ -104,28 +104,28 @@ private fun activityListCardComponentRowName(taskBook: TaskBook) {
         Column(Modifier.padding(4.dp))
         {
             Text(
-                text = taskBook.name,
+                text = activityBook.name,
                 style = MaterialTheme.typography.titleMedium,
             )
         }
         Column(Modifier.padding(4.dp))
         {
-            activityListCardComponentButtonUpdate(taskBook)
+            activityListCardComponentButtonUpdate(activityBook)
         }
     }
 }
 
 
 @Composable
-private fun activityListCardComponentButtonUpdate(taskBook: TaskBook) {
-    val viewModel: TasksManagerViewModel = koinViewModel()
+private fun activityListCardComponentButtonUpdate(activityBook: ActivityBook) {
+    val viewModel: ActivitiesManagerViewModel = koinViewModel()
 
     OutlinedButton(modifier = Modifier
         .width(110.dp)
         .height(35.dp),
         colors = CommonViewComp.getPlanningBookCardButtonPrimaryColour(),
         onClick = {
-            viewModel.showTaskUpdateSection(taskBook)
+            viewModel.showActivityUpdateSection(activityBook)
         }
     ) {
         Text(
@@ -136,7 +136,7 @@ private fun activityListCardComponentButtonUpdate(taskBook: TaskBook) {
 }
 
 @Composable
-private fun activityListCardComponentRowDesc(taskBook: TaskBook) {
+private fun activityListCardComponentRowDesc(activityBook: ActivityBook) {
     Row (
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween)
@@ -144,7 +144,7 @@ private fun activityListCardComponentRowDesc(taskBook: TaskBook) {
         Column(Modifier.padding(4.dp))
         {
             Text(
-                text = taskBook.description ?: "-",
+                text = activityBook.description ?: "-",
                 style = MaterialTheme.typography.titleSmall,
             )
         }
@@ -152,8 +152,8 @@ private fun activityListCardComponentRowDesc(taskBook: TaskBook) {
 }
 
 @Composable
-private fun activityListCardComponentRowDate(taskBook: TaskBook) {
-    val viewModel: TasksManagerViewModel = koinViewModel()
+private fun activityListCardComponentRowDate(activityBook: ActivityBook) {
+    val viewModel: ActivitiesManagerViewModel = koinViewModel()
 
     Row (
         Modifier.fillMaxWidth(),
@@ -161,10 +161,7 @@ private fun activityListCardComponentRowDate(taskBook: TaskBook) {
     {
         Column(Modifier.padding(4.dp))
         {
-            Text(
-                text = viewModel.formatTaskDateTime(taskBook),
-                style = MaterialTheme.typography.titleSmall,
-            )
+
         }
     }
 }

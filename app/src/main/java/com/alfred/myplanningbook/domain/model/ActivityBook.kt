@@ -4,15 +4,14 @@ package com.alfred.myplanningbook.domain.model
  * @author Alfredo Sanz
  * @time 2024
  */
-data class TaskBook(
+class ActivityBook(
     var id: String?,
     val idPlanningbook: String,
     val name: String,
     val description: String?,
-    val dateInMillis: Long,
-    val year: Int,
-    val month: Int,
-    val day: Int,
-    val hour: Int,
-    val minute: Int
-)
+    val startHour: Int,
+    val startMinute: Int,
+    val endHour: Int,
+    val endMinute: Int,
+    val weekDaysList: MutableList<String>
+) {}

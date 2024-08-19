@@ -204,6 +204,13 @@ class BookMenuView {
         ) {
             Text("Activities")
         }
+
+        LaunchedEffect(uiState.isToActivitiesManager) {
+            if(uiState.isToActivitiesManager) {
+                viewModel.clearFields()
+                onActivities()
+            }
+        }
     }
 
     @Composable

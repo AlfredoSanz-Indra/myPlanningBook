@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.alfred.myplanningbook.AppRoutes.ACTIVITIES_ROUTE
 import com.alfred.myplanningbook.AppRoutes.BOOKMENU_ROUTE
 import com.alfred.myplanningbook.AppRoutes.LOGIN_ROUTE
 import com.alfred.myplanningbook.AppRoutes.MAIN_ROUTE
@@ -159,6 +160,18 @@ fun NavigationGraph(
             tasksManagerViewModel.createView(
                 onBack = {
                     Klog.line("NavigationController", "NavigationGraph", "navHost tasksManager go back!")
+                    navController.popBackStack()
+                })
+        }
+
+        composable(
+            ACTIVITIES_ROUTE,
+            arguments = listOf()
+        ) {
+            val activitiesManagerViewModel = ViewsStore.getActivitiesManagerView()
+            activitiesManagerViewModel.createView(
+                onBack = {
+                    Klog.line("NavigationController", "NavigationGraph", "navHost activitiesManager go back!")
                     navController.popBackStack()
                 })
         }

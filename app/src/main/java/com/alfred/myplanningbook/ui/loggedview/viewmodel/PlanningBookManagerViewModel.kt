@@ -62,7 +62,6 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
     }
 
     fun showPBCreationSection(action: Boolean) {
-
         clearErrors()
         updatePBName("")
         updateIsToCreatePB(action)
@@ -72,7 +71,6 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
      * Create a new Planning book owned by me.
      */
     fun createPlanningBook() {
-
         clearErrors()
         if(!validateFields()) {
             Klog.linedbg("PlanningBookManagerViewModel", "createPlanningBook", "Validation was unsuccessful")
@@ -104,7 +102,6 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
      * Check if the the planning book is currently active
      */
     fun isActivePlanningBook(pb: PlanningBook): Boolean {
-
         var result = false
         Klog.linedbg("PlanningBookManagerViewModel","isActivePlanningBook", "pb: $pb")
         if(AppState.owner!!.activePlanningBook != null) {
@@ -120,7 +117,6 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
      * with me.
      */
     fun isSharedWithMePlanningBook(pb: PlanningBook): Boolean {
-
         var result = true
         if(pb.idOwner == AppState.owner!!.id) {
             result = false
@@ -133,7 +129,6 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
      * When i want to set Active a planning book of my list.
      */
     fun setActivePlanningBook(planningBookID: String) {
-
         Klog.linedbg("PlanningBookManagerViewModel","setActivePlanningBook", "planningBookID: $planningBookID")
         clearErrors()
         if(planningBookID.isNullOrBlank()) {
@@ -163,7 +158,6 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
     }
 
     fun isToDeletePlanningBook(action: Boolean, pbIdToDelete: String) {
-
         Klog.linedbg("PlanningBookManagerViewModel","isToDeletePlanningBook", "click, action -> $action, pbIdToDelete -> $pbIdToDelete")
         clearErrors()
         val id = if(action)
@@ -176,7 +170,6 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
     }
 
     fun deletePlanningBook() {
-
         Klog.linedbg("PlanningBookManagerViewModel","deletePlanningBook", "planningBookID: ${_uiState.value.pbIDtoDelete}")
 
         if(_uiState.value.pbIDtoDelete.isNullOrEmpty()) {
@@ -207,7 +200,6 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
     }
 
     fun sharePlanningBook_ON(pbID: String) {
-
         Klog.linedbg("PlanningBookManagerViewModel","sharePlanningBook_ON", "click")
         clearErrors()
         updateIsSharing(true)
@@ -216,7 +208,6 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
     }
 
     fun sharePlanningBook_OFF() {
-
         Klog.linedbg("PlanningBookManagerViewModel","sharePlanningBook_OFF", "click")
         clearErrors()
         updateIsSharing(false)
@@ -228,7 +219,6 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
      * When i want to share a planning book of my own with another user.
      */
     fun sharePlanningBook(planningBook: PlanningBook) {
-
         Klog.linedbg("PlanningBookManagerViewModel","sharePlanningBook", "planningBook: $planningBook")
         clearErrors()
 
@@ -265,7 +255,6 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
      * shared it with me and i want to remove it from my list.
      */
     fun forgetPlanningBook(planningBook: PlanningBook) {
-
         Klog.linedbg("PlanningBookManagerViewModel","forgetPlanningBook", "planningBook: $planningBook")
 
         viewModelScope.launch {
@@ -289,7 +278,6 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
     }
 
     private fun validateFields(): Boolean {
-
         val chainTxt = ChainTextValidator(
             TextValidatorLength(5, 20),
             TextValidatorOnlyNaturalChars()
@@ -306,7 +294,6 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
     }
 
     private fun validateSharePBFields(): Boolean {
-
         val chainTxtValEmail = ChainTextValidator(
             TextValidatorLength(5, 50),
             TextValidatorEmail()
@@ -323,7 +310,6 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
     }
 
     private fun updateViewPlanningBooks() {
-
         if(AppState.activePlanningBook != null) {
             updateCurrentPlanningBook(AppState.activePlanningBook!!.name)
         }
@@ -333,49 +319,42 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
     }
 
     private fun updateCurrentPlanningBook(pbText: String) {
-
         _uiState.update {
             it.copy(currentPlanningBook = pbText)
         }
     }
 
     private fun updatePlanningBookList(pbList: MutableList<PlanningBook>) {
-
         _uiState.update {
             it.copy(planningBookList = pbList)
         }
     }
 
     private fun updateIsToDeletePB(action: Boolean) {
-
         _uiState.update {
             it.copy(isToDeletePB = action)
         }
     }
 
     private fun updatePbIDtoDelete(id: String) {
-
         _uiState.update {
             it.copy(pbIDtoDelete = id)
         }
     }
 
     private fun updateIsSharing(action: Boolean) {
-
         _uiState.update {
             it.copy(isSharing = action)
         }
     }
 
     private fun updateIsSharingPB(pbID: String) {
-
         _uiState.update {
             it.copy(isSharingPB = pbID)
         }
     }
 
     private fun setGeneralError(txt: String) {
-
         _uiState.update {
             it.copy(generalError = true)
         }
@@ -385,14 +364,12 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
     }
 
     fun updatePBName(txt: String) {
-
         _uiState.update {
             it.copy(pbName = txt)
         }
     }
 
     private fun updatePBNameError(txt: String) {
-
         _uiState.update {
             it.copy(pbNameError = true)
         }
@@ -403,14 +380,12 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
     }
 
     fun updateShareToEmail(txt: String) {
-
         _uiState.update {
             it.copy(shareToEmail = txt)
         }
     }
 
     fun updateShareToEmailError(txt: String) {
-
         _uiState.update {
             it.copy(shareToEmailError = true)
         }
@@ -421,14 +396,12 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
     }
 
     private fun updateIsToCreatePB(action: Boolean) {
-
         _uiState.update {
             it.copy(isToCreatePB = action)
         }
     }
 
     private fun clearErrors() {
-
         _uiState.update {
             it.copy(generalError = false)
         }
