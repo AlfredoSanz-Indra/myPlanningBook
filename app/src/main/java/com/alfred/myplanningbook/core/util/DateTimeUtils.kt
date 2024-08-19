@@ -15,6 +15,14 @@ import java.time.format.DateTimeFormatter
  */
 object DateTimeUtils {
 
+    const val LUNES = "LU"
+    const val MARTES = "MA"
+    const val MIERCOLES = "MI"
+    const val JUEVES = "JU"
+    const val VIERNES = "VI"
+    const val SABADO = "SA"
+    const val DOMINGO = "DO"
+
     fun formatDate(date: Long?): String {
         return date?.asInstant()?.asShortString() ?: "Seleccionar fecha"
     }
@@ -103,5 +111,33 @@ object DateTimeUtils {
             formatedHour = "0$formatedHour"
         }
         return "$formatedHour:$formatedMin"
+    }
+
+    fun sortWeekDaysList(weekDaysList: MutableList<String>): MutableList<String> {
+
+        var result: MutableList<String> = mutableListOf()
+
+        if(weekDaysList.contains(LUNES)) {
+            result.add(LUNES)
+        }
+        if(weekDaysList.contains(MARTES)) {
+            result.add(MARTES)
+        }
+        if(weekDaysList.contains(MIERCOLES)) {
+            result.add(MIERCOLES)
+        }
+        if(weekDaysList.contains(JUEVES)) {
+            result.add(JUEVES)
+        }
+        if(weekDaysList.contains(VIERNES)) {
+            result.add(VIERNES)
+        }
+        if(weekDaysList.contains(SABADO)) {
+            result.add(SABADO)
+        }
+        if(weekDaysList.contains(DOMINGO)) {
+            result.add(DOMINGO)
+        }
+        return result
     }
 }

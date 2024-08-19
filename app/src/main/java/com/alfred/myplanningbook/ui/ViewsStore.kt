@@ -1,6 +1,7 @@
 package com.alfred.myplanningbook.ui
 
 import com.alfred.myplanningbook.core.log.Klog
+import com.alfred.myplanningbook.ui.loggedview.ActivitiesManagerView
 import com.alfred.myplanningbook.ui.loggedview.BookMenuView
 import com.alfred.myplanningbook.ui.loggedview.PlanningBookManagerView
 import com.alfred.myplanningbook.ui.loggedview.TasksManagerView
@@ -14,6 +15,7 @@ object ViewsStore {
     private var bookMenuView: BookMenuView? = null
     private var planningBookmangerView: PlanningBookManagerView? = null
     private var tasksManagerView: TasksManagerView? = null
+    private var activitiesManagerView: ActivitiesManagerView? = null
 
     fun getBookMenuView(): BookMenuView {
         if(bookMenuView == null) {
@@ -39,9 +41,18 @@ object ViewsStore {
         return tasksManagerView!!
     }
 
+    fun getActivitiesManagerView(): ActivitiesManagerView {
+        if(activitiesManagerView == null) {
+            Klog.line("ViewsStore", "getActivitiesManagerView", "creating ActivitiesManagerView!")
+            activitiesManagerView = ActivitiesManagerView()
+        }
+        return activitiesManagerView!!
+    }
+
     fun cleanLoggedViews() {
         bookMenuView = null
         planningBookmangerView = null
         tasksManagerView = null
+        activitiesManagerView = null
     }
 }
