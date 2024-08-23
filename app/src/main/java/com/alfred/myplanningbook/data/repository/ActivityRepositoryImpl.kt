@@ -6,6 +6,7 @@ import com.alfred.myplanningbook.data.model.Collections
 import com.alfred.myplanningbook.data.model.Documents
 import com.alfred.myplanningbook.data.model.SimpleDataResponse
 import com.alfred.myplanningbook.domain.model.ActivityBook
+import com.alfred.myplanningbook.domain.model.TaskBook
 import com.alfred.myplanningbook.domain.repositoryapi.ActivityRepository
 import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.DocumentReference
@@ -70,7 +71,51 @@ class ActivityRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): Act
         return result
     }
 
+    override suspend fun updateActivity(activitybook: ActivityBook): SimpleDataResponse {
+        var result = SimpleDataResponse(false, 100, "not updated")
+        Klog.line("ActivityRepositoryImpl", "updateActivity", "name: ${activitybook.name}")
 
+        val activityBookData = hashMapOf(
+            Documents.ACTIVITYBOOK_NAME to activitybook.name,
+            Documents.ACTIVITYBOOK_PLANNINGBOOK_ID to activitybook.idPlanningbook,
+            Documents.ACTIVITYBOOK_DESC to activitybook.description,
+            Documents.ACTIVITYBOOK_START_HOUR to activitybook.startHour,
+            Documents.ACTIVITYBOOK_START_MINUTE to activitybook.startMinute,
+            Documents.ACTIVITYBOOK_END_HOUR to activitybook.endHour,
+            Documents.ACTIVITYBOOK_END_MINUTE to activitybook.endMinute,
+            Documents.ACTIVITYBOOK_WEEKDAYS to activitybook.weekDaysList,
+            Documents.ACTIVITYBOOK_ISACTIVE to activitybook.isActive
+        )
+
+        withContext(ioDispatcher) {
+            val defer = async(ioDispatcher) {
+                val task: Task<Void> = FirebaseSession.db.collection(Collections.ACTIVITYBOOK).document(activitybook.id!!)
+                    .set(activityBookData)
+                    .addOnSuccessListener {}
+
+                task.await()
+
+                var taskResp: SimpleDataResponse
+                if(task.isSuccessful) {
+                    Klog.line("ActivityRepositoryImpl", "updateActivity", "task is successful")
+                    taskResp = SimpleDataResponse(true, 200, "Task update - ${activitybook.id}")
+                }
+                else {
+                    Klog.line("ActivityRepositoryImpl", "updateActivity", "error cause: ${task.exception?.cause}")
+                    Klog.line("ActivityRepositoryImpl", "updateActivity", "error message: ${task.exception?.message}")
+
+                    taskResp = SimpleDataResponse(false, 400, "Updating Activity failed.")
+                }
+
+                return@async taskResp
+            }
+
+            result = defer.await()
+        } //scope
+
+        Klog.linedbg("ActivityRepositoryImpl", "updateActivity", "result: $result")
+        return result
+     }
 
     override suspend fun getActivityList(planningBookId: String, isActive: Int): SimpleDataResponse {
         var result = SimpleDataResponse(false, 404, "not found")

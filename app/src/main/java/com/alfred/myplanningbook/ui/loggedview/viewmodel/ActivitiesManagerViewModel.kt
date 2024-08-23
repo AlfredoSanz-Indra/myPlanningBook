@@ -71,7 +71,6 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
         clearErrors()
         clearState()
 
-        updateIsToCreateActivity(action)
         updateActivityStartTime(DateTimeUtils.currentHour(), 0, DateTimeUtils.currentTimeFormatted())
         updateActivityEndTime(DateTimeUtils.currentHour() + 1, 0, DateTimeUtils.currentTimeFormatted())
         updateIsToCreateActivity(action)
@@ -88,6 +87,13 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
         updateActivityEndTime(ActivityBook.endHour, ActivityBook.endMinute, DateTimeUtils.formatTime(ActivityBook.endHour, ActivityBook.endMinute))
 
         updateIsToUpdateActivity(true)
+    }
+
+    fun hideActivityUpdateSection() {
+        clearErrors()
+        clearState()
+
+        updateIsToUpdateActivity(false)
     }
 
     fun loadActivities() {
@@ -190,6 +196,44 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
         Klog.linedbg("ActivitiesManagerViewModel", "createActivity", "is created")
     }
 
+    fun updateActivity() {
+        Klog.line("ActivitiesManagerViewModel", "updateActivity", "-")
+
+        if(!validateFields()) {
+            Klog.linedbg("ActivitiesManagerViewModel", "updateActivity", "Validation was unsuccessfull")
+            return
+        }
+        Klog.linedbg("ActivitiesManagerViewModel", "updateActivity", "Validation has been success")
+
+        if(AppState.activePlanningBook == null) {
+            updateCurrentPlanningBook("You don't have any planning book yet")
+            return
+        }
+
+        val activityBook = fillActivityBookObj()
+        activityBook.id = uiState.value.activityBookSelectedId
+
+        viewModelScope.launch {
+            val resp = activityService.updateActivity(activityBook)
+            Klog.line("ActivitiesManagerViewModel", "updateActivity", "resp: $resp")
+            if(resp.result) {
+                clearErrors()
+                clearState()
+                updateIsToUpdateActivity(false)
+                updateIsActivityBookListLoaded(false)
+            }
+            else {
+                setGeneralError(" ${resp.code}: ${resp.message}")
+            }
+        }
+
+        Klog.linedbg("ActivitiesManagerViewModel", "updateActivity", "is created")
+    }
+
+    fun cloneActivity() {
+
+    }
+
     private fun validateFields(): Boolean {
         clearErrors()
 
@@ -241,10 +285,6 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
             null)
 
         return result
-    }
-
-    fun updateActivity() {
-
     }
 
     private fun updateIsToCreateActivity(action: Boolean) {

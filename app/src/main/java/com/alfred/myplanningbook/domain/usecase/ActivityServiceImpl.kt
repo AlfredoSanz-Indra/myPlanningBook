@@ -40,7 +40,32 @@ class ActivityServiceImpl(private val activityRepository: ActivityRepository): A
         return result
     }
 
+    override suspend fun updateActivity(activity: ActivityBook): SimpleResponse {
+        var result: SimpleResponse
+        Klog.line("ActivityServiceImpl", "updateActivity", "updating Activity -> name: ${activity.name}")
 
+        try {
+            activity.isActive = 1
+
+            val resp: SimpleDataResponse = activityRepository.updateActivity(activity)
+            Klog.linedbg("ActivityServiceImpl", "updateActivity", "resp: $resp")
+
+            if(!resp.result) {
+                result = SimpleResponse(false, resp.code, resp.message, "")
+            }
+            else {
+                result = SimpleResponse(true, 200, "got it", "")
+                result.activity = resp.activity
+            }
+        }
+        catch(e: Exception) {
+            Klog.line("ActivityServiceImpl", "updateActivity", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleResponse(false, 500, e.localizedMessage, "" )
+        }
+
+        Klog.linedbg("ActivityServiceImpl", "updateActivity", "result: $result")
+        return result
+    }
 
     override suspend fun getActivityList(planningBookId: String, isActive: Int): SimpleResponse {
         var result: SimpleResponse

@@ -96,17 +96,22 @@ private fun activityUpdateActions() {
     val viewModel: ActivitiesManagerViewModel = koinViewModel()
 
     Column {
-        Row {
-            OutlinedButton(modifier = Modifier
-                .width(200.dp)
-                .height(70.dp),
-                colors = CommonViewComp.getSecondaryButtonColour(),
-                onClick = {
-                    viewModel.showActivityCreationSection(false);
-                }) {
-                Text("Cancel")
-            }
+        Column(Modifier.fillMaxWidth(),
+            Arrangement.Top,
+            Alignment.CenterHorizontally) {
 
+            Row {
+                OutlinedButton(
+                    modifier = Modifier.width(200.dp).height(70.dp),
+                    colors = CommonViewComp.getSecondaryButtonColour(),
+                    onClick = {
+                        viewModel.hideActivityUpdateSection();
+                    }) {
+                    Text("Cancel")
+                }
+            }
+        }
+        Row {
             OutlinedButton(modifier = Modifier
                 .width(200.dp)
                 .height(70.dp),
@@ -115,6 +120,14 @@ private fun activityUpdateActions() {
                     viewModel.updateActivity();
                 }) {
                 Text("Save")
+            }
+            OutlinedButton(
+                modifier = Modifier.width(200.dp).height(70.dp),
+                colors = CommonViewComp.getActionsButtonColour(),
+                onClick = {
+                    viewModel.cloneActivity();
+                }) {
+                Text("Clone with changes")
             }
         }
     }
