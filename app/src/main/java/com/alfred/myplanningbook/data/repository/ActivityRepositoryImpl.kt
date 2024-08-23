@@ -9,6 +9,7 @@ import com.alfred.myplanningbook.domain.model.ActivityBook
 import com.alfred.myplanningbook.domain.repositoryapi.ActivityRepository
 import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.QuerySnapshot
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.tasks.await
@@ -32,7 +33,8 @@ class ActivityRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): Act
             Documents.ACTIVITYBOOK_START_MINUTE to activitybook.startMinute,
             Documents.ACTIVITYBOOK_END_HOUR to activitybook.endHour,
             Documents.ACTIVITYBOOK_END_MINUTE to activitybook.endMinute,
-            Documents.ACTIVITYBOOK_WEEKDAYS to activitybook.weekDaysList
+            Documents.ACTIVITYBOOK_WEEKDAYS to activitybook.weekDaysList,
+            Documents.ACTIVITYBOOK_ISACTIVE to activitybook.isActive
         )
 
         withContext(ioDispatcher) {
@@ -65,6 +67,64 @@ class ActivityRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): Act
         } //scope
 
         Klog.linedbg("ActivityRepositoryImpl", "createActivity", "result: $result")
+        return result
+    }
+
+
+
+    override suspend fun getActivityList(planningBookId: String, isActive: Int): SimpleDataResponse {
+        var result = SimpleDataResponse(false, 404, "not found")
+        Klog.line("ActivityRepositoryImpl", "getActivityList", "Listing activitiesBook from the planningBook: pbId $planningBookId")
+
+        withContext(ioDispatcher) {
+            val defer = async(ioDispatcher) {
+                val task: Task<QuerySnapshot> = FirebaseSession.db.collection(Collections.ACTIVITYBOOK)
+                    .whereEqualTo(Documents.ACTIVITYBOOK_PLANNINGBOOK_ID, planningBookId)
+                    .whereGreaterThanOrEqualTo(Documents.ACTIVITYBOOK_ISACTIVE, isActive)
+                    .orderBy(Documents.ACTIVITYBOOK_NAME)
+                    .get()
+                    .addOnSuccessListener {}
+
+
+                task.await()
+
+                var taskResp: SimpleDataResponse
+                if(task.isSuccessful) {
+                    Klog.line("ActivityRepositoryImpl", "getActivityList", "task is successful")
+                    var activityBookList: MutableList<ActivityBook> = mutableListOf()
+                    for (document in task.result.documents) {
+                        var activityBookFound = ActivityBook(
+                            document.id,
+                            document.get(Documents.ACTIVITYBOOK_PLANNINGBOOK_ID) as String,
+                            document.get(Documents.ACTIVITYBOOK_NAME) as String,
+                            document.get(Documents.ACTIVITYBOOK_DESC) as String?,
+                            (document.get(Documents.ACTIVITYBOOK_START_HOUR) as Long).toInt(),
+                            (document.get(Documents.ACTIVITYBOOK_START_MINUTE) as Long).toInt(),
+                            (document.get(Documents.ACTIVITYBOOK_END_HOUR) as Long).toInt(),
+                            (document.get(Documents.ACTIVITYBOOK_END_MINUTE) as Long).toInt(),
+                            (document.get(Documents.ACTIVITYBOOK_WEEKDAYS) as MutableList<String>),
+                            (document.get(Documents.ACTIVITYBOOK_ISACTIVE) as Long).toInt(),
+                        )
+                        activityBookList.add(activityBookFound)
+                    }
+
+                    taskResp = SimpleDataResponse(true, 200, "Activities list - $activityBookList")
+                    taskResp.activityBookList = activityBookList
+                }
+                else {
+                    Klog.line("ActivityRepositoryImpl", "getActivityList", "error cause: ${task.exception?.cause}")
+                    Klog.line("ActivityRepositoryImpl", "getActivityList", "error message: ${task.exception?.message}")
+
+                    taskResp = SimpleDataResponse(false, 400, "Listing owner failed.")
+                }
+
+                return@async taskResp
+            }
+
+            result = defer.await()
+        } //scope
+
+        Klog.line("ActivityRepositoryImpl", "getActivityList", "result: $result")
         return result
     }
 }

@@ -6,6 +6,7 @@ import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.core.util.DateTimeUtils
 import com.alfred.myplanningbook.core.validators.ChainTextValidator
 import com.alfred.myplanningbook.core.validators.TextValidatorLength
+import com.alfred.myplanningbook.core.validators.TimeGreaterValidator
 import com.alfred.myplanningbook.core.validators.ValidatorResult
 import com.alfred.myplanningbook.domain.AppState
 import com.alfred.myplanningbook.domain.model.ActivityBook
@@ -100,6 +101,21 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
 
         Klog.line("ActivitiesManagerViewModel", "loadActivities", "${AppState.activePlanningBook!!.id}")
         updateCurrentPlanningBook(AppState.activePlanningBook!!.name)
+
+        viewModelScope.launch {
+            val resp = activityService.getActivityList(AppState.activePlanningBook!!.id, 1)
+            Klog.line("ActivitiesManagerViewModel", "loadActivities", "resp=${resp.result}")
+            if(resp.result) {
+                updateActivityBookList(resp.activityBookList ?: mutableListOf())
+                clearErrors()
+                clearState()
+                updateIsToCreateActivity(false)
+                updateIsActivityBookListLoaded(true)
+            }
+            else {
+                setGeneralError(" ${resp.code}: ${resp.message}")
+            }
+        }
     }
 
     fun selectChip(code: String, action: Boolean) {
@@ -183,11 +199,14 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
         val chainTxtValDesc = ChainTextValidator(
             TextValidatorLength(5, activityDesc_maxLength)
         )
-
-        //TODO Validar hora-min fin > hora-min start
+        val timeValidator = TimeGreaterValidator()
 
         val valResultName = chainTxtValName.validate(uiState.value.activityName.trim())
         val valResultDesc = chainTxtValDesc.validate(uiState.value.activityDesc.trim())
+        val valResultTime = timeValidator.validate(uiState.value.activityStartHour,
+                                                   uiState.value.activityEndHour,
+                                                   uiState.value.activityStartMinute,
+                                                   uiState.value.activityEndMinute)
 
         var result = true
         if(valResultName is ValidatorResult.Error) {
@@ -198,7 +217,10 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
             updateActivityDescError(valResultDesc.message)
             result = false
         }
-
+        if(valResultTime is ValidatorResult.Error) {
+            updateActivityEndTimeError(valResultTime.message)
+            result = false
+        }
         if(uiState.value.chipsSelectedList.size == 0) {
             updateActivityChipsError("Seleccione al menos un día")
             result = false
@@ -215,7 +237,8 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
             uiState.value.activityStartMinute,
             uiState.value.activityEndHour,
             uiState.value.activityEndMinute,
-            DateTimeUtils.sortWeekDaysList(uiState.value.chipsSelectedList))
+            DateTimeUtils.sortWeekDaysList(uiState.value.chipsSelectedList),
+            null)
 
         return result
     }

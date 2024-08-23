@@ -10,4 +10,7 @@ import com.alfred.myplanningbook.domain.model.ActivityBook
 interface ActivityRepository {
 
     suspend fun createActivity(activity: ActivityBook): SimpleDataResponse
+
+
+    suspend fun getActivityList(planningBookId: String, isActive: Int): SimpleDataResponse
 }
