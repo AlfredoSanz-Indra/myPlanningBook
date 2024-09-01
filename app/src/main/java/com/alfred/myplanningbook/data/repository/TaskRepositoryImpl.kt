@@ -155,14 +155,14 @@ class TaskRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): TaskRep
                         taskBookList.add(taskbookFound)
                     }
 
-                    taskResp = SimpleDataResponse(true, 200, "Owner list - $taskBookList")
+                    taskResp = SimpleDataResponse(true, 200, "Tasks list - $taskBookList")
                     taskResp.taskBookList = taskBookList
                 }
                 else {
                     Klog.line("TaskRepositoryImpl", "getTaskList", "error cause: ${task.exception?.cause}")
                     Klog.line("TaskRepositoryImpl", "getTaskList", "error message: ${task.exception?.message}")
 
-                    taskResp = SimpleDataResponse(false, 400, "Listing owner failed.")
+                    taskResp = SimpleDataResponse(false, 400, "Listing tasks failed.")
                 }
 
                 return@async taskResp
@@ -171,7 +171,7 @@ class TaskRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): TaskRep
             result = defer.await()
         } //scope
 
-        Klog.line("TaskRepositoryImpl", "listOwnersByContainPB", "result: $result")
+        Klog.line("TaskRepositoryImpl", "getTaskList", "result: $result")
         return result
     }
 }

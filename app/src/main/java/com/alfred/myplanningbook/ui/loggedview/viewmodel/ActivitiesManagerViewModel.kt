@@ -6,10 +6,10 @@ import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.core.util.DateTimeUtils
 import com.alfred.myplanningbook.core.validators.ChainTextValidator
 import com.alfred.myplanningbook.core.validators.TextValidatorLength
+import com.alfred.myplanningbook.core.validators.TimeGreaterValidator
 import com.alfred.myplanningbook.core.validators.ValidatorResult
 import com.alfred.myplanningbook.domain.AppState
 import com.alfred.myplanningbook.domain.model.ActivityBook
-import com.alfred.myplanningbook.domain.model.TaskBook
 import com.alfred.myplanningbook.domain.usecaseapi.ActivityService
 import com.alfred.myplanningbook.domain.usecaseapi.StateService
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,6 +50,7 @@ data class ActivitiesManagerUiState(
     var isActivityBookListLoaded: Boolean = false,
     var activityBookSelectedId: String = "",
     var chipsSelectedList: MutableList<String> = mutableListOf(),
+    var chipsSelectedMap: MutableMap<String, Boolean> = mutableMapOf(),
     var activityChipsError: Boolean = false,
     var activityChipsErrorTxt: String = ""
 )
@@ -70,23 +71,30 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
         clearErrors()
         clearState()
 
-        updateIsToCreateActivity(action)
         updateActivityStartTime(DateTimeUtils.currentHour(), 0, DateTimeUtils.currentTimeFormatted())
         updateActivityEndTime(DateTimeUtils.currentHour() + 1, 0, DateTimeUtils.currentTimeFormatted())
         updateIsToCreateActivity(action)
     }
 
-    fun showActivityUpdateSection(ActivityBook: ActivityBook) {
+    fun showActivityUpdateSection(activityBook: ActivityBook) {
         clearErrors()
         clearState()
 
-        updateActivityBookSelectedId(ActivityBook.id!!)
-        updateActivityName(ActivityBook.name)
-        updateActivityDesc(ActivityBook.description ?: "")
-        updateActivityStartTime(ActivityBook.startHour, ActivityBook.startMinute, DateTimeUtils.formatTime(ActivityBook.startHour, ActivityBook.startMinute))
-        updateActivityEndTime(ActivityBook.endHour, ActivityBook.endMinute, DateTimeUtils.formatTime(ActivityBook.endHour, ActivityBook.endMinute))
+        initChipsForUpdate(activityBook.weekDaysList)
+        updateActivityBookSelectedId(activityBook.id!!)
+        updateActivityName(activityBook.name)
+        updateActivityDesc(activityBook.description ?: "")
+        updateActivityStartTime(activityBook.startHour, activityBook.startMinute, DateTimeUtils.formatTime(activityBook.startHour, activityBook.startMinute))
+        updateActivityEndTime(activityBook.endHour, activityBook.endMinute, DateTimeUtils.formatTime(activityBook.endHour, activityBook.endMinute))
 
         updateIsToUpdateActivity(true)
+    }
+
+    fun hideActivityUpdateSection() {
+        clearErrors()
+        clearState()
+
+        updateIsToUpdateActivity(false)
     }
 
     fun loadActivities() {
@@ -100,6 +108,21 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
 
         Klog.line("ActivitiesManagerViewModel", "loadActivities", "${AppState.activePlanningBook!!.id}")
         updateCurrentPlanningBook(AppState.activePlanningBook!!.name)
+
+        viewModelScope.launch {
+            val resp = activityService.getActivityList(AppState.activePlanningBook!!.id, 1)
+            Klog.line("ActivitiesManagerViewModel", "loadActivities", "resp=${resp.result}")
+            if(resp.result) {
+                updateActivityBookList(resp.activityBookList ?: mutableListOf())
+                clearErrors()
+                clearState()
+                updateIsToCreateActivity(false)
+                updateIsActivityBookListLoaded(true)
+            }
+            else {
+                setGeneralError(" ${resp.code}: ${resp.message}")
+            }
+        }
     }
 
     fun selectChip(code: String, action: Boolean) {
@@ -110,7 +133,7 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
         if(!exist && action) {
             uiState.value.chipsSelectedList.add(code)
         }
-        Klog.line("ActivitiesManagerViewModel", "chipsSelectedList*= ", "${uiState.value.chipsSelectedList}")
+        uiState.value.chipsSelectedMap[code] = action
     }
 
     fun openTimeStartDi() {
@@ -174,6 +197,48 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
         Klog.linedbg("ActivitiesManagerViewModel", "createActivity", "is created")
     }
 
+    fun updateActivity() {
+        Klog.line("ActivitiesManagerViewModel", "updateActivity", "-")
+
+        if(!validateFields()) {
+            Klog.linedbg("ActivitiesManagerViewModel", "updateActivity", "Validation was unsuccessfull")
+            return
+        }
+        Klog.linedbg("ActivitiesManagerViewModel", "updateActivity", "Validation has been success")
+
+        if(AppState.activePlanningBook == null) {
+            updateCurrentPlanningBook("You don't have any planning book yet")
+            return
+        }
+
+        val activityBook = fillActivityBookObj()
+        activityBook.id = uiState.value.activityBookSelectedId
+
+        viewModelScope.launch {
+            val resp = activityService.updateActivity(activityBook)
+            Klog.line("ActivitiesManagerViewModel", "updateActivity", "resp: $resp")
+            if(resp.result) {
+                clearErrors()
+                clearState()
+                updateIsToUpdateActivity(false)
+                updateIsActivityBookListLoaded(false)
+            }
+            else {
+                setGeneralError(" ${resp.code}: ${resp.message}")
+            }
+        }
+
+        Klog.linedbg("ActivitiesManagerViewModel", "updateActivity", "is created")
+    }
+
+    fun cloneActivity() {
+        Klog.linedbg("ActivitiesManagerViewModel", "cloneActivity", "-")
+        createActivity()
+        updateIsToUpdateActivity(false)
+        updateIsActivityBookListLoaded(false)
+        Klog.linedbg("ActivitiesManagerViewModel", "cloneActivity", "is cloned")
+    }
+
     private fun validateFields(): Boolean {
         clearErrors()
 
@@ -183,11 +248,14 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
         val chainTxtValDesc = ChainTextValidator(
             TextValidatorLength(5, activityDesc_maxLength)
         )
-
-        //TODO Validar hora-min fin > hora-min start
+        val timeValidator = TimeGreaterValidator()
 
         val valResultName = chainTxtValName.validate(uiState.value.activityName.trim())
         val valResultDesc = chainTxtValDesc.validate(uiState.value.activityDesc.trim())
+        val valResultTime = timeValidator.validate(uiState.value.activityStartHour,
+                                                   uiState.value.activityEndHour,
+                                                   uiState.value.activityStartMinute,
+                                                   uiState.value.activityEndMinute)
 
         var result = true
         if(valResultName is ValidatorResult.Error) {
@@ -198,7 +266,10 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
             updateActivityDescError(valResultDesc.message)
             result = false
         }
-
+        if(valResultTime is ValidatorResult.Error) {
+            updateActivityEndTimeError(valResultTime.message)
+            result = false
+        }
         if(uiState.value.chipsSelectedList.size == 0) {
             updateActivityChipsError("Seleccione al menos un día")
             result = false
@@ -215,13 +286,34 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
             uiState.value.activityStartMinute,
             uiState.value.activityEndHour,
             uiState.value.activityEndMinute,
-            DateTimeUtils.sortWeekDaysList(uiState.value.chipsSelectedList))
+            DateTimeUtils.sortWeekDaysList(uiState.value.chipsSelectedList),
+            null)
 
         return result
     }
 
-    fun updateActivity() {
+    private fun initChipsMap() {
+        uiState.value.chipsSelectedMap[DateTimeUtils.LUNES] = false;
+        uiState.value.chipsSelectedMap[DateTimeUtils.MARTES] = false;
+        uiState.value.chipsSelectedMap[DateTimeUtils.MIERCOLES] = false;
+        uiState.value.chipsSelectedMap[DateTimeUtils.JUEVES] = false;
+        uiState.value.chipsSelectedMap[DateTimeUtils.VIERNES] = false;
+        uiState.value.chipsSelectedMap[DateTimeUtils.SABADO] = false;
+        uiState.value.chipsSelectedMap[DateTimeUtils.DOMINGO] = false;
+    }
 
+    private fun initChipsForUpdate(daysOfWeek: MutableList<String>) {
+        Klog.linedbg("ActivitiesManagerViewModel", "initChipsMapForUpdate", "daysOfWeek: $daysOfWeek")
+        Klog.linedbg("ActivitiesManagerViewModel", "initChipsMapForUpdate", "uiState.value.chipsSelectedList: ${uiState.value.chipsSelectedList}")
+        Klog.linedbg("ActivitiesManagerViewModel", "initChipsMapForUpdate", "uiState.value.chipsSelectedMap: ${uiState.value.chipsSelectedMap}")
+
+        daysOfWeek.forEach {it ->
+            uiState.value.chipsSelectedMap[it] = true
+            uiState.value.chipsSelectedList.add(it)
+        }
+
+        Klog.linedbg("ActivitiesManagerViewModel", "initChipsMapForUpdate", "uiState.value.chipsSelectedList *: ${uiState.value.chipsSelectedList}")
+        Klog.linedbg("ActivitiesManagerViewModel", "initChipsMapForUpdate", "uiState.value.chipsSelectedMap *: ${uiState.value.chipsSelectedMap}")
     }
 
     private fun updateIsToCreateActivity(action: Boolean) {
@@ -374,6 +466,7 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
         updateActivityEndTime(0, 0, "")
         updateActivityBookSelectedId("")
         uiState.value.chipsSelectedList = mutableListOf()
+        initChipsMap()
     }
 
     private fun setGeneralError(txt: String) {

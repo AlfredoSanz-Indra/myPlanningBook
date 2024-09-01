@@ -19,4 +19,5 @@ data class SimpleDataResponse(val result: Boolean,
     var task: TaskBook? = null
     var activity: ActivityBook? = null
     var taskBookList: MutableList<TaskBook>? = null
+    var activityBookList: MutableList<ActivityBook>? = null
 }

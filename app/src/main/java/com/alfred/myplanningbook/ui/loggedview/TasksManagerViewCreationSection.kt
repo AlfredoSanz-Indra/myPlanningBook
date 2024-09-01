@@ -103,7 +103,6 @@ private fun taskUpdateActions() {
                     }) {
                     Text("Cancel")
                 }
-
             }
         }
         Row {

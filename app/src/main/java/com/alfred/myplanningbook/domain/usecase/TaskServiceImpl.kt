@@ -14,7 +14,6 @@ import com.alfred.myplanningbook.domain.usecaseapi.TaskService
 class TaskServiceImpl(private val taskRepository: TaskRepository): TaskService {
 
     override suspend fun createTask(task: TaskBook): SimpleResponse {
-
         var result: SimpleResponse
         Klog.line("TaskServiceImpl", "createTask", "creating Task -> name: ${task.name}")
 
@@ -65,7 +64,6 @@ class TaskServiceImpl(private val taskRepository: TaskRepository): TaskService {
     }
 
     override suspend fun getTaskList(planningBookId: String, fromDate: Long): SimpleResponse {
-
         var result: SimpleResponse
         Klog.line("TaskServiceImpl", "getTaskList", "getting the taskbook list from planningbook -> pb_id: ${planningBookId}")
 

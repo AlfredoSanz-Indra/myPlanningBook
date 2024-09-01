@@ -57,7 +57,7 @@ fun activitiesListSection() {
                 //@see https://developer.android.com/codelabs/basic-android-compose-training-add-scrollable-list?hl=es-419#2
                 items( uiState.activityBookList.size, itemContent = { item ->
                     val activityBook = uiState.activityBookList[item]
-                    activityListCardComponent(activityBook)
+                    TaskListCardComponent(activityBook)
                 })
             } //lazy
         } //Box
@@ -65,12 +65,12 @@ fun activitiesListSection() {
 }
 
 @Composable
-private fun activityListCardComponent(activityBook: ActivityBook) {
+private fun TaskListCardComponent(activityBook: ActivityBook) {
     OutlinedCard(
         modifier = Modifier
             .padding(vertical = 5.dp)
             .fillMaxWidth()
-            .height(150.dp)
+            .height(170.dp)
             .wrapContentHeight(),
         shape = MaterialTheme.shapes.medium,
         colors = CommonViewComp.gePlanningBookCardColour(),
@@ -84,19 +84,22 @@ private fun activityListCardComponent(activityBook: ActivityBook) {
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.Start)
         {
-            activityListCardComponentRowName(activityBook)
+            taskListCardComponentRowName(activityBook)
 
             Spacer(modifier = Modifier.height(10.dp))
-            activityListCardComponentRowDesc(activityBook)
+            taskListCardComponentRowDesc(activityBook)
 
             Spacer(modifier = Modifier.height(10.dp))
-            activityListCardComponentRowDate(activityBook)
+            taskListCardComponentRowDays(activityBook)
+
+            Spacer(modifier = Modifier.height(5.dp))
+            activityListCardComponentRowHours(activityBook)
         } //Column
     } //card
 }
 
 @Composable
-private fun activityListCardComponentRowName(activityBook: ActivityBook) {
+private fun taskListCardComponentRowName(activityBook: ActivityBook) {
     Row (
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween)
@@ -110,14 +113,14 @@ private fun activityListCardComponentRowName(activityBook: ActivityBook) {
         }
         Column(Modifier.padding(4.dp))
         {
-            activityListCardComponentButtonUpdate(activityBook)
+            taskListCardComponentButtonUpdate(activityBook)
         }
     }
 }
 
 
 @Composable
-private fun activityListCardComponentButtonUpdate(activityBook: ActivityBook) {
+private fun taskListCardComponentButtonUpdate(activityBook: ActivityBook) {
     val viewModel: ActivitiesManagerViewModel = koinViewModel()
 
     OutlinedButton(modifier = Modifier
@@ -136,7 +139,7 @@ private fun activityListCardComponentButtonUpdate(activityBook: ActivityBook) {
 }
 
 @Composable
-private fun activityListCardComponentRowDesc(activityBook: ActivityBook) {
+private fun taskListCardComponentRowDesc(activityBook: ActivityBook) {
     Row (
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween)
@@ -144,7 +147,7 @@ private fun activityListCardComponentRowDesc(activityBook: ActivityBook) {
         Column(Modifier.padding(4.dp))
         {
             Text(
-                text = activityBook.description ?: "-",
+                text = activityBook.getDescriptionInShort(),
                 style = MaterialTheme.typography.titleSmall,
             )
         }
@@ -152,16 +155,33 @@ private fun activityListCardComponentRowDesc(activityBook: ActivityBook) {
 }
 
 @Composable
-private fun activityListCardComponentRowDate(activityBook: ActivityBook) {
-    val viewModel: ActivitiesManagerViewModel = koinViewModel()
-
+private fun taskListCardComponentRowDays(activityBook: ActivityBook) {
     Row (
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween)
     {
         Column(Modifier.padding(4.dp))
         {
+            Text(
+                text = activityBook.getStringWeekDaysList() ,
+                style = MaterialTheme.typography.titleSmall,
+            )
+        }
+    }
+}
 
+@Composable
+private fun activityListCardComponentRowHours(activityBook: ActivityBook) {
+    Row (
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween)
+    {
+        Column(Modifier.padding(4.dp))
+        {
+            Text(
+                text = "De ${activityBook.getFormattedStartTime()} a  ${activityBook.getFormattedEndTime()}",
+                style = MaterialTheme.typography.titleSmall,
+            )
         }
     }
 }

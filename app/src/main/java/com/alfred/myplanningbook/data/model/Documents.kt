@@ -32,4 +32,5 @@ object Documents {
     const val ACTIVITYBOOK_END_HOUR: String = "END_HOUR"
     const val ACTIVITYBOOK_END_MINUTE: String = "END_MINUTE"
     const val ACTIVITYBOOK_WEEKDAYS: String = "WEEK_DAYS"
+    const val ACTIVITYBOOK_ISACTIVE: String = "IS_ACTIVE"
 }
