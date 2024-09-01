@@ -232,7 +232,11 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
     }
 
     fun cloneActivity() {
-
+        Klog.linedbg("ActivitiesManagerViewModel", "cloneActivity", "-")
+        createActivity()
+        updateIsToUpdateActivity(false)
+        updateIsActivityBookListLoaded(false)
+        Klog.linedbg("ActivitiesManagerViewModel", "cloneActivity", "is cloned")
     }
 
     private fun validateFields(): Boolean {
