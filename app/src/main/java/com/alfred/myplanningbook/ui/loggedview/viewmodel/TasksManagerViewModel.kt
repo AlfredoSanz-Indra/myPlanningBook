@@ -89,6 +89,7 @@ class TasksManagerViewModel(private val taskService: TaskService,
                     taskListReal.addAll(taskFromActivities)
                     taskListReal.sortWith(compareBy({it.year}, {it.month}, {it.day}, {it.hour}, {it.minute}))
                     setDayOfWeekToTasks(taskListReal)
+                    excludeActivitiesTaskWhenTaskSimilar(taskListReal)
 
                     updateTaskBookList(taskListReal)
                     clearErrors()
@@ -145,6 +146,28 @@ class TasksManagerViewModel(private val taskService: TaskService,
 
     private fun setDayOfWeekToTasks(taskList: MutableList<TaskBook>) {
         taskList.map { it.dayOfWeekStr = DateTimeUtils.translateDaysToSpanish(DateTimeUtils.dateToDayString(it.dateInMillis))}
+    }
+
+    private fun excludeActivitiesTaskWhenTaskSimilar(taskBookList: MutableList<TaskBook>) {
+        val iterator = taskBookList.listIterator()
+        while (iterator.hasNext()) {
+            val curTask = iterator.next()
+            if(curTask.nature != TaskBookNatureEnum.IS_ACTIVITY) {
+                continue
+            }
+
+            val similarTasks = taskBookList.filter { it.name == curTask.name &&
+                    it.year == curTask.year &&
+                    it.month == curTask.month &&
+                    it.day == curTask.day &&
+                    it.nature != TaskBookNatureEnum.IS_ACTIVITY
+                }
+
+            if (similarTasks.isNotEmpty()) {
+                iterator.remove()
+                continue
+            }
+        }
     }
 
     fun showTaskCreationSection(action: Boolean) {

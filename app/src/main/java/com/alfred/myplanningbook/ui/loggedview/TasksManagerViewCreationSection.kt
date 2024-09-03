@@ -34,6 +34,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.alfred.myplanningbook.domain.model.TaskBookNatureEnum
 import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.common.DialogDatePickerView
 import com.alfred.myplanningbook.ui.common.DialogTimePickerView
@@ -165,6 +166,16 @@ private fun taskCreationComponents_taskName() {
                     .height(90.dp)
                     .fillMaxSize(0.8f)
                     .padding(10.dp),
+                enabled = when(uiState.taskNature) {
+                    TaskBookNatureEnum.IS_ACTIVITY -> false
+                    TaskBookNatureEnum.ORIGIN_ACTIVITY -> false
+                    else -> true
+                },
+                readOnly = when(uiState.taskNature) {
+                    TaskBookNatureEnum.IS_ACTIVITY -> true
+                    TaskBookNatureEnum.ORIGIN_ACTIVITY -> true
+                    else -> false
+                },
                 onValueChange = { viewModel.updateTaskName(it) },
                 placeholder = { Text("Enter Task Name (5-30)") },
                 singleLine = true,
