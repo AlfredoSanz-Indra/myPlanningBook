@@ -1,6 +1,5 @@
 package com.alfred.myplanningbook.core.util
 
-import com.alfred.myplanningbook.core.log.Klog
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -43,6 +42,10 @@ object DateTimeUtils {
         return format("dd").toInt()
     }
 
+    private fun Instant.asDayString(): String {
+        return format("EEE")
+    }
+
     private fun Instant.format(pattern: String): String {
         return DateTimeFormatter
             .ofPattern(pattern)
@@ -62,6 +65,10 @@ object DateTimeUtils {
 
     fun dateToDay(date: Long): Int {
         return date?.asInstant()?.asDayNumber() ?: 1
+    }
+
+    fun dateToDayString(date: Long): String {
+        return date?.asInstant()?.asDayString() ?: ""
     }
 
     fun currentDate(): Long {
@@ -90,15 +97,15 @@ object DateTimeUtils {
     }
 
     fun formatDate(year: Int, month: Int, day: Int): String {
-        var formateDay = day.toString()
+        var formatedDay = day.toString()
         if(day < 10) {
-            formateDay = "0$formateDay"
+            formatedDay = "0$formatedDay"
         }
         var formatedMonth = month.toString()
         if(month < 10) {
             formatedMonth = "0$formatedMonth"
         }
-        return "$formateDay/$formatedMonth/${year.toString()}"
+        return "$formatedDay/$formatedMonth/${year.toString()}"
     }
 
     fun formatTime(hour: Int, min: Int): String {
@@ -111,6 +118,19 @@ object DateTimeUtils {
             formatedHour = "0$formatedHour"
         }
         return "$formatedHour:$formatedMin"
+    }
+
+    fun currentDatePlusDays(days: Long): Long {
+        val zdtNow = ZonedDateTime.now()
+        return zdtNow.plusDays(days).with(LocalTime.MIDNIGHT).toInstant().toEpochMilli()
+    }
+
+    /*
+     * Days of week start from 1 which is Monday,
+     */
+    fun currentDayOfWeekPlusDays(days: Long): Int {
+        val zdtNow = ZonedDateTime.now()
+        return zdtNow.plusDays(days).dayOfWeek.value
     }
 
     fun sortWeekDaysList(weekDaysList: MutableList<String>): MutableList<String> {
@@ -139,5 +159,33 @@ object DateTimeUtils {
             result.add(DOMINGO)
         }
         return result
+    }
+
+    fun castDayOfWeekToInt(cday: String): Int {
+        var result = when(cday) {
+            LUNES -> 1
+            MARTES -> 2
+            MIERCOLES -> 3
+            JUEVES -> 4
+            VIERNES -> 5
+            SABADO -> 6
+            DOMINGO -> 7
+            else -> 0
+        }
+
+        return result
+    }
+
+    fun translateDaysToSpanish(day: String): String {
+        return when(day) {
+            "Mon" -> "Lunes"
+            "Tue" -> "Martes"
+            "Wed" -> "Miércoles"
+            "Thu" -> "Jueves"
+            "Fri" -> "Viernes"
+            "Sat" -> "Sábado"
+            "Sun" -> "Domingo"
+            else -> ""
+        }
     }
 }

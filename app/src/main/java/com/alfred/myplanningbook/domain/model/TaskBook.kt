@@ -14,5 +14,6 @@ data class TaskBook(
     val month: Int,
     val day: Int,
     val hour: Int,
-    val minute: Int
+    val minute: Int,
+    var dayOfWeekStr: String?
 )

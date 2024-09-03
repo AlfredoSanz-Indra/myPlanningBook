@@ -150,7 +150,8 @@ class TaskRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): TaskRep
                             (document.get(Documents.TASKBOOK_MONTH) as Long).toInt(),
                             (document.get(Documents.TASKBOOK_DAY) as Long).toInt(),
                             (document.get(Documents.TASKBOOK_HOUR) as Long).toInt(),
-                            (document.get(Documents.TASKBOOK_MINUTE) as Long).toInt()
+                            (document.get(Documents.TASKBOOK_MINUTE) as Long).toInt(),
+                            ""
                         )
                         taskBookList.add(taskbookFound)
                     }

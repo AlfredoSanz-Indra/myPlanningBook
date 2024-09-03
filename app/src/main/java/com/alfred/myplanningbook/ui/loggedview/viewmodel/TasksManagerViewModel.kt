@@ -8,7 +8,9 @@ import com.alfred.myplanningbook.core.validators.ChainTextValidator
 import com.alfred.myplanningbook.core.validators.TextValidatorLength
 import com.alfred.myplanningbook.core.validators.ValidatorResult
 import com.alfred.myplanningbook.domain.AppState
+import com.alfred.myplanningbook.domain.model.ActivityBook
 import com.alfred.myplanningbook.domain.model.TaskBook
+import com.alfred.myplanningbook.domain.usecaseapi.ActivityService
 import com.alfred.myplanningbook.domain.usecaseapi.StateService
 import com.alfred.myplanningbook.domain.usecaseapi.TaskService
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,6 +52,7 @@ data class TaskManagerUiState(
 )
 
 class TasksManagerViewModel(private val taskService: TaskService,
+                            private val activityService: ActivityService,
                             private val stateService: StateService): ViewModel() {
 
     private val _uiState = MutableStateFlow(TaskManagerUiState())
@@ -73,16 +76,72 @@ class TasksManagerViewModel(private val taskService: TaskService,
         viewModelScope.launch {
             val resp = taskService.getTaskList(AppState.activePlanningBook!!.id, todayDate)
             if(resp.result) {
-                updateTaskBookList(resp.taskBookList ?: mutableListOf())
-                clearErrors()
-                clearState()
-                updateIsToCreateTask(false)
-                updateIsTaskBookListLodaded(true)
+                var taskListReal = resp.taskBookList ?: mutableListOf()
+
+                val resp2 = activityService.getActivityList(AppState.activePlanningBook!!.id, 1)
+                if(resp2.result) {
+                    var taskFromActivities: MutableList<TaskBook> = mutableListOf()
+                    if(!resp2.activityBookList.isNullOrEmpty()) {
+                        taskFromActivities = generateTasksFromActivities(resp2.activityBookList!!)
+                    }
+                    taskListReal.addAll(taskFromActivities)
+                    taskListReal.sortWith(compareBy({it.year}, {it.month}, {it.day}, {it.hour}, {it.minute}))
+                    setDayOfWeekToTasks(taskListReal)
+
+                    updateTaskBookList(taskListReal)
+                    clearErrors()
+                    clearState()
+                    updateIsToCreateTask(false)
+                    updateIsTaskBookListLodaded(true)
+                }
+                else {
+                    setGeneralError(" ${resp2.code}: ${resp2.message}")
+                }
             }
             else {
                 setGeneralError(" ${resp.code}: ${resp.message}")
             }
         }
+    }
+
+    private fun generateTasksFromActivities(activitiesList: MutableList<ActivityBook>): MutableList<TaskBook> {
+        val result: MutableList<TaskBook> = mutableListOf()
+
+        activitiesList.forEach { it ->
+            for(cday in 0..14) {
+                val cDate = DateTimeUtils.currentDatePlusDays(cday.toLong())
+                val cDayOfWeek = DateTimeUtils.currentDayOfWeekPlusDays(cday.toLong())
+                for(itDayOfWeek in it.weekDaysList) {
+                    var apply = false
+                    val itDayOfWeekInt = DateTimeUtils.castDayOfWeekToInt(itDayOfWeek)
+                    if(itDayOfWeekInt == cDayOfWeek) {
+                        apply = true
+                    }
+                    if(apply) {
+                        val taskB = TaskBook(
+                            null,
+                            it.idPlanningbook,
+                            it.name,
+                            it.description,
+                            cDate,
+                            DateTimeUtils.dateToYear(cDate),
+                            DateTimeUtils.dateToMonth(cDate),
+                            DateTimeUtils.dateToDay(cDate),
+                            it.startHour,
+                            it.startMinute,
+                            ""
+                        )
+                        result.add(taskB)
+                        continue
+                    }
+                }
+            }
+        }
+        return result
+    }
+
+    private fun setDayOfWeekToTasks(taskList: MutableList<TaskBook>) {
+        taskList.map { it.dayOfWeekStr = DateTimeUtils.translateDaysToSpanish(DateTimeUtils.dateToDayString(it.dateInMillis))}
     }
 
     fun showTaskCreationSection(action: Boolean) {
@@ -234,7 +293,8 @@ class TasksManagerViewModel(private val taskService: TaskService,
             DateTimeUtils.dateToMonth(uiState.value.taskDate),
             DateTimeUtils.dateToDay(uiState.value.taskDate),
             uiState.value.taskHour,
-            uiState.value.taskMinute)
+            uiState.value.taskMinute,
+            "")
 
         return result
     }

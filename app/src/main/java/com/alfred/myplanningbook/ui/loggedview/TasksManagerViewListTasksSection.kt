@@ -166,5 +166,13 @@ private fun taskListCardComponentRowDays(taskBook: TaskBook) {
                 style = MaterialTheme.typography.titleSmall,
             )
         }
+
+        Column(Modifier.padding(4.dp))
+        {
+            Text(
+                text = taskBook.dayOfWeekStr!!,
+                style = MaterialTheme.typography.titleSmall,
+            )
+        }
     }
 }
