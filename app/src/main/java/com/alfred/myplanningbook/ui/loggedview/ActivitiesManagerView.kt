@@ -130,7 +130,7 @@ class ActivitiesManagerView {
         }
         else {
             activitiesHeaderActions(onBack)
-            activitiesListSection()
+            ActivitiesListSection()
         }
     }
 

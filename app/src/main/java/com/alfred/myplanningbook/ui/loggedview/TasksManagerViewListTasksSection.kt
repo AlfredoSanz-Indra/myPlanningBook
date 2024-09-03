@@ -69,7 +69,7 @@ fun taskListSection() {
                 //@see https://developer.android.com/codelabs/basic-android-compose-training-add-scrollable-list?hl=es-419#2
                 items( uiState.taskBookList.size, itemContent = { item ->
                     val taskBook = uiState.taskBookList[item]
-                    TaskListCardComponent(taskBook)
+                    ActivityListCardComponent(taskBook)
                 })
             } //lazy
         } //Box
@@ -77,7 +77,7 @@ fun taskListSection() {
 }
 
 @Composable
-private fun TaskListCardComponent(taskBook: TaskBook) {
+private fun ActivityListCardComponent(taskBook: TaskBook) {
     OutlinedCard(
         modifier = Modifier
             .padding(vertical = 5.dp)
@@ -96,19 +96,19 @@ private fun TaskListCardComponent(taskBook: TaskBook) {
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.Start)
         {
-            taskListCardComponentRowName(taskBook)
+            ActivityListCardComponentRowName(taskBook)
 
             Spacer(modifier = Modifier.height(10.dp))
-            taskListCardComponentRowDesc(taskBook)
+            ActivityListCardComponentRowDesc(taskBook)
 
             Spacer(modifier = Modifier.height(10.dp))
-            taskListCardComponentRowDays(taskBook)
+            ActivityListCardComponentRowDays(taskBook)
         } //Column
     } //card
 }
 
 @Composable
-private fun taskListCardComponentRowName(taskBook: TaskBook) {
+private fun ActivityListCardComponentRowName(taskBook: TaskBook) {
     Row (
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween)
@@ -122,19 +122,19 @@ private fun taskListCardComponentRowName(taskBook: TaskBook) {
         }
         Column(Modifier.padding(4.dp))
         {
-            taskListCardComponentButtonUpdate(taskBook)
+            ActivityListCardComponentButtonUpdate(taskBook)
         }
 
         if(taskBook.nature != TaskBookNatureEnum.IS_ACTIVITY) {
             Column(Modifier.padding(4.dp)) {
-                taskListCardComponentButtonDelete(taskBook)
+                ActivityListCardComponentButtonDelete(taskBook)
             }
         }
     }
 }
 
 @Composable
-private fun taskListCardComponentButtonUpdate(taskBook: TaskBook) {
+private fun ActivityListCardComponentButtonUpdate(taskBook: TaskBook) {
     val viewModel: TasksManagerViewModel = koinViewModel()
 
     OutlinedButton(modifier = Modifier
@@ -153,7 +153,7 @@ private fun taskListCardComponentButtonUpdate(taskBook: TaskBook) {
 }
 
 @Composable
-private fun taskListCardComponentButtonDelete(taskBook: TaskBook) {
+private fun ActivityListCardComponentButtonDelete(taskBook: TaskBook) {
     val viewModel: TasksManagerViewModel = koinViewModel()
 
     OutlinedButton(modifier = Modifier
@@ -173,7 +173,7 @@ private fun taskListCardComponentButtonDelete(taskBook: TaskBook) {
 }
 
 @Composable
-private fun taskListCardComponentRowDesc(taskBook: TaskBook) {
+private fun ActivityListCardComponentRowDesc(taskBook: TaskBook) {
     Row (
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween)
@@ -189,7 +189,7 @@ private fun taskListCardComponentRowDesc(taskBook: TaskBook) {
 }
 
 @Composable
-private fun taskListCardComponentRowDays(taskBook: TaskBook) {
+private fun ActivityListCardComponentRowDays(taskBook: TaskBook) {
     val viewModel: TasksManagerViewModel = koinViewModel()
 
     Row (
