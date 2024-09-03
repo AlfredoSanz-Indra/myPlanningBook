@@ -15,4 +15,6 @@ interface ActivityRepository {
     suspend fun updateActivity(activity: ActivityBook): SimpleDataResponse
 
     suspend fun getActivityList(planningBookId: String, isActive: Int): SimpleDataResponse
+
+    suspend fun deleteActivity(id: String): SimpleDataResponse
 }

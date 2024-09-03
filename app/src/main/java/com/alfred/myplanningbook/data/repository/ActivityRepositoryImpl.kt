@@ -172,4 +172,38 @@ class ActivityRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): Act
         Klog.line("ActivityRepositoryImpl", "getActivityList", "result: $result")
         return result
     }
+
+    override suspend fun deleteActivity(id: String): SimpleDataResponse {
+        var result = SimpleDataResponse(false, 404, "not found")
+        Klog.line("ActivityRepositoryImpl", "deleteActivity", "id: $id")
+
+        withContext(ioDispatcher) {
+            val defer = async(ioDispatcher) {
+                val task: Task<Void> = FirebaseSession.db.collection(Collections.ACTIVITYBOOK)
+                    .document(id)
+                    .delete()
+                    .addOnSuccessListener {}
+
+                task.await()
+
+                var taskResp: SimpleDataResponse = if(task.isSuccessful) {
+                    Klog.line("ActivityRepositoryImpl", "deleteActivity", "task is successfully")
+                    SimpleDataResponse(true, 200, "Activity removed")
+                }
+                else {
+                    Klog.line("ActivityRepositoryImpl", "deleteActivity", "error cause: ${task.exception?.cause}")
+                    Klog.line("ActivityRepositoryImpl", "deleteActivity", "error message: ${task.exception?.message}")
+
+                    SimpleDataResponse(false, 400, "Removing Activity failed.")
+                }
+
+                return@async taskResp
+            }
+
+            result = defer.await()
+        }//scope
+
+        Klog.line("ActivityRepositoryImpl", "deleteTask", "result: $result")
+        return result
+    }
 }

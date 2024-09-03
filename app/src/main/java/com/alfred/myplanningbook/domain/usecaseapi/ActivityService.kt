@@ -15,4 +15,6 @@ interface ActivityService {
     suspend fun updateActivity(activity: ActivityBook): SimpleResponse
 
     suspend fun getActivityList(planningBookId: String, isActive: Int): SimpleResponse
+
+    suspend fun deleteActivity(id: String): SimpleResponse
 }

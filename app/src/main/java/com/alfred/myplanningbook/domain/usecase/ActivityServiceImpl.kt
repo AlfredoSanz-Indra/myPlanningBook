@@ -96,4 +96,27 @@ class ActivityServiceImpl(private val activityRepository: ActivityRepository): A
         Klog.line("ActivityServiceImpl", "getActivityList", "result: $result")
         return result
     }
+
+    override suspend fun deleteActivity(id: String): SimpleResponse {
+        var result: SimpleResponse
+        Klog.line("ActivityServiceImpl", "deleteActivity", "Removing Activity -> id: $id")
+
+        try {
+            val resp = activityRepository.deleteActivity(id)
+
+            result = if (resp.result && resp.code == 200) {
+                SimpleResponse(true, 200, "removed", "")
+            }
+            else {
+                SimpleResponse(false, resp.code, "not removed", resp.message)
+            }
+        }
+        catch(e: Exception) {
+            Klog.line("ActivityServiceImpl", "deleteActivity", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleResponse(false, 500, e.localizedMessage, "")
+        }
+
+        Klog.linedbg("ActivityServiceImpl", "deleteActivity", "removed Activity -> result: $result")
+        return result
+    }
 }

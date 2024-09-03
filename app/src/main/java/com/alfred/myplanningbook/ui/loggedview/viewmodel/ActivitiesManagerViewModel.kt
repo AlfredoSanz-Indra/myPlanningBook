@@ -52,7 +52,9 @@ data class ActivitiesManagerUiState(
     var chipsSelectedList: MutableList<String> = mutableListOf(),
     var chipsSelectedMap: MutableMap<String, Boolean> = mutableMapOf(),
     var activityChipsError: Boolean = false,
-    var activityChipsErrorTxt: String = ""
+    var activityChipsErrorTxt: String = "",
+    var activityToDelete: ActivityBook? = null,
+    var isToDeleteActivity: Boolean = false
 )
 
 class ActivitiesManagerViewModel(private val activityService: ActivityService,
@@ -303,17 +305,48 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
     }
 
     private fun initChipsForUpdate(daysOfWeek: MutableList<String>) {
-        Klog.linedbg("ActivitiesManagerViewModel", "initChipsMapForUpdate", "daysOfWeek: $daysOfWeek")
-        Klog.linedbg("ActivitiesManagerViewModel", "initChipsMapForUpdate", "uiState.value.chipsSelectedList: ${uiState.value.chipsSelectedList}")
-        Klog.linedbg("ActivitiesManagerViewModel", "initChipsMapForUpdate", "uiState.value.chipsSelectedMap: ${uiState.value.chipsSelectedMap}")
-
         daysOfWeek.forEach {it ->
             uiState.value.chipsSelectedMap[it] = true
             uiState.value.chipsSelectedList.add(it)
         }
+    }
 
-        Klog.linedbg("ActivitiesManagerViewModel", "initChipsMapForUpdate", "uiState.value.chipsSelectedList *: ${uiState.value.chipsSelectedList}")
-        Klog.linedbg("ActivitiesManagerViewModel", "initChipsMapForUpdate", "uiState.value.chipsSelectedMap *: ${uiState.value.chipsSelectedMap}")
+    fun confirmDeleteActivity(activityBook: ActivityBook?, action: Boolean) {
+        Klog.linedbg("ActivitiesManagerViewModel","confirmDeleteActivity", "click, activityBook -> $activityBook, action-> $action")
+        clearErrors()
+
+        updateActivityToDelete(activityBook)
+        updateIsToDeleteActivity(action)
+    }
+
+    fun deleteActivity() {
+        Klog.linedbg("ActivitiesManagerViewModel","deleteActivity", "Activity id: ${_uiState.value.activityToDelete?.id}")
+
+        if(_uiState.value.activityToDelete == null || _uiState.value.activityToDelete?.id.isNullOrEmpty()) {
+            Klog.linedbg("ActivitiesManagerViewModel","deleteActivity", "Activity to delete is missing")
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val resp = activityService.deleteActivity(_uiState.value.activityToDelete!!.id!!)
+                Klog.linedbg("ActivitiesManagerViewModel", "deleteActivity", "resp: $resp")
+                if (resp.result && resp.code == 200) {
+                    clearErrors()
+                    clearState()
+                    loadActivities()
+                }
+                else {
+                    setGeneralError(" ${resp.code}: ${resp.message}")
+                }
+                Klog.linedbg("ActivitiesManagerViewModel", "deleteActivity", "Activity has been deleted or not")
+            }
+            catch (e: Exception) {
+                Klog.stackTrace("ActivitiesManagerViewModel", "deleteActivity", e.stackTrace)
+                Klog.line("ActivitiesManagerViewModel","deleteActivity"," Exception localizedMessage: ${e.localizedMessage}")
+                setGeneralError(" 500: ${e.message}, Error deleting ACtivity!")
+            }
+        }//launch
     }
 
     private fun updateIsToCreateActivity(action: Boolean) {
@@ -459,12 +492,26 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
         }
     }
 
+    private fun updateActivityToDelete(activityBook: ActivityBook?) {
+        _uiState.update {
+            it.copy(activityToDelete = activityBook)
+        }
+    }
+
+    private fun updateIsToDeleteActivity(action: Boolean) {
+        _uiState.update {
+            it.copy(isToDeleteActivity = action)
+        }
+    }
+
     private fun clearState() {
         updateActivityName("")
         updateActivityDesc("")
         updateActivityStartTime(0, 0, "")
         updateActivityEndTime(0, 0, "")
         updateActivityBookSelectedId("")
+        updateActivityToDelete(null)
+        updateIsToDeleteActivity(false)
         uiState.value.chipsSelectedList = mutableListOf()
         initChipsMap()
     }
