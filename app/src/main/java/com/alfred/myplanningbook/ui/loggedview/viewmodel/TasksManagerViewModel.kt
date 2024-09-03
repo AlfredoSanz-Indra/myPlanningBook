@@ -50,7 +50,9 @@ data class TaskManagerUiState(
     var openTimeDialog: Boolean = false,
     var taskBookList: MutableList<TaskBook> = mutableListOf(),
     var isTaskBookListLoaded: Boolean = false,
-    var taskBookSelectedId: String = ""
+    var taskBookSelectedId: String = "",
+    var taskBookToDelete: TaskBook? = null,
+    var isToDeleteTask: Boolean = false
 )
 
 class TasksManagerViewModel(private val taskService: TaskService,
@@ -386,6 +388,44 @@ class TasksManagerViewModel(private val taskService: TaskService,
         return result
     }
 
+    fun confirmDeleteTask(taskBook: TaskBook?, action: Boolean) {
+        Klog.linedbg("TasksManagerViewModel","confirmDeleteTask", "click, taskBook -> $taskBook, action-> $action")
+        clearErrors()
+
+        updateTaskBookToDelete(taskBook)
+        updateIsToDeleteTask(action)
+    }
+
+    fun deleteTask() {
+        Klog.linedbg("TasksManagerViewModel","deleteTask", "Task id: ${_uiState.value.taskBookToDelete?.id}")
+
+        if(_uiState.value.taskBookToDelete == null || _uiState.value.taskBookToDelete?.id.isNullOrEmpty()) {
+            Klog.linedbg("TasksManagerViewModel","deleteTask", "Task to delete is missing")
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val resp = taskService.deleteTask(_uiState.value.taskBookToDelete!!.id!!)
+                Klog.linedbg("TasksManagerViewModel", "deleteTask", "resp: $resp")
+                if (resp.result && resp.code == 200) {
+                    clearErrors()
+                    clearState()
+                    loadTasks()
+                }
+                else {
+                    setGeneralError(" ${resp.code}: ${resp.message}")
+                }
+                Klog.linedbg("TasksManagerViewModel", "deleteTask", "Task has been deleted or not")
+            }
+            catch (e: Exception) {
+                Klog.stackTrace("TasksManagerViewModel", "deleteTask", e.stackTrace)
+                Klog.line("TasksManagerViewModel","deleteTask"," Exception localizedMessage: ${e.localizedMessage}")
+                setGeneralError(" 500: ${e.message}, Error deleting Task!")
+            }
+        }//launch
+    }
+
     private fun updateIsToCreateTask(action: Boolean) {
         _uiState.update {
             it.copy(isToCreateTask = action)
@@ -499,6 +539,18 @@ class TasksManagerViewModel(private val taskService: TaskService,
         }
     }
 
+    private fun updateTaskBookToDelete(taskBook: TaskBook?) {
+        _uiState.update {
+            it.copy(taskBookToDelete = taskBook)
+        }
+    }
+
+    private fun updateIsToDeleteTask(action: Boolean) {
+        _uiState.update {
+            it.copy(isToDeleteTask = action)
+        }
+    }
+
     private fun clearState() {
         updateTaskNature(null)
         updateTaskName("")
@@ -506,6 +558,8 @@ class TasksManagerViewModel(private val taskService: TaskService,
         updateTaskDate(0, "")
         updateTaskTime(0, 0, "")
         updateTaskBookSelectedId("")
+        updateTaskBookToDelete(null)
+        updateIsToDeleteTask(false)
     }
 
     private fun setGeneralError(txt: String) {

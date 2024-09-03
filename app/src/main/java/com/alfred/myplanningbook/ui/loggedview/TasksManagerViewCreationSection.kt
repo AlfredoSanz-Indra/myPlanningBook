@@ -88,6 +88,7 @@ fun taskUpdateSection() {
 @Composable
 private fun taskUpdateActions() {
     val viewModel: TasksManagerViewModel = koinViewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Column {
         Column(Modifier.fillMaxWidth(),
@@ -95,6 +96,16 @@ private fun taskUpdateActions() {
             Alignment.CenterHorizontally) {
 
             Row {
+                OutlinedButton(modifier = Modifier
+                    .width(200.dp)
+                    .height(70.dp),
+                    colors = CommonViewComp.getActionsButtonColour(),
+                    onClick = {
+                        viewModel.updateTask();
+                    }) {
+                    Text("Save")
+                }
+
                 OutlinedButton(modifier = Modifier
                     .width(200.dp)
                     .height(70.dp),
@@ -106,23 +117,21 @@ private fun taskUpdateActions() {
                 }
             }
         }
-        Row {
-            OutlinedButton(modifier = Modifier
-                .width(200.dp)
-                .height(70.dp),
-                colors = CommonViewComp.getActionsButtonColour(),
-                onClick = {
-                    viewModel.updateTask();
-                }) {
-                Text("Save")
-            }
-            OutlinedButton(
-                modifier = Modifier.width(200.dp).height(70.dp),
-                colors = CommonViewComp.getActionsButtonColour(),
-                onClick = {
-                    viewModel.cloneTask();
-                }) {
-                Text("Clone with changes")
+        if(uiState.taskNature != TaskBookNatureEnum.IS_ACTIVITY) {
+            Column(Modifier.fillMaxWidth(),
+                Arrangement.Top,
+                Alignment.CenterHorizontally) {
+
+                Row {
+                    OutlinedButton(
+                        modifier = Modifier.width(200.dp).height(70.dp),
+                        colors = CommonViewComp.getActionsButtonColour(),
+                        onClick = {
+                            viewModel.cloneTask();
+                        }) {
+                        Text("Clone with changes")
+                    }
+                }
             }
         }
     }

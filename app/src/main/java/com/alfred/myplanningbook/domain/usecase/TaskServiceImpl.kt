@@ -92,4 +92,27 @@ class TaskServiceImpl(private val taskRepository: TaskRepository): TaskService {
         Klog.line("TaskServiceImpl", "getTaskList", "result: $result")
         return result
     }
+
+    override suspend fun deleteTask(id: String): SimpleResponse {
+        var result: SimpleResponse
+        Klog.line("TaskServiceImpl", "deleteTask", "Removing Task -> id: $id")
+
+        try {
+            val resp = taskRepository.deleteTask(id)
+
+            result = if (resp.result && resp.code == 200) {
+                SimpleResponse(true, 200, "removed", "")
+            }
+            else {
+                SimpleResponse(false, resp.code, "not removed", resp.message)
+            }
+        }
+        catch(e: Exception) {
+            Klog.line("TaskServiceImpl", "deleteTask", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleResponse(false, 500, e.localizedMessage, "")
+        }
+
+        Klog.linedbg("TaskServiceImpl", "deleteTask", "removed Task -> result: $result")
+        return result
+    }
 }

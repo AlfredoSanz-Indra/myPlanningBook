@@ -186,4 +186,38 @@ class TaskRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): TaskRep
             else -> TaskBookNatureEnum.ORIGIN_ACTIVITY
         }
     }
+
+    override suspend fun deleteTask(id: String): SimpleDataResponse {
+        var result = SimpleDataResponse(false, 404, "not found")
+        Klog.line("TaskRepositoryImpl", "deleteTask", "id: $id")
+
+        withContext(ioDispatcher) {
+            val defer = async(ioDispatcher) {
+                val task: Task<Void> = FirebaseSession.db.collection(Collections.TASKBOOK)
+                    .document(id)
+                    .delete()
+                    .addOnSuccessListener {}
+
+                task.await()
+
+                var taskResp: SimpleDataResponse = if(task.isSuccessful) {
+                    Klog.line("TaskRepositoryImpl", "deleteTask", "task is successfull")
+                    SimpleDataResponse(true, 200, "Task removed")
+                }
+                else {
+                    Klog.line("TaskRepositoryImpl", "deleteTask", "error cause: ${task.exception?.cause}")
+                    Klog.line("TaskRepositoryImpl", "deleteTask", "error message: ${task.exception?.message}")
+
+                    SimpleDataResponse(false, 400, "Removing Task failed.")
+                }
+
+                return@async taskResp
+            }
+
+            result = defer.await()
+        }//scope
+
+        Klog.line("TaskRepositoryImpl", "deleteTask", "result: $result")
+        return result
+    }
 }
