@@ -162,7 +162,7 @@ class PlanningBookManagerView {
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "You are to delete a Planning Book.  Do you want to continue?",
+                        text = "You are about to delete a Planning Book.  Do you want to continue?",
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))

@@ -15,4 +15,6 @@ interface TaskRepository {
     suspend fun updateTask(task: TaskBook): SimpleDataResponse
 
     suspend fun getTaskList(planningBookId: String, fromDate: Long): SimpleDataResponse
+
+    suspend fun deleteTask(id: String): SimpleDataResponse
 }

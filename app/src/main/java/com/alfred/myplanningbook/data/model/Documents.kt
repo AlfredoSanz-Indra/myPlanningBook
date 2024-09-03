@@ -23,6 +23,7 @@ object Documents {
     const val TASKBOOK_DAY: String = "DAY"
     const val TASKBOOK_HOUR: String = "HOUR"
     const val TASKBOOK_MINUTE: String = "MINUTE"
+    const val TASKBOOK_NATURE: String = "NATURE"
 
     const val ACTIVITYBOOK_NAME: String = "NAME"
     const val ACTIVITYBOOK_PLANNINGBOOK_ID: String = "PLANNINGBOOK_ID"

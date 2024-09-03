@@ -8,7 +8,10 @@ import com.alfred.myplanningbook.core.validators.ChainTextValidator
 import com.alfred.myplanningbook.core.validators.TextValidatorLength
 import com.alfred.myplanningbook.core.validators.ValidatorResult
 import com.alfred.myplanningbook.domain.AppState
+import com.alfred.myplanningbook.domain.model.ActivityBook
 import com.alfred.myplanningbook.domain.model.TaskBook
+import com.alfred.myplanningbook.domain.model.TaskBookNatureEnum
+import com.alfred.myplanningbook.domain.usecaseapi.ActivityService
 import com.alfred.myplanningbook.domain.usecaseapi.StateService
 import com.alfred.myplanningbook.domain.usecaseapi.TaskService
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +30,7 @@ data class TaskManagerUiState(
     var currentPlanningBook: String = "",
     var isToCreateTask: Boolean = false,
     var isToUpdateTask: Boolean = false,
+    var taskNature: TaskBookNatureEnum? = null,
     var taskName: String = "",
     var taskDesc: String = "",
     var taskDate: Long = 0,
@@ -46,10 +50,13 @@ data class TaskManagerUiState(
     var openTimeDialog: Boolean = false,
     var taskBookList: MutableList<TaskBook> = mutableListOf(),
     var isTaskBookListLoaded: Boolean = false,
-    var taskBookSelectedId: String = ""
+    var taskBookSelectedId: String = "",
+    var taskBookToDelete: TaskBook? = null,
+    var isToDeleteTask: Boolean = false
 )
 
 class TasksManagerViewModel(private val taskService: TaskService,
+                            private val activityService: ActivityService,
                             private val stateService: StateService): ViewModel() {
 
     private val _uiState = MutableStateFlow(TaskManagerUiState())
@@ -65,7 +72,7 @@ class TasksManagerViewModel(private val taskService: TaskService,
             return
         }
 
-        Klog.line("TasksManagerViewModel", "loadTasks", "${AppState.activePlanningBook!!.id}")
+        Klog.line("TasksManagerViewModel", "loadTasks", AppState.activePlanningBook!!.id)
         updateCurrentPlanningBook(AppState.activePlanningBook!!.name)
 
         val todayDate: Long = DateTimeUtils.currentDate()
@@ -73,14 +80,94 @@ class TasksManagerViewModel(private val taskService: TaskService,
         viewModelScope.launch {
             val resp = taskService.getTaskList(AppState.activePlanningBook!!.id, todayDate)
             if(resp.result) {
-                updateTaskBookList(resp.taskBookList ?: mutableListOf())
-                clearErrors()
-                clearState()
-                updateIsToCreateTask(false)
-                updateIsTaskBookListLodaded(true)
+                val taskListReal = resp.taskBookList ?: mutableListOf()
+
+                val resp2 = activityService.getActivityList(AppState.activePlanningBook!!.id, 1)
+                if(resp2.result) {
+                    var taskFromActivities: MutableList<TaskBook> = mutableListOf()
+                    if(!resp2.activityBookList.isNullOrEmpty()) {
+                        taskFromActivities = generateTasksFromActivities(resp2.activityBookList!!)
+                    }
+                    taskListReal.addAll(taskFromActivities)
+                    taskListReal.sortWith(compareBy({it.year}, {it.month}, {it.day}, {it.hour}, {it.minute}))
+                    setDayOfWeekToTasks(taskListReal)
+                    excludeActivitiesTaskWhenTaskSimilar(taskListReal)
+
+                    updateTaskBookList(taskListReal)
+                    clearErrors()
+                    clearState()
+                    updateIsToCreateTask(false)
+                    updateIsTaskBookListLodaded(true)
+                }
+                else {
+                    setGeneralError(" ${resp2.code}: ${resp2.message}")
+                }
             }
             else {
                 setGeneralError(" ${resp.code}: ${resp.message}")
+            }
+        }
+    }
+
+    private fun generateTasksFromActivities(activitiesList: MutableList<ActivityBook>): MutableList<TaskBook> {
+        val result: MutableList<TaskBook> = mutableListOf()
+
+        activitiesList.forEach { it ->
+            for(cday in 0..14) {
+                val cDate = DateTimeUtils.currentDatePlusDays(cday.toLong())
+                val cDayOfWeek = DateTimeUtils.currentDayOfWeekPlusDays(cday.toLong())
+                for(itDayOfWeek in it.weekDaysList) {
+                    var apply = false
+                    val itDayOfWeekInt = DateTimeUtils.castDayOfWeekToInt(itDayOfWeek)
+                    if(itDayOfWeekInt == cDayOfWeek) {
+                        apply = true
+                    }
+                    if(apply) {
+                        val taskB = TaskBook(
+                            null,
+                            it.idPlanningbook,
+                            it.name,
+                            it.description,
+                            cDate,
+                            DateTimeUtils.dateToYear(cDate),
+                            DateTimeUtils.dateToMonth(cDate),
+                            DateTimeUtils.dateToDay(cDate),
+                            it.startHour,
+                            it.startMinute,
+                            "",
+                            TaskBookNatureEnum.IS_ACTIVITY
+                        )
+                        result.add(taskB)
+                        continue
+                    }
+                }
+            }
+        }
+        return result
+    }
+
+    private fun setDayOfWeekToTasks(taskList: MutableList<TaskBook>) {
+        taskList.map { it.dayOfWeekStr = DateTimeUtils.translateDaysToSpanish(DateTimeUtils.dateToDayString(it.dateInMillis))}
+    }
+
+    private fun excludeActivitiesTaskWhenTaskSimilar(taskBookList: MutableList<TaskBook>) {
+        val iterator = taskBookList.listIterator()
+        while (iterator.hasNext()) {
+            val curTask = iterator.next()
+            if(curTask.nature != TaskBookNatureEnum.IS_ACTIVITY) {
+                continue
+            }
+
+            val similarTasks = taskBookList.filter { it.name == curTask.name &&
+                    it.year == curTask.year &&
+                    it.month == curTask.month &&
+                    it.day == curTask.day &&
+                    it.nature != TaskBookNatureEnum.IS_ACTIVITY
+                }
+
+            if (similarTasks.isNotEmpty()) {
+                iterator.remove()
+                continue
             }
         }
     }
@@ -89,6 +176,7 @@ class TasksManagerViewModel(private val taskService: TaskService,
         clearErrors()
         clearState()
 
+        updateTaskNature(TaskBookNatureEnum.ORIGIN_TASK)
         updateTaskDate(DateTimeUtils.currentDate(), DateTimeUtils.currentDateFormatted())
         updateTaskTime(DateTimeUtils.currentHour(), 0, DateTimeUtils.currentTimeFormatted())
         updateIsToCreateTask(action)
@@ -98,7 +186,14 @@ class TasksManagerViewModel(private val taskService: TaskService,
         clearErrors()
         clearState()
 
-        updateTaskBookSelectedId(taskBook.id!!)
+        Klog.line("TasksManagerViewModel", "showTaskUpdateSection", "taskBook.nature: ${taskBook.nature}")
+        when(taskBook.nature) {
+            TaskBookNatureEnum.ORIGIN_TASK -> updateTaskBookSelectedId(taskBook.id!!)
+            TaskBookNatureEnum.ORIGIN_ACTIVITY -> updateTaskBookSelectedId(taskBook.id!!)
+            else -> updateTaskBookSelectedId("0")
+        }
+        updateTaskNature(taskBook.nature)
+        //updateTaskBookSelectedId(taskBook.id!!)
         updateTaskName(taskBook.name)
         updateTaskDesc(taskBook.description ?: "")
         updateTaskDate(taskBook.dateInMillis, DateTimeUtils.formatDate(taskBook.dateInMillis))
@@ -164,7 +259,7 @@ class TasksManagerViewModel(private val taskService: TaskService,
             return
         }
 
-        val taskBook = fillTaskBookObj()
+        val taskBook = fillTaskBookObj(TaskBookNatureEnum.ORIGIN_TASK)
 
         viewModelScope.launch {
             val resp = taskService.createTask(taskBook)
@@ -197,12 +292,20 @@ class TasksManagerViewModel(private val taskService: TaskService,
             return
         }
 
-        val taskBook = fillTaskBookObj()
-        taskBook.id = uiState.value.taskBookSelectedId
+        when(uiState.value.taskNature) {
+            TaskBookNatureEnum.IS_ACTIVITY -> updateTaskFromActivity()
+            else -> updateTaskExisting()
+        }
+        Klog.linedbg("TasksManagerViewModel", "updateTask", "is updated")
+    }
+
+    private fun updateTaskFromActivity() {
+        val taskBook = fillTaskBookObj(TaskBookNatureEnum.ORIGIN_ACTIVITY)
+        Klog.linedbg("TasksManagerViewModel", "updateTaskFromActivity", "taskBook: $taskBook")
 
         viewModelScope.launch {
-            val resp = taskService.updateTask(taskBook)
-            Klog.line("TasksManagerViewModel", "updateTask", "resp: $resp")
+            val resp = taskService.createTask(taskBook)
+            Klog.line("TasksManagerViewModel", "updateTaskFromActivity", "resp: $resp")
             if(resp.result) {
                 clearErrors()
                 clearState()
@@ -213,8 +316,26 @@ class TasksManagerViewModel(private val taskService: TaskService,
                 setGeneralError(" ${resp.code}: ${resp.message}")
             }
         }
+    }
 
-        Klog.linedbg("TasksManagerViewModel", "updateTask", "is updated")
+    private fun updateTaskExisting() {
+        val taskBook = fillTaskBookObj(uiState.value.taskNature!!)
+        taskBook.id = uiState.value.taskBookSelectedId
+        Klog.linedbg("TasksManagerViewModel", "updateTaskExisting", "taskBook: $taskBook")
+
+        viewModelScope.launch {
+            val resp = taskService.updateTask(taskBook)
+            Klog.line("TasksManagerViewModel", "updateTaskExisting", "resp: $resp")
+            if(resp.result) {
+                clearErrors()
+                clearState()
+                updateIsToUpdateTask(false)
+                updateIsTaskBookListLodaded(false)
+            }
+            else {
+                setGeneralError(" ${resp.code}: ${resp.message}")
+            }
+        }
     }
 
     fun cloneTask() {
@@ -224,7 +345,7 @@ class TasksManagerViewModel(private val taskService: TaskService,
         Klog.linedbg("TasksManagerViewModel", "cloneTask", "is cloned")
     }
 
-    private fun fillTaskBookObj(): TaskBook {
+    private fun fillTaskBookObj(nature: TaskBookNatureEnum): TaskBook {
         val result = TaskBook(null,
             AppState.activePlanningBook!!.id,
             uiState.value.taskName,
@@ -234,7 +355,9 @@ class TasksManagerViewModel(private val taskService: TaskService,
             DateTimeUtils.dateToMonth(uiState.value.taskDate),
             DateTimeUtils.dateToDay(uiState.value.taskDate),
             uiState.value.taskHour,
-            uiState.value.taskMinute)
+            uiState.value.taskMinute,
+            "",
+            nature)
 
         return result
     }
@@ -263,6 +386,44 @@ class TasksManagerViewModel(private val taskService: TaskService,
         }
 
         return result
+    }
+
+    fun confirmDeleteTask(taskBook: TaskBook?, action: Boolean) {
+        Klog.linedbg("TasksManagerViewModel","confirmDeleteTask", "click, taskBook -> $taskBook, action-> $action")
+        clearErrors()
+
+        updateTaskBookToDelete(taskBook)
+        updateIsToDeleteTask(action)
+    }
+
+    fun deleteTask() {
+        Klog.linedbg("TasksManagerViewModel","deleteTask", "Task id: ${_uiState.value.taskBookToDelete?.id}")
+
+        if(_uiState.value.taskBookToDelete == null || _uiState.value.taskBookToDelete?.id.isNullOrEmpty()) {
+            Klog.linedbg("TasksManagerViewModel","deleteTask", "Task to delete is missing")
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val resp = taskService.deleteTask(_uiState.value.taskBookToDelete!!.id!!)
+                Klog.linedbg("TasksManagerViewModel", "deleteTask", "resp: $resp")
+                if (resp.result && resp.code == 200) {
+                    clearErrors()
+                    clearState()
+                    loadTasks()
+                }
+                else {
+                    setGeneralError(" ${resp.code}: ${resp.message}")
+                }
+                Klog.linedbg("TasksManagerViewModel", "deleteTask", "Task has been deleted or not")
+            }
+            catch (e: Exception) {
+                Klog.stackTrace("TasksManagerViewModel", "deleteTask", e.stackTrace)
+                Klog.line("TasksManagerViewModel","deleteTask"," Exception localizedMessage: ${e.localizedMessage}")
+                setGeneralError(" 500: ${e.message}, Error deleting Task!")
+            }
+        }//launch
     }
 
     private fun updateIsToCreateTask(action: Boolean) {
@@ -297,6 +458,12 @@ class TasksManagerViewModel(private val taskService: TaskService,
     private fun updateOpenTimeDialog(action: Boolean) {
         _uiState.update {
             it.copy(openTimeDialog = action)
+        }
+    }
+
+    private fun updateTaskNature(nature: TaskBookNatureEnum?) {
+        _uiState.update {
+            it.copy(taskNature = nature)
         }
     }
 
@@ -372,12 +539,27 @@ class TasksManagerViewModel(private val taskService: TaskService,
         }
     }
 
+    private fun updateTaskBookToDelete(taskBook: TaskBook?) {
+        _uiState.update {
+            it.copy(taskBookToDelete = taskBook)
+        }
+    }
+
+    private fun updateIsToDeleteTask(action: Boolean) {
+        _uiState.update {
+            it.copy(isToDeleteTask = action)
+        }
+    }
+
     private fun clearState() {
+        updateTaskNature(null)
         updateTaskName("")
         updateTaskDesc("")
         updateTaskDate(0, "")
         updateTaskTime(0, 0, "")
         updateTaskBookSelectedId("")
+        updateTaskBookToDelete(null)
+        updateIsToDeleteTask(false)
     }
 
     private fun setGeneralError(txt: String) {
