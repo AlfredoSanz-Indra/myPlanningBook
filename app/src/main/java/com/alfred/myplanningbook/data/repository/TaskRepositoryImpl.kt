@@ -8,6 +8,7 @@ import com.alfred.myplanningbook.data.model.SimpleDataResponse
 import com.alfred.myplanningbook.domain.model.Owner
 import com.alfred.myplanningbook.domain.model.PlanningBook
 import com.alfred.myplanningbook.domain.model.TaskBook
+import com.alfred.myplanningbook.domain.model.TaskBookNatureEnum
 import com.alfred.myplanningbook.domain.repositoryapi.TaskRepository
 import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.DocumentReference
@@ -37,6 +38,7 @@ class TaskRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): TaskRep
             Documents.TASKBOOK_DAY to taskbook.day,
             Documents.TASKBOOK_HOUR to taskbook.hour,
             Documents.TASKBOOK_MINUTE to taskbook.minute,
+            Documents.TASKBOOK_NATURE to taskbook.nature.nature
         )
 
         withContext(ioDispatcher) {
@@ -86,6 +88,7 @@ class TaskRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): TaskRep
             Documents.TASKBOOK_DAY to taskbook.day,
             Documents.TASKBOOK_HOUR to taskbook.hour,
             Documents.TASKBOOK_MINUTE to taskbook.minute,
+            Documents.TASKBOOK_NATURE to taskbook.nature.nature
         )
 
         withContext(ioDispatcher) {
@@ -151,7 +154,8 @@ class TaskRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): TaskRep
                             (document.get(Documents.TASKBOOK_DAY) as Long).toInt(),
                             (document.get(Documents.TASKBOOK_HOUR) as Long).toInt(),
                             (document.get(Documents.TASKBOOK_MINUTE) as Long).toInt(),
-                            ""
+                            "",
+                            castNature((document.get(Documents.TASKBOOK_NATURE) as Long).toInt()),
                         )
                         taskBookList.add(taskbookFound)
                     }
@@ -174,5 +178,12 @@ class TaskRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): TaskRep
 
         Klog.line("TaskRepositoryImpl", "getTaskList", "result: $result")
         return result
+    }
+
+    private fun castNature(nature: Int): TaskBookNatureEnum {
+        return when(nature) {
+            1 -> TaskBookNatureEnum.ORIGIN_TASK
+            else -> TaskBookNatureEnum.ORIGIN_ACTIVITY
+        }
     }
 }
