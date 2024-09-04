@@ -55,7 +55,6 @@ class PlanningBookManagerViewModel(private val planningBookService: PlanningBook
 
         if(AppState.activePlanningBook == null) {
             updateCurrentPlanningBook("You don't have any planning book yet")
-            return
         }
 
         updateViewPlanningBooks()
