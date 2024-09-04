@@ -11,7 +11,7 @@ class TimeGreaterValidatorTest {
     fun validate_isCorrect() {
         val timeGreaterVal = TimeGreaterValidator()
 
-        val valResult = timeGreaterVal.validate(10, 11, 20, 30)
+        val valResult = timeGreaterVal.validate(18, 19, 20, 0)
         assertEquals(valResult, ValidatorResult.Success)
 
         val valResult2 = timeGreaterVal.validate(10, 10, 20, 20)

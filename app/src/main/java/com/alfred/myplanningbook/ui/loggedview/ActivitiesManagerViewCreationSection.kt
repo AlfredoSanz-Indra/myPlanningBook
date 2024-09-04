@@ -102,6 +102,16 @@ private fun activityUpdateActions() {
             Alignment.CenterHorizontally) {
 
             Row {
+                OutlinedButton(modifier = Modifier
+                    .width(200.dp)
+                    .height(70.dp),
+                    colors = CommonViewComp.getActionsButtonColour(),
+                    onClick = {
+                        viewModel.updateActivity();
+                    }) {
+                    Text("Save")
+                }
+
                 OutlinedButton(
                     modifier = Modifier.width(200.dp).height(70.dp),
                     colors = CommonViewComp.getSecondaryButtonColour(),
@@ -113,22 +123,18 @@ private fun activityUpdateActions() {
             }
         }
         Row {
-            OutlinedButton(modifier = Modifier
-                .width(200.dp)
-                .height(70.dp),
-                colors = CommonViewComp.getActionsButtonColour(),
-                onClick = {
-                    viewModel.updateActivity();
-                }) {
-                Text("Save")
-            }
-            OutlinedButton(
-                modifier = Modifier.width(200.dp).height(70.dp),
-                colors = CommonViewComp.getActionsButtonColour(),
-                onClick = {
-                    viewModel.cloneActivity();
-                }) {
-                Text("Clone with changes")
+            Column(Modifier.fillMaxWidth(),
+                Arrangement.Top,
+                Alignment.CenterHorizontally) {
+
+                OutlinedButton(
+                    modifier = Modifier.width(200.dp).height(70.dp),
+                    colors = CommonViewComp.getActionsButtonColour(),
+                    onClick = {
+                        viewModel.cloneActivity();
+                    }) {
+                    Text("Clone with changes")
+                }
             }
         }
     }

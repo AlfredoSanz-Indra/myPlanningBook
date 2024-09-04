@@ -15,6 +15,8 @@ data class TaskBook(
     val day: Int,
     val hour: Int,
     val minute: Int,
+    val endHour: Int,
+    val endMinute: Int,
     var dayOfWeekStr: String?,
     val nature: TaskBookNatureEnum
 ) {

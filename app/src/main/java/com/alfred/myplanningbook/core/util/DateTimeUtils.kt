@@ -88,9 +88,26 @@ object DateTimeUtils {
         return ldt.hour
     }
 
+    fun currentHourPlusHours(hours: Long): Int {
+        val zdtNow = ZonedDateTime.now()
+        val zdtPlus = zdtNow.plusHours(hours)
+        val ldt = LocalDateTime.ofInstant(zdtPlus.toInstant(), ZoneOffset.systemDefault())
+
+        return ldt.hour
+    }
+
     fun currentTimeFormatted(): String {
         val zdtNow = ZonedDateTime.now()
         val ldt = LocalDateTime.ofInstant(zdtNow.toInstant(), ZoneOffset.systemDefault())
+        val result = ldt.hour.toString() + ":" + "00"
+
+        return result
+    }
+
+    fun currentTimeFormattedPlusHours(hours: Long): String {
+        val zdtNow = ZonedDateTime.now()
+        val zdtPlus = zdtNow.plusHours(hours)
+        val ldt = LocalDateTime.ofInstant(zdtPlus.toInstant(), ZoneOffset.systemDefault())
         val result = ldt.hour.toString() + ":" + "00"
 
         return result

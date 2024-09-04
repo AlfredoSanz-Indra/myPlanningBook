@@ -38,6 +38,8 @@ class TaskRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): TaskRep
             Documents.TASKBOOK_DAY to taskbook.day,
             Documents.TASKBOOK_HOUR to taskbook.hour,
             Documents.TASKBOOK_MINUTE to taskbook.minute,
+            Documents.TASKBOOK_END_HOUR to taskbook.endHour,
+            Documents.TASKBOOK_END_MINUTE to taskbook.endMinute,
             Documents.TASKBOOK_NATURE to taskbook.nature.nature
         )
 
@@ -88,6 +90,8 @@ class TaskRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): TaskRep
             Documents.TASKBOOK_DAY to taskbook.day,
             Documents.TASKBOOK_HOUR to taskbook.hour,
             Documents.TASKBOOK_MINUTE to taskbook.minute,
+            Documents.TASKBOOK_END_HOUR to taskbook.endHour,
+            Documents.TASKBOOK_END_MINUTE to taskbook.endMinute,
             Documents.TASKBOOK_NATURE to taskbook.nature.nature
         )
 
@@ -154,6 +158,8 @@ class TaskRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): TaskRep
                             (document.get(Documents.TASKBOOK_DAY) as Long).toInt(),
                             (document.get(Documents.TASKBOOK_HOUR) as Long).toInt(),
                             (document.get(Documents.TASKBOOK_MINUTE) as Long).toInt(),
+                            (document.get(Documents.TASKBOOK_END_HOUR) as Long).toInt(),
+                            (document.get(Documents.TASKBOOK_END_MINUTE) as Long).toInt(),
                             "",
                             castNature((document.get(Documents.TASKBOOK_NATURE) as Long).toInt()),
                         )
