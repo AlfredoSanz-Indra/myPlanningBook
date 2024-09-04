@@ -151,7 +151,8 @@ private fun taskDataFieldsComponents() {
             taskCreationComponents_taskName()
             taskCreationComponents_taskDesc()
             taskCreationComponents_Datepicker()
-            taskCreationComponents_Timepicker()
+            taskCreationComponents_Timepicker_START()
+            taskCreationComponents_Timepicker_END()
         }
     }
 }
@@ -304,7 +305,7 @@ private fun taskCreationComponents_Datepicker() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun taskCreationComponents_Timepicker() {
+private fun taskCreationComponents_Timepicker_START() {
     val viewModel: TasksManagerViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -325,7 +326,7 @@ private fun taskCreationComponents_Timepicker() {
             Arrangement.Top,
             Alignment.CenterHorizontally
         ) {
-            Text("Task time")
+            Text("Task start time")
 
             OutlinedTextField(
                 modifier = Modifier
@@ -360,5 +361,67 @@ private fun taskCreationComponents_Timepicker() {
 
     if(uiState.openTimeDialog) {
         dialogPicker.openView(uiState.taskHour, uiState.taskMinute)
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun taskCreationComponents_Timepicker_END() {
+    val viewModel: TasksManagerViewModel = koinViewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    var dialogPicker = DialogTimePickerView(
+        onClose = {
+            viewModel.closeTimeEndDi()
+        },
+        onTimeSelected = { hour: Int, min: Int ->
+            viewModel.onTimeEndSelected(hour, min)
+        }
+    )
+
+    Row {
+        Column(
+            Modifier
+                .background(color = MaterialTheme.colorScheme.surface)
+                .fillMaxWidth(),
+            Arrangement.Top,
+            Alignment.CenterHorizontally
+        ) {
+            Text("Task end time")
+
+            OutlinedTextField(
+                modifier = Modifier
+                    .height(80.dp)
+                    .fillMaxSize(0.8f)
+                    .padding(10.dp),
+                value = uiState.taskTimeEndFormatted,
+                onValueChange = {},
+                readOnly = true,
+                leadingIcon = {
+                    IconButton(
+                        onClick = {
+                            viewModel.openTimeEndDi()
+                        }
+                    ) {
+                        Icon(imageVector = Icons.Filled.Schedule, contentDescription = null)
+                    }
+                }
+            )
+
+            if(uiState.taskTimeEndError) {
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Text(
+                    uiState.taskTimeEndErrorTxt, color = Color.Red, style = TextStyle(
+                        fontSize = 15.sp, color = Color.Red
+                    )
+                )
+            }
+        }
+    }
+
+    if(uiState.openTimeEndDialog) {
+        dialogPicker.openView(uiState.taskEndHour, uiState.taskEndMinute)
     }
 }

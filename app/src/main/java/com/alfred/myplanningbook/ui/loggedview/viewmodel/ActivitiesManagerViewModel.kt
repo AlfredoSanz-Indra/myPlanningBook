@@ -74,7 +74,7 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
         clearState()
 
         updateActivityStartTime(DateTimeUtils.currentHour(), 0, DateTimeUtils.currentTimeFormatted())
-        updateActivityEndTime(DateTimeUtils.currentHour() + 1, 0, DateTimeUtils.currentTimeFormatted())
+        updateActivityEndTime(DateTimeUtils.currentHourPlusHours(1), 0, DateTimeUtils.currentTimeFormattedPlusHours(1))
         updateIsToCreateActivity(action)
     }
 

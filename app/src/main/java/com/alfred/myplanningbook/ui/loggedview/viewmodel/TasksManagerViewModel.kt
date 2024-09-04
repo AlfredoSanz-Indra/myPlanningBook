@@ -6,6 +6,7 @@ import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.core.util.DateTimeUtils
 import com.alfred.myplanningbook.core.validators.ChainTextValidator
 import com.alfred.myplanningbook.core.validators.TextValidatorLength
+import com.alfred.myplanningbook.core.validators.TimeGreaterValidator
 import com.alfred.myplanningbook.core.validators.ValidatorResult
 import com.alfred.myplanningbook.domain.AppState
 import com.alfred.myplanningbook.domain.model.ActivityBook
@@ -48,6 +49,12 @@ data class TaskManagerUiState(
     var taskTimeError: Boolean = false,
     var taskTimeErrorTxt: String = "",
     var openTimeDialog: Boolean = false,
+    var openTimeEndDialog: Boolean = false,
+    var taskEndHour: Int = 0,
+    var taskEndMinute: Int = 0,
+    var taskTimeEndFormatted: String = "",
+    var taskTimeEndError: Boolean = false,
+    var taskTimeEndErrorTxt: String = "",
     var taskBookList: MutableList<TaskBook> = mutableListOf(),
     var isTaskBookListLoaded: Boolean = false,
     var taskBookSelectedId: String = "",
@@ -134,6 +141,8 @@ class TasksManagerViewModel(private val taskService: TaskService,
                             DateTimeUtils.dateToDay(cDate),
                             it.startHour,
                             it.startMinute,
+                            it.endHour,
+                            it.endMinute,
                             "",
                             TaskBookNatureEnum.IS_ACTIVITY
                         )
@@ -179,6 +188,7 @@ class TasksManagerViewModel(private val taskService: TaskService,
         updateTaskNature(TaskBookNatureEnum.ORIGIN_TASK)
         updateTaskDate(DateTimeUtils.currentDate(), DateTimeUtils.currentDateFormatted())
         updateTaskTime(DateTimeUtils.currentHour(), 0, DateTimeUtils.currentTimeFormatted())
+        updateTaskEndTime(DateTimeUtils.currentHourPlusHours(1), 0, DateTimeUtils.currentTimeFormattedPlusHours(1))
         updateIsToCreateTask(action)
     }
 
@@ -193,11 +203,11 @@ class TasksManagerViewModel(private val taskService: TaskService,
             else -> updateTaskBookSelectedId("0")
         }
         updateTaskNature(taskBook.nature)
-        //updateTaskBookSelectedId(taskBook.id!!)
         updateTaskName(taskBook.name)
         updateTaskDesc(taskBook.description ?: "")
         updateTaskDate(taskBook.dateInMillis, DateTimeUtils.formatDate(taskBook.dateInMillis))
         updateTaskTime(taskBook.hour, taskBook.minute, DateTimeUtils.formatTime(taskBook.hour, taskBook.minute))
+        updateTaskEndTime(taskBook.endHour, taskBook.endMinute, DateTimeUtils.formatTime(taskBook.endHour, taskBook.endMinute))
 
         updateIsToUpdateTask(true)
     }
@@ -210,9 +220,11 @@ class TasksManagerViewModel(private val taskService: TaskService,
     }
 
     fun formatTaskDateTime(taskBook: TaskBook): String {
-
         var result: String = DateTimeUtils.formatDate(taskBook.year, taskBook.month, taskBook.day)
-        result += " - ${DateTimeUtils.formatTime(taskBook.hour, taskBook.minute)}"
+        result += " - de "
+        result += "${DateTimeUtils.formatTime(taskBook.hour, taskBook.minute)}"
+        result += " a "
+        result += "${DateTimeUtils.formatTime(taskBook.endHour, taskBook.endMinute)}"
 
         return result
     }
@@ -239,10 +251,24 @@ class TasksManagerViewModel(private val taskService: TaskService,
         updateOpenTimeDialog(false)
     }
 
+    fun openTimeEndDi() {
+        updateOpenTimeEndDialog(true)
+    }
+
+    fun closeTimeEndDi() {
+        updateOpenTimeEndDialog(false)
+    }
+
     fun onTimeSelected(hour: Int, min: Int) {
         val timeFormatted = DateTimeUtils.formatTime(hour, min)
         updateTaskTime(hour, min, timeFormatted)
         updateOpenTimeDialog(false)
+    }
+
+    fun onTimeEndSelected(hour: Int, min: Int) {
+        val timeEndFormatted = DateTimeUtils.formatTime(hour, min)
+        updateTaskEndTime(hour, min, timeEndFormatted)
+        updateOpenTimeEndDialog(false)
     }
 
     fun createTask() {
@@ -356,6 +382,8 @@ class TasksManagerViewModel(private val taskService: TaskService,
             DateTimeUtils.dateToDay(uiState.value.taskDate),
             uiState.value.taskHour,
             uiState.value.taskMinute,
+            uiState.value.taskEndHour,
+            uiState.value.taskEndMinute,
             "",
             nature)
 
@@ -371,9 +399,14 @@ class TasksManagerViewModel(private val taskService: TaskService,
         val chainTxtValDesc = ChainTextValidator(
             TextValidatorLength(5, taskDesc_maxLength)
         )
+        val timeValidator = TimeGreaterValidator()
 
         val valResultName = chainTxtValName.validate(uiState.value.taskName.trim())
         val valResultDesc = chainTxtValDesc.validate(uiState.value.taskDesc.trim())
+        val valResultTime = timeValidator.validate(uiState.value.taskHour,
+                                                   uiState.value.taskEndHour,
+                                                   uiState.value.taskMinute,
+                                                   uiState.value.taskEndMinute)
 
         var result = true
         if(valResultName is ValidatorResult.Error) {
@@ -382,6 +415,10 @@ class TasksManagerViewModel(private val taskService: TaskService,
         }
         if(valResultDesc is ValidatorResult.Error) {
             updateTaskDescError(valResultDesc.message)
+            result = false
+        }
+        if(valResultTime is ValidatorResult.Error) {
+            updateTaskEndTimeError(valResultTime.message)
             result = false
         }
 
@@ -461,6 +498,12 @@ class TasksManagerViewModel(private val taskService: TaskService,
         }
     }
 
+    private fun updateOpenTimeEndDialog(action: Boolean) {
+        _uiState.update {
+            it.copy(openTimeEndDialog = action)
+        }
+    }
+
     private fun updateTaskNature(nature: TaskBookNatureEnum?) {
         _uiState.update {
             it.copy(taskNature = nature)
@@ -527,6 +570,30 @@ class TasksManagerViewModel(private val taskService: TaskService,
         }
     }
 
+    private fun updateTaskEndTime(hour: Int, min: Int, timeFormatted: String) {
+        _uiState.update {
+            it.copy(taskEndHour = hour)
+        }
+
+        _uiState.update {
+            it.copy(taskEndMinute = min)
+        }
+
+        _uiState.update {
+            it.copy(taskTimeEndFormatted = timeFormatted)
+        }
+    }
+
+    private fun updateTaskEndTimeError(txt: String) {
+        _uiState.update {
+            it.copy(taskTimeEndErrorTxt = txt)
+        }
+
+        _uiState.update {
+            it.copy(taskTimeEndError = true)
+        }
+    }
+
     private fun updateIsTaskBookListLodaded(action: Boolean) {
         _uiState.update {
             it.copy(isTaskBookListLoaded = action)
@@ -557,6 +624,7 @@ class TasksManagerViewModel(private val taskService: TaskService,
         updateTaskDesc("")
         updateTaskDate(0, "")
         updateTaskTime(0, 0, "")
+        updateTaskEndTime(0, 0, "")
         updateTaskBookSelectedId("")
         updateTaskBookToDelete(null)
         updateIsToDeleteTask(false)
@@ -601,6 +669,12 @@ class TasksManagerViewModel(private val taskService: TaskService,
         }
         _uiState.update {
             it.copy(taskTimeErrorTxt = "")
+        }
+        _uiState.update {
+            it.copy(taskTimeEndError = false)
+        }
+        _uiState.update {
+            it.copy(taskTimeEndErrorTxt = "")
         }
     }
 }
