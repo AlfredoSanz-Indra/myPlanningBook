@@ -43,14 +43,14 @@ import org.koin.androidx.compose.koinViewModel
 
 
 @Composable
-fun taskCreationSection() {
-    taskCreationActions()
+fun TaskCreationSection() {
+    TaskCreationActions()
     Spacer(modifier = Modifier.height(10.dp))
-    taskDataFieldsComponents()
+    TaskDataFieldsComponents()
 }
 
 @Composable
-private fun taskCreationActions() {
+private fun TaskCreationActions() {
     val viewModel: TasksManagerViewModel = koinViewModel()
 
     Column {
@@ -79,14 +79,14 @@ private fun taskCreationActions() {
 }
 
 @Composable
-fun taskUpdateSection() {
-    taskUpdateActions()
+fun TaskUpdateSection() {
+    TaskUpdateActions()
     Spacer(modifier = Modifier.height(10.dp))
-    taskDataFieldsComponents()
+    TaskDataFieldsComponents()
 }
 
 @Composable
-private fun taskUpdateActions() {
+private fun TaskUpdateActions() {
     val viewModel: TasksManagerViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -139,7 +139,7 @@ private fun taskUpdateActions() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun taskDataFieldsComponents() {
+private fun TaskDataFieldsComponents() {
     Box(
         modifier = Modifier
             .padding(15.dp)
@@ -148,18 +148,18 @@ private fun taskDataFieldsComponents() {
             .fillMaxHeight()
     ) {
         Column {
-            taskCreationComponents_taskName()
-            taskCreationComponents_taskDesc()
-            taskCreationComponents_Datepicker()
-            taskCreationComponents_Timepicker_START()
-            taskCreationComponents_Timepicker_END()
+            TaskCreationComponents_taskName()
+            TaskCreationComponents_taskDesc()
+            TaskCreationComponents_Datepicker()
+            TaskCreationComponents_Timepicker_START()
+            TaskCreationComponents_Timepicker_END()
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun taskCreationComponents_taskName() {
+private fun TaskCreationComponents_taskName() {
     val viewModel: TasksManagerViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -206,7 +206,7 @@ private fun taskCreationComponents_taskName() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun taskCreationComponents_taskDesc() {
+private fun TaskCreationComponents_taskDesc() {
     val viewModel: TasksManagerViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -244,11 +244,11 @@ private fun taskCreationComponents_taskDesc() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun taskCreationComponents_Datepicker() {
+private fun TaskCreationComponents_Datepicker() {
     val viewModel: TasksManagerViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    var dialogPicker = DialogDatePickerView(
+    val dialogPicker = DialogDatePickerView(
         onClose = {
             viewModel.closeCalendarDi()
         },
@@ -305,11 +305,11 @@ private fun taskCreationComponents_Datepicker() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun taskCreationComponents_Timepicker_START() {
+private fun TaskCreationComponents_Timepicker_START() {
     val viewModel: TasksManagerViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    var dialogPicker = DialogTimePickerView(
+    val dialogPicker = DialogTimePickerView(
         onClose = {
             viewModel.closeTimeDi()
         },
@@ -367,11 +367,11 @@ private fun taskCreationComponents_Timepicker_START() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun taskCreationComponents_Timepicker_END() {
+private fun TaskCreationComponents_Timepicker_END() {
     val viewModel: TasksManagerViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    var dialogPicker = DialogTimePickerView(
+    val dialogPicker = DialogTimePickerView(
         onClose = {
             viewModel.closeTimeEndDi()
         },

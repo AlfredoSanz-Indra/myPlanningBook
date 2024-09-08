@@ -35,7 +35,6 @@ import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.domain.model.ActivityBook
 import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.loggedview.viewmodel.ActivitiesManagerViewModel
-import com.alfred.myplanningbook.ui.loggedview.viewmodel.TasksManagerViewModel
 import org.koin.androidx.compose.koinViewModel
 
 
@@ -69,7 +68,7 @@ fun ActivitiesListSection() {
                 //@see https://developer.android.com/codelabs/basic-android-compose-training-add-scrollable-list?hl=es-419#2
                 items( uiState.activityBookList.size, itemContent = { item ->
                     val activityBook = uiState.activityBookList[item]
-                    ActivityListCardComponent(activityBook)
+                    TaskListCardComponent(activityBook)
                 })
             } //lazy
         } //Box
@@ -77,7 +76,7 @@ fun ActivitiesListSection() {
 }
 
 @Composable
-private fun ActivityListCardComponent(activityBook: ActivityBook) {
+private fun TaskListCardComponent(activityBook: ActivityBook) {
     OutlinedCard(
         modifier = Modifier
             .padding(vertical = 5.dp)
@@ -96,13 +95,13 @@ private fun ActivityListCardComponent(activityBook: ActivityBook) {
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.Start)
         {
-            ActivityListCardComponentRowName(activityBook)
+            TaskListCardComponentRowName(activityBook)
 
             Spacer(modifier = Modifier.height(10.dp))
-            ActivityListCardComponentRowDesc(activityBook)
+            TaskListCardComponentRowDesc(activityBook)
 
             Spacer(modifier = Modifier.height(10.dp))
-            ActivityListCardComponentRowDays(activityBook)
+            TaskListCardComponentRowDate(activityBook)
 
             Spacer(modifier = Modifier.height(5.dp))
             ActivityListCardComponentRowHours(activityBook)
@@ -111,7 +110,7 @@ private fun ActivityListCardComponent(activityBook: ActivityBook) {
 }
 
 @Composable
-private fun ActivityListCardComponentRowName(activityBook: ActivityBook) {
+private fun TaskListCardComponentRowName(activityBook: ActivityBook) {
     Row (
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween)
@@ -125,18 +124,18 @@ private fun ActivityListCardComponentRowName(activityBook: ActivityBook) {
         }
         Column(Modifier.padding(4.dp))
         {
-            ActivityListCardComponentButtonUpdate(activityBook)
+            TaskListCardComponentButtonUpdate(activityBook)
         }
         Column(Modifier.padding(4.dp))
         {
-            ActivityListCardComponentButtonDelete(activityBook)
+            TaskListCardComponentButtonDelete(activityBook)
         }
     }
 }
 
 
 @Composable
-private fun ActivityListCardComponentButtonUpdate(activityBook: ActivityBook) {
+private fun TaskListCardComponentButtonUpdate(activityBook: ActivityBook) {
     val viewModel: ActivitiesManagerViewModel = koinViewModel()
 
     OutlinedButton(modifier = Modifier
@@ -155,7 +154,7 @@ private fun ActivityListCardComponentButtonUpdate(activityBook: ActivityBook) {
 }
 
 @Composable
-private fun ActivityListCardComponentButtonDelete(activityBook: ActivityBook) {
+private fun TaskListCardComponentButtonDelete(activityBook: ActivityBook) {
     val viewModel: ActivitiesManagerViewModel = koinViewModel()
 
     OutlinedButton(modifier = Modifier
@@ -175,7 +174,7 @@ private fun ActivityListCardComponentButtonDelete(activityBook: ActivityBook) {
 }
 
 @Composable
-private fun ActivityListCardComponentRowDesc(activityBook: ActivityBook) {
+private fun TaskListCardComponentRowDesc(activityBook: ActivityBook) {
     Row (
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween)
@@ -191,7 +190,7 @@ private fun ActivityListCardComponentRowDesc(activityBook: ActivityBook) {
 }
 
 @Composable
-private fun ActivityListCardComponentRowDays(activityBook: ActivityBook) {
+private fun TaskListCardComponentRowDate(activityBook: ActivityBook) {
     Row (
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween)
