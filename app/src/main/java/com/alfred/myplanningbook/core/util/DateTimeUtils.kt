@@ -1,11 +1,19 @@
 package com.alfred.myplanningbook.core.util
 
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atTime
+import kotlinx.datetime.format
+import kotlinx.datetime.format.DayOfWeekNames
+import kotlinx.datetime.format.FormatStringsInDatetimeFormats
+import kotlinx.datetime.format.byUnicodePattern
+import kotlinx.datetime.plus
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 
 
 /**
@@ -22,95 +30,123 @@ object DateTimeUtils {
     const val SABADO = "SA"
     const val DOMINGO = "DO"
 
-    fun formatDate(date: Long?): String {
-        return date?.asInstant()?.asShortString() ?: "Seleccionar fecha"
+    val SpanishOfWeekNames = listOf(
+        "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"
+    )
+
+    private fun getLocalTimeZone(): TimeZone {
+        return TimeZone.of("Europe/Madrid")
     }
 
-    private fun Instant.asShortString(): String {
-        return format("dd/MM/yyyy")
+    private fun getLocalDateTime(date: Long): LocalDateTime {
+        val instant = Instant.fromEpochMilliseconds(date)
+        return instant.toLocalDateTime(getLocalTimeZone())
     }
 
-    private fun Instant.asYearNumber(): Int {
-        return format("yyyy").toInt()
+    private fun getCurrentLocalDate(): LocalDate {
+        val now: Instant = Clock.System.now()
+        return now.toLocalDateTime(getLocalTimeZone()).date
     }
 
-    private fun Instant.asMonthNumber(): Int {
-        return format("MM").toInt()
+    private fun getCurrentLocalDateTime(): LocalDateTime {
+        val now: Instant = Clock.System.now()
+        return now.toLocalDateTime(getLocalTimeZone())
     }
-
-    private fun Instant.asDayNumber(): Int {
-        return format("dd").toInt()
-    }
-
-    private fun Instant.asDayString(): String {
-        return format("EEE")
-    }
-
-    private fun Instant.format(pattern: String): String {
-        return DateTimeFormatter
-            .ofPattern(pattern)
-            .withZone(ZoneOffset.UTC)
-            .format(this)
-    }
-
-    private fun Long?.asInstant(): Instant? = this?.let { Instant.ofEpochMilli(it) }
 
     fun dateToYear(date: Long): Int {
-        return date?.asInstant()?.asYearNumber() ?: 1900
+        return getLocalDateTime(date).year
     }
 
     fun dateToMonth(date: Long): Int {
-        return date?.asInstant()?.asMonthNumber() ?: 1
+        return getLocalDateTime(date).monthNumber
     }
 
     fun dateToDay(date: Long): Int {
-        return date?.asInstant()?.asDayNumber() ?: 1
+        return getLocalDateTime(date).dayOfMonth
     }
 
     fun dateToDayString(date: Long): String {
-        return date?.asInstant()?.asDayString() ?: ""
+        return getDayOfWeekName(getLocalDateTime(date))
+    }
+
+    fun dateToDateString(date: Long): String {
+        val dtFormat: kotlinx.datetime.format.DateTimeFormat<LocalDateTime> = getDateTimeFormat("dd/MM/yyyy")
+        return getLocalDateTime(date).format(dtFormat)
+    }
+
+    fun dateToDateTimeString(date: Long): String {
+        val dtFormat: kotlinx.datetime.format.DateTimeFormat<LocalDateTime> = getDateTimeFormat("dd/MM/yyyy HH:mm")
+        return getLocalDateTime(date).format(dtFormat)
     }
 
     fun currentDate(): Long {
-        val zdtNow = ZonedDateTime.now()
-        return zdtNow.with(LocalTime.MIDNIGHT).toInstant().toEpochMilli()
+        val today = getCurrentLocalDate()
+        val todayDateTime: LocalDateTime = today.atTime(0,0)
+        return todayDateTime.toInstant(getLocalTimeZone()).toEpochMilliseconds()
     }
 
     fun currentDateFormatted(): String {
-        val zdtNow = ZonedDateTime.now()
-        return zdtNow.with(LocalTime.MIDNIGHT).toInstant().asShortString()
+        val today = getCurrentLocalDate()
+        val todayDateTime: LocalDateTime = today.atTime(0,0)
+        val dtFormat: kotlinx.datetime.format.DateTimeFormat<LocalDateTime> = getDateTimeFormat("dd/MM/yyyy")
+        val result: String = todayDateTime.format(dtFormat)
+        return result
+    }
+
+    fun currentDatePlusDays(days: Long): Long {
+        val today = getCurrentLocalDate()
+        val todayDateTime: LocalDateTime = today.atTime(0,0)
+        val todayInstant: kotlinx.datetime.Instant = todayDateTime.toInstant(getLocalTimeZone())
+        val afterInstant: kotlinx.datetime.Instant = todayInstant.plus(days, DateTimeUnit.DAY, getLocalTimeZone())
+        return afterInstant.toEpochMilliseconds()
+    }
+
+    fun currentDatePlusDaysDayOfWeek(days: Long): Int {
+        val today = getCurrentLocalDate()
+        val todayDateTime: LocalDateTime = today.atTime(0,0)
+        val todayInstant: kotlinx.datetime.Instant = todayDateTime.toInstant(getLocalTimeZone())
+        val afterInstant: kotlinx.datetime.Instant = todayInstant.plus(days, DateTimeUnit.DAY, getLocalTimeZone())
+        val dayAfter: LocalDateTime = afterInstant.toLocalDateTime(getLocalTimeZone())
+        return dayAfter.dayOfWeek.value
     }
 
     fun currentHour(): Int {
-        val zdtNow = ZonedDateTime.now()
-        val ldt = LocalDateTime.ofInstant(zdtNow.toInstant(), ZoneOffset.systemDefault())
-
-        return ldt.hour
+        val today = getCurrentLocalDateTime()
+        return today.hour
     }
 
     fun currentHourPlusHours(hours: Long): Int {
-        val zdtNow = ZonedDateTime.now()
-        val zdtPlus = zdtNow.plusHours(hours)
-        val ldt = LocalDateTime.ofInstant(zdtPlus.toInstant(), ZoneOffset.systemDefault())
-
-        return ldt.hour
+        val today = getCurrentLocalDateTime()
+        val todayInstant: kotlinx.datetime.Instant = today.toInstant(getLocalTimeZone())
+        val todayAfterInstant = todayInstant.plus(hours, DateTimeUnit.HOUR, getLocalTimeZone())
+        val todayAfter: LocalDateTime = todayAfterInstant.toLocalDateTime(getLocalTimeZone())
+        return todayAfter.hour
     }
 
     fun currentTimeFormatted(): String {
-        val zdtNow = ZonedDateTime.now()
-        val ldt = LocalDateTime.ofInstant(zdtNow.toInstant(), ZoneOffset.systemDefault())
-        val result = ldt.hour.toString() + ":" + "00"
-
-        return result
+        return formatTime(currentHour(), 0)
     }
 
     fun currentTimeFormattedPlusHours(hours: Long): String {
-        val zdtNow = ZonedDateTime.now()
-        val zdtPlus = zdtNow.plusHours(hours)
-        val ldt = LocalDateTime.ofInstant(zdtPlus.toInstant(), ZoneOffset.systemDefault())
-        val result = ldt.hour.toString() + ":" + "00"
+        return formatTime(currentHourPlusHours(hours), 0)
+    }
 
+    private fun getDateTimeFormat(format: String): kotlinx.datetime.format.DateTimeFormat<LocalDateTime> {
+        @OptIn(FormatStringsInDatetimeFormats::class)
+        val result = LocalDateTime.Format {
+            byUnicodePattern(format)
+        }
         return result
+    }
+
+    private fun getDayOfWeekName(localDateTime: LocalDateTime): String {
+        val myDayOfWeekNames = DayOfWeekNames(SpanishOfWeekNames)
+        val format = kotlinx.datetime.LocalDateTime.Format {
+           // date(LocalDate.Formats.ISO)
+           // chars(", ")
+            dayOfWeek(myDayOfWeekNames)
+        }
+        return format.format(localDateTime)
     }
 
     fun formatDate(year: Int, month: Int, day: Int): String {
@@ -137,21 +173,7 @@ object DateTimeUtils {
         return "$formatedHour:$formatedMin"
     }
 
-    fun currentDatePlusDays(days: Long): Long {
-        val zdtNow = ZonedDateTime.now()
-        return zdtNow.plusDays(days).with(LocalTime.MIDNIGHT).toInstant().toEpochMilli()
-    }
-
-    /*
-     * Days of week start from 1 which is Monday,
-     */
-    fun currentDayOfWeekPlusDays(days: Long): Int {
-        val zdtNow = ZonedDateTime.now()
-        return zdtNow.plusDays(days).dayOfWeek.value
-    }
-
     fun sortWeekDaysList(weekDaysList: MutableList<String>): MutableList<String> {
-
         var result: MutableList<String> = mutableListOf()
 
         if(weekDaysList.contains(LUNES)) {
@@ -191,18 +213,5 @@ object DateTimeUtils {
         }
 
         return result
-    }
-
-    fun translateDaysToSpanish(day: String): String {
-        return when(day) {
-            "Mon" -> "Lunes"
-            "Tue" -> "Martes"
-            "Wed" -> "Miércoles"
-            "Thu" -> "Jueves"
-            "Fri" -> "Viernes"
-            "Sat" -> "Sábado"
-            "Sun" -> "Domingo"
-            else -> ""
-        }
     }
 }

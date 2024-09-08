@@ -15,7 +15,7 @@ android {
         //noinspection EditedTargetSdkVersion
         targetSdk = 34
         versionCode = 1
-        versionName = "1.4.12"
+        versionName = "1.4.13"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -83,6 +83,9 @@ dependencies {
     //Koin
     implementation("io.insert-koin:koin-androidx-compose:3.5.6")
     implementation("io.insert-koin:koin-androidx-compose-navigation:3.5.6")
+
+    //kotlinx-datetime
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
 
     // Desugaring JDK
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")

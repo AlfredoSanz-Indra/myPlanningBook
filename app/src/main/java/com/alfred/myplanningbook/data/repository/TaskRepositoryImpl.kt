@@ -128,6 +128,7 @@ class TaskRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): TaskRep
     override suspend fun getTaskList(planningBookId: String, fromDate: Long): SimpleDataResponse {
         var result = SimpleDataResponse(false, 404, "not found")
         Klog.line("TaskRepositoryImpl", "getTaskList", "Listing tasksBook from the planningBook: pbId $planningBookId")
+        Klog.line("TaskRepositoryImpl", "getTaskList", "Listing tasksBook from the planningBook: fromDate $fromDate")
 
         withContext(ioDispatcher) {
             val defer = async(ioDispatcher) {

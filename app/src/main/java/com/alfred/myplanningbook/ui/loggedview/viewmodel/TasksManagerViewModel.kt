@@ -83,6 +83,11 @@ class TasksManagerViewModel(private val taskService: TaskService,
         updateCurrentPlanningBook(AppState.activePlanningBook!!.name)
 
         val todayDate: Long = DateTimeUtils.currentDate()
+        val _todayDateFormated = DateTimeUtils.currentDateFormatted()
+        val _dayAfter = DateTimeUtils.currentDatePlusDays(1)
+        Klog.line("TasksManagerViewModel", "loadTasks", "_todayDate -> $todayDate")
+        Klog.line("TasksManagerViewModel", "loadTasks", "_todayDateFormated -> $_todayDateFormated")
+        Klog.line("TasksManagerViewModel", "loadTasks", "_dayAfter -> $_dayAfter")
 
         viewModelScope.launch {
             val resp = taskService.getTaskList(AppState.activePlanningBook!!.id, todayDate)
@@ -121,12 +126,12 @@ class TasksManagerViewModel(private val taskService: TaskService,
 
         activitiesList.forEach { it ->
             for(cday in 0..14) {
-                val cDate = DateTimeUtils.currentDatePlusDays(cday.toLong())
-                val cDayOfWeek = DateTimeUtils.currentDayOfWeekPlusDays(cday.toLong())
+                val _cDate = DateTimeUtils.currentDatePlusDays(cday.toLong())
+                val _cDayOfWeek = DateTimeUtils.currentDatePlusDaysDayOfWeek(cday.toLong())
                 for(itDayOfWeek in it.weekDaysList) {
                     var apply = false
                     val itDayOfWeekInt = DateTimeUtils.castDayOfWeekToInt(itDayOfWeek)
-                    if(itDayOfWeekInt == cDayOfWeek) {
+                    if(itDayOfWeekInt == _cDayOfWeek) {
                         apply = true
                     }
                     if(apply) {
@@ -135,10 +140,10 @@ class TasksManagerViewModel(private val taskService: TaskService,
                             it.idPlanningbook,
                             it.name,
                             it.description,
-                            cDate,
-                            DateTimeUtils.dateToYear(cDate),
-                            DateTimeUtils.dateToMonth(cDate),
-                            DateTimeUtils.dateToDay(cDate),
+                            _cDate,
+                            DateTimeUtils.dateToYear(_cDate),
+                            DateTimeUtils.dateToMonth(_cDate),
+                            DateTimeUtils.dateToDay(_cDate),
                             it.startHour,
                             it.startMinute,
                             it.endHour,
@@ -156,7 +161,7 @@ class TasksManagerViewModel(private val taskService: TaskService,
     }
 
     private fun setDayOfWeekToTasks(taskList: MutableList<TaskBook>) {
-        taskList.map { it.dayOfWeekStr = DateTimeUtils.translateDaysToSpanish(DateTimeUtils.dateToDayString(it.dateInMillis))}
+        taskList.map {it.dayOfWeekStr = DateTimeUtils.dateToDayString(it.dateInMillis)}
     }
 
     private fun excludeActivitiesTaskWhenTaskSimilar(taskBookList: MutableList<TaskBook>) {
@@ -205,7 +210,7 @@ class TasksManagerViewModel(private val taskService: TaskService,
         updateTaskNature(taskBook.nature)
         updateTaskName(taskBook.name)
         updateTaskDesc(taskBook.description ?: "")
-        updateTaskDate(taskBook.dateInMillis, DateTimeUtils.formatDate(taskBook.dateInMillis))
+        updateTaskDate(taskBook.dateInMillis, DateTimeUtils.dateToDateString(taskBook.dateInMillis))
         updateTaskTime(taskBook.hour, taskBook.minute, DateTimeUtils.formatTime(taskBook.hour, taskBook.minute))
         updateTaskEndTime(taskBook.endHour, taskBook.endMinute, DateTimeUtils.formatTime(taskBook.endHour, taskBook.endMinute))
 
@@ -219,9 +224,12 @@ class TasksManagerViewModel(private val taskService: TaskService,
         updateIsToUpdateTask(false)
     }
 
-    fun formatTaskDateTime(taskBook: TaskBook): String {
-        var result: String = DateTimeUtils.formatDate(taskBook.year, taskBook.month, taskBook.day)
-        result += " - de "
+    fun formatTaskDate(taskBook: TaskBook): String {
+        return DateTimeUtils.formatDate(taskBook.year, taskBook.month, taskBook.day)
+    }
+
+    fun formatTaskTime(taskBook: TaskBook): String {
+        var result = "de "
         result += "${DateTimeUtils.formatTime(taskBook.hour, taskBook.minute)}"
         result += " a "
         result += "${DateTimeUtils.formatTime(taskBook.endHour, taskBook.endMinute)}"
@@ -238,7 +246,7 @@ class TasksManagerViewModel(private val taskService: TaskService,
     }
 
     fun onDateSelected(dateInMill: Long) {
-        val dateFormatted = DateTimeUtils.formatDate(dateInMill)
+        val dateFormatted = DateTimeUtils.dateToDateString(dateInMill)
         updateTaskDate(dateInMill, dateFormatted)
         updateOpenCalendarDialog(false)
     }
