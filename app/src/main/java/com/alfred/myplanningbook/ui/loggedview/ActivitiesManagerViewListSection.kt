@@ -10,18 +10,24 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -115,7 +121,9 @@ private fun TaskListCardComponentRowName(activityBook: ActivityBook) {
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween)
     {
-        Column(Modifier.padding(4.dp))
+        Column(modifier = Modifier
+            .padding(4.dp)
+            .weight(0.7F))
         {
             Text(
                 text = activityBook.name,
@@ -138,18 +146,15 @@ private fun TaskListCardComponentRowName(activityBook: ActivityBook) {
 private fun TaskListCardComponentButtonUpdate(activityBook: ActivityBook) {
     val viewModel: ActivitiesManagerViewModel = koinViewModel()
 
-    OutlinedButton(modifier = Modifier
-        .width(110.dp)
+    OutlinedIconButton(modifier = Modifier
+        .width(35.dp)
         .height(35.dp),
-        colors = CommonViewComp.getPlanningBookCardButtonPrimaryColour(),
+        colors = CommonViewComp.getPlanningBookCardIconButtonPrimaryColour(),
         onClick = {
             viewModel.showActivityUpdateSection(activityBook)
         }
     ) {
-        Text(
-            "Update",
-            style = MaterialTheme.typography.titleMedium,
-        )
+        Icon(imageVector = Icons.Outlined.Edit, contentDescription = "Edit task", Modifier.size(25.dp))
     } //button
 }
 
@@ -157,19 +162,16 @@ private fun TaskListCardComponentButtonUpdate(activityBook: ActivityBook) {
 private fun TaskListCardComponentButtonDelete(activityBook: ActivityBook) {
     val viewModel: ActivitiesManagerViewModel = koinViewModel()
 
-    OutlinedButton(modifier = Modifier
-        .width(110.dp)
+    OutlinedIconButton(modifier = Modifier
+        .width(35.dp)
         .height(35.dp),
-        colors = CommonViewComp.getPlanningBookCardButtonSecondaryColour(),
+        colors = CommonViewComp.getPlanningBookCardIconButtonSecondaryColour(),
         onClick = {
-            Klog.line("ActivitiesListSection","ActivityListCardComponentButtonDelete","delete Activity button clicked")
+            Klog.line("taskListSection","taskListCardComponentButtonDelete","delete task button clicked")
             viewModel.confirmDeleteActivity(activityBook, true)
-        }
+        },
     ) {
-        Text(
-            "Delete",
-            style = MaterialTheme.typography.titleMedium,
-        )
+        Icon(imageVector = Icons.Outlined.Delete, contentDescription = "delete activity", Modifier.size(25.dp))
     } //button
 }
 

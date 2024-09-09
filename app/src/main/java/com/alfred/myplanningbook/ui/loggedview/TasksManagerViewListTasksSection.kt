@@ -10,18 +10,28 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,8 +39,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.Gray
+import androidx.compose.ui.text.font.FontVariation.weight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.domain.model.TaskBook
 import com.alfred.myplanningbook.domain.model.TaskBookNatureEnum
@@ -78,6 +90,10 @@ fun TaskListSection() {
 
 @Composable
 private fun TaskListCardComponent(taskBook: TaskBook) {
+    val viewModel: TasksManagerViewModel = koinViewModel()
+
+    val isToday = viewModel.taskDateIsToday(taskBook)
+
     OutlinedCard(
         modifier = Modifier
             .padding(vertical = 5.dp)
@@ -85,7 +101,10 @@ private fun TaskListCardComponent(taskBook: TaskBook) {
             .height(170.dp)
             .wrapContentHeight(),
         shape = MaterialTheme.shapes.medium,
-        colors = CommonViewComp.gePlanningBookCardColour(),
+        colors = when(isToday) {
+                true -> CommonViewComp.gePlanningBookCardSecondaryColour()
+                else -> CommonViewComp.gePlanningBookCardColour()
+            },
         elevation = CardDefaults.outlinedCardElevation(),
         border = CardDefaults.outlinedCardBorder(),
     )
@@ -114,7 +133,9 @@ private fun TaskListCardComponentRowName(taskBook: TaskBook) {
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween)
     {
-        Column(Modifier.padding(4.dp))
+        Column(modifier = Modifier
+            .padding(4.dp)
+            .weight(0.7F))
         {
             Text(
                 text = taskBook.name,
@@ -138,18 +159,15 @@ private fun TaskListCardComponentRowName(taskBook: TaskBook) {
 private fun TaskListCardComponentButtonUpdate(taskBook: TaskBook) {
     val viewModel: TasksManagerViewModel = koinViewModel()
 
-    OutlinedButton(modifier = Modifier
-        .width(110.dp)
+    OutlinedIconButton(modifier = Modifier
+        .width(35.dp)
         .height(35.dp),
-        colors = CommonViewComp.getPlanningBookCardButtonPrimaryColour(),
+        colors = CommonViewComp.getPlanningBookCardIconButtonPrimaryColour(),
         onClick = {
             viewModel.showTaskUpdateSection(taskBook)
         }
     ) {
-        Text(
-            "Update",
-            style = MaterialTheme.typography.titleMedium,
-        )
+        Icon(imageVector = Icons.Outlined.Edit, contentDescription = "Edit task", Modifier.size(25.dp))
     } //button
 }
 
@@ -157,19 +175,16 @@ private fun TaskListCardComponentButtonUpdate(taskBook: TaskBook) {
 private fun TaskListCardComponentButtonDelete(taskBook: TaskBook) {
     val viewModel: TasksManagerViewModel = koinViewModel()
 
-    OutlinedButton(modifier = Modifier
-        .width(110.dp)
+    OutlinedIconButton(modifier = Modifier
+        .width(35.dp)
         .height(35.dp),
-        colors = CommonViewComp.getPlanningBookCardButtonSecondaryColour(),
+        colors = CommonViewComp.getPlanningBookCardIconButtonSecondaryColour(),
         onClick = {
             Klog.line("taskListSection","taskListCardComponentButtonDelete","delete task button clicked")
             viewModel.confirmDeleteTask(taskBook, true)
-        }
+        },
     ) {
-        Text(
-            "Delete",
-            style = MaterialTheme.typography.titleMedium,
-        )
+        Icon(imageVector = Icons.Outlined.Delete, contentDescription = "delete task", Modifier.size(25.dp))
     } //button
 }
 

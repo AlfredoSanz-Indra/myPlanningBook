@@ -471,6 +471,15 @@ class TasksManagerViewModel(private val taskService: TaskService,
         }//launch
     }
 
+    fun taskDateIsToday(taskBook: TaskBook): Boolean {
+        val todayDate = DateTimeUtils.currentDate()
+        val todayYear = DateTimeUtils.dateToYear(todayDate)
+        val todayMonth = DateTimeUtils.dateToMonth(todayDate)
+        val todayDay = DateTimeUtils.dateToDay(todayDate)
+
+        return taskBook.year == todayYear && taskBook.month == todayMonth && taskBook.day == todayDay
+    }
+
     private fun updateIsToCreateTask(action: Boolean) {
         _uiState.update {
             it.copy(isToCreateTask = action)
