@@ -27,7 +27,8 @@ data class BookMenuUiState(
     var isToTasksManager: Boolean = false,
     var isToActivitiesManager: Boolean = false,
     var isToBack: Boolean = false,
-    var showBack: Boolean = false
+    var showBack: Boolean = false,
+    var loggedUser: String = ""
 )
 class BookMenuViewModel(private val usersService: UsersService,
                         private val stateService: StateService): ViewModel()  {
@@ -50,6 +51,8 @@ class BookMenuViewModel(private val usersService: UsersService,
 
                 if (resp!!.result) {
                     updateIsStateLoaded(true)
+                    Klog.line("BookMenuViewModel", "loadState", "AppState.useremail!!: ${AppState.useremail!!}")
+                    updateLoggedUser(AppState.useremail!!)
 
                     Klog.line("BookMenuViewModel", "loadState", "State Successfully loaded")
                     if (AppState.activePlanningBook != null) {
@@ -63,11 +66,13 @@ class BookMenuViewModel(private val usersService: UsersService,
                         setGeneralError(" Owner is not accessible, please log in again!")
                         updateIsStateLoaded(false)
                     }
+                    Klog.line("BookMenuViewModel", "loadState", "AppState.useremail!! 2: ${AppState.useremail!!}")
                 }
                 else {
                     setGeneralError(" ${resp.code}: ${resp.message}, please log in again!")
                     updateShowBack(true)
                 }
+                Klog.line("BookMenuViewModel", "loadState", "AppState.useremail!! 3: ${AppState.useremail!!}")
             }
             catch (e: Exception) {
                 Klog.stackTrace("BookMenuViewModel", "loadState", e.stackTrace)
@@ -78,7 +83,7 @@ class BookMenuViewModel(private val usersService: UsersService,
     }
 
     fun updateState() {
-
+        Klog.line("BookMenuViewModel", "updateState", "updateState")
         clearErrors()
         clearFields()
 
@@ -182,6 +187,12 @@ class BookMenuViewModel(private val usersService: UsersService,
     private fun updateShowBack(action: Boolean) {
         _uiState.update {
             it.copy(showBack = action)
+        }
+    }
+
+    private fun updateLoggedUser(user: String) {
+        _uiState.update {
+            it.copy(loggedUser = user)
         }
     }
 

@@ -122,7 +122,7 @@ fun NavigationGraph(
                     arguments = listOf()
         ) {
             val bookMenuView = ViewsStore.getBookMenuView()
-            bookMenuView.createView(
+            bookMenuView.CreateView(
                 onPlanningBooks = {
                     Klog.line("NavigationController", "NavigationGraph", "navHost bookmenu go to PlanningBookManager!")
                     navActions.navigateToPlanningManagerBook()

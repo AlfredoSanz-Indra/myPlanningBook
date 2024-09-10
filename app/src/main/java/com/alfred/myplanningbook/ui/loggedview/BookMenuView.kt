@@ -3,14 +3,18 @@ package com.alfred.myplanningbook.ui.loggedview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,7 +38,7 @@ import org.koin.androidx.compose.koinViewModel
 class BookMenuView {
 
     @Composable
-    fun createView(onPlanningBooks: () -> Unit,
+    fun CreateView(onPlanningBooks: () -> Unit,
                    onTasks: () -> Unit,
                    onActivities: () -> Unit,
                    onLogout: () -> Unit) {
@@ -52,48 +56,110 @@ class BookMenuView {
         }
 
         MaterialTheme(colorScheme = MaterialTheme.colorScheme) {
-            Column(
-                Modifier
-                    .background(color = MaterialTheme.colorScheme.surface)
-                    .fillMaxWidth()
-                    .fillMaxHeight(),
-                Arrangement.Top,
-                Alignment.CenterHorizontally
-            ) {
-                if(uiState.currentPlanningBook.isEmpty()) {
-                    Spacer(modifier = Modifier.height(30.dp))
-                    errorGeneralField()
-                    if(!uiState.showBack) {
-                        loading()
-                    }
-                    else {
-                        backButton(onLogout)
-                    }
+            Scaffold(
+                modifier = Modifier,
+                topBar = {
+                    Topbar(onLogout)
+                },
+                bottomBar = {
+                    Bottombar()
+                },
+                content = { innerPadding ->
+                    Content(onPlanningBooks, onTasks, onActivities, onLogout, innerPadding)
+                }
+            )
+        }
+    }
+
+    @Composable
+    private fun Topbar(onLogout: () -> Unit) {
+        val viewModel: BookMenuViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+        Column(
+            Modifier
+                .background(color = MaterialTheme.colorScheme.surface)
+                .fillMaxWidth()
+                .height(50.dp),
+            Arrangement.Top,
+            Alignment.CenterHorizontally)
+        {
+            if(uiState.currentPlanningBook.isEmpty()) {
+                Spacer(modifier = Modifier.height(30.dp))
+                ErrorGeneralField()
+                if(!uiState.showBack) {
+                    Loading()
                 }
                 else {
-                    Spacer(modifier = Modifier.height(30.dp))
-                    errorGeneralField()
-                    planningBookNameText()
-
-                    Spacer(modifier = Modifier.height(30.dp))
-                    planningBooksButton(onPlanningBooks)
-
-                    Spacer(modifier = Modifier.height(30.dp))
-                    tasksButton(onTasks)
-
-                    Spacer(modifier = Modifier.height(30.dp))
-                    activitiesButton(onActivities)
-
-                    Spacer(modifier = Modifier.height(30.dp))
-                    logoutButton(onLogout)
+                    BackButton(onLogout)
                 }
+            }
+            else {
+                Spacer(modifier = Modifier.height(30.dp))
+                ErrorGeneralField()
+                PlanningBookNameText()
             }
         }
     }
 
     @Composable
-    private fun errorGeneralField() {
+    private fun Bottombar() {
+        Column(
+            Modifier
+                .background(color = MaterialTheme.colorScheme.surface)
+                .fillMaxWidth()
+                .height(70.dp),
+            Arrangement.Top,
+            Alignment.CenterHorizontally)
+        {
+            LegendOnFoot()
+        }
+    }
 
+    @Composable
+    private fun Content(onPlanningBooks: () -> Unit,
+                        onTasks: () -> Unit,
+                        onActivities: () -> Unit,
+                        onLogout: () -> Unit,
+                        innerPadding: PaddingValues) {
+        Column(
+            Modifier
+                .background(color = MaterialTheme.colorScheme.surface)
+                .fillMaxWidth()
+                .fillMaxHeight(),
+            Arrangement.Top,
+            Alignment.CenterHorizontally)
+        {
+            Spacer(modifier = Modifier
+                .height(30.dp)
+                .padding(innerPadding))
+            ErrorGeneralField()
+            PlanningBookNameText()
+
+            Spacer(modifier = Modifier
+                .height(30.dp)
+                .padding(innerPadding))
+            PlanningBooksButton(onPlanningBooks)
+
+            Spacer(modifier = Modifier
+                .height(30.dp)
+                .padding(innerPadding))
+            TasksButton(onTasks)
+
+            Spacer(modifier = Modifier
+                .height(30.dp)
+                .padding(innerPadding))
+            ActivitiesButton(onActivities)
+
+            Spacer(modifier = Modifier
+                .height(30.dp)
+                .padding(innerPadding))
+            LogoutButton(onLogout)
+        }
+    }
+
+    @Composable
+    private fun ErrorGeneralField() {
         val viewModel: BookMenuViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -114,14 +180,12 @@ class BookMenuView {
     }
 
     @Composable
-    private fun loading() {
-
+    private fun Loading() {
         CircularProgressIndicator()
     }
 
     @Composable
-    private fun planningBookNameText() {
-
+    private fun PlanningBookNameText() {
         val viewModel: BookMenuViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -136,8 +200,7 @@ class BookMenuView {
     }
 
     @Composable
-    private fun planningBooksButton(onPlanningBooks: () -> Unit) {
-
+    private fun PlanningBooksButton(onPlanningBooks: () -> Unit) {
         val viewModel: BookMenuViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -162,8 +225,7 @@ class BookMenuView {
     }
 
     @Composable
-    private fun tasksButton(onTasks: () -> Unit) {
-
+    private fun TasksButton(onTasks: () -> Unit) {
         val viewModel: BookMenuViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -188,8 +250,7 @@ class BookMenuView {
     }
 
     @Composable
-    private fun activitiesButton(onActivities: () -> Unit) {
-
+    private fun ActivitiesButton(onActivities: () -> Unit) {
         val viewModel: BookMenuViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -214,8 +275,7 @@ class BookMenuView {
     }
 
     @Composable
-    private fun logoutButton(onLogout: () -> Unit) {
-
+    private fun LogoutButton(onLogout: () -> Unit) {
         val viewModel: BookMenuViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -240,8 +300,7 @@ class BookMenuView {
     }
 
     @Composable
-    private fun backButton(onLogout: () -> Unit) {
-
+    private fun BackButton(onLogout: () -> Unit) {
         val viewModel: BookMenuViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -261,6 +320,41 @@ class BookMenuView {
             if(uiState.isToBack) {
                 viewModel.clearFields()
                 onLogout()
+            }
+        }
+    }
+
+    @Composable
+    private fun LegendOnFoot() {
+        val viewModel: BookMenuViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+        Klog.line("BookMenuView", "legendOnFoot", "uiState.loggedUser: ${uiState.loggedUser}")
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween)
+        {
+            Column(Modifier.padding(4.dp))
+            {
+                Text(
+                    text = uiState.loggedUser,
+                    color = CommonViewComp.c_card_buttonOneContent,
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        background = CommonViewComp.c_snow
+                    )
+                )
+            }
+        }
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween)
+        {
+            Column(Modifier.padding(4.dp)) {
+                Text(
+                    text = "version 1.4.15", color = CommonViewComp.c_card_buttonOneContent, style = TextStyle(
+                        fontSize = 15.sp, background = CommonViewComp.c_snow
+                    )
+                )
             }
         }
     }
