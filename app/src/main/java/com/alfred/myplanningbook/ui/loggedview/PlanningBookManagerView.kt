@@ -354,7 +354,6 @@ class PlanningBookManagerView {
         }
     }
 
-
     @Composable
     private fun pbCardComponent(planningBook: PlanningBook) {
         val viewModel: PlanningBookManagerViewModel = koinViewModel()

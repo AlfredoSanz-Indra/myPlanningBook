@@ -141,7 +141,6 @@ private fun TaskListCardComponentRowName(activityBook: ActivityBook) {
     }
 }
 
-
 @Composable
 private fun TaskListCardComponentButtonUpdate(activityBook: ActivityBook) {
     val viewModel: ActivitiesManagerViewModel = koinViewModel()
