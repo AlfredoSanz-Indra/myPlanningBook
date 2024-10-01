@@ -5,6 +5,6 @@ package com.alfred.myplanningbook.core.validators
  * @time 2023
  */
 interface TextValidator {
-    fun validate(stringToValidate: String): ValidatorResult
+    fun validate(theText: String): ValidatorResult
     var validatorResult: ValidatorResult
 }

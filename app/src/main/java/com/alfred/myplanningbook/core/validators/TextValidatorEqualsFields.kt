@@ -4,20 +4,20 @@ package com.alfred.myplanningbook.core.validators
  * @author Alfredo Sanz
  * @time 2023
  */
-class TextValidatorEqualsFields (private val thetext2: String): TextValidator {
+class TextValidatorEqualsFields (private val theText2: String): TextValidator {
 
     override var validatorResult: ValidatorResult = ValidatorResult.NoResult
 
-    override fun validate(thetext: String): ValidatorResult {
+    override fun validate(theText: String): ValidatorResult {
 
         validatorResult = when {
-            thetext == null || thetext2 == null ->
+            theText.isEmpty() || theText2.isEmpty() ->
                 ValidatorResult.Error("Both fields must be filled")
 
-            thetext != thetext2 ->
+            theText != theText2                 ->
                 ValidatorResult.Error("Both values must be equal")
 
-            else ->
+            else                                ->
                 ValidatorResult.Success
         }
 
