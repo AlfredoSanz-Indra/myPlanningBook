@@ -260,7 +260,6 @@ class PlanningBookManagerView {
     @Composable
     private fun pbCreationActions() {
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
         Column {
             Row {
@@ -466,7 +465,6 @@ class PlanningBookManagerView {
     @Composable
     private fun pbCardComponentRowButtons(planningBook: PlanningBook, isSharedWithMe: Boolean) {
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
         if(isSharedWithMe) {
             Row ( Modifier.fillMaxWidth(),

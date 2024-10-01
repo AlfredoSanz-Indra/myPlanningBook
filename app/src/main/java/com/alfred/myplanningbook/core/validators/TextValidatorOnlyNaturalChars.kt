@@ -10,16 +10,16 @@ class TextValidatorOnlyNaturalChars: TextValidator {
 
     override var validatorResult: ValidatorResult = ValidatorResult.NoResult
 
-    override fun validate(thetext: String): ValidatorResult {
+    override fun validate(theText: String): ValidatorResult {
 
         validatorResult = when {
-            thetext == null ->
+            theText.isEmpty() ->
                 ValidatorResult.Error("The field value cannot be empty")
 
-            !onlyHasNaturalChars(thetext) ->
+            !onlyHasNaturalChars(theText) ->
                 ValidatorResult.Error("The field has not allowed chars")
 
-            else ->
+            else                          ->
                 ValidatorResult.Success
         }
 

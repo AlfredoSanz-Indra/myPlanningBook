@@ -71,7 +71,7 @@ class ActivityServiceImpl(private val activityRepository: ActivityRepository): A
         var result: SimpleResponse
         Klog.line("ActivityServiceImpl", "getActivityList", "getting the activityBook list from planningbook -> pb_id: ${planningBookId}")
 
-        if(planningBookId == null) {
+        if(planningBookId.isEmpty()) {
             Klog.line("ActivityServiceImpl", "getActivityList", "Missing planningBook id")
             result = SimpleResponse(false, 404, "Fail: Missing planningBook id!", "")
             return result

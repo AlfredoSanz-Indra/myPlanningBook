@@ -19,7 +19,7 @@ class ActivityBook(
     var isActive: Int?
 ) {
     companion object {
-        const val DESCRIPTION_LENGTH_SHORT = 50
+        const val DESCRIPTION_LENGTH_SHORT = 60
     }
 
     fun getStringWeekDaysList(): String {

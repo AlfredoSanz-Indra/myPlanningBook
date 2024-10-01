@@ -76,7 +76,7 @@ private fun activityFormActions() {
                 .height(70.dp),
                 colors = CommonViewComp.getSecondaryButtonColour(),
                 onClick = {
-                    viewModel.showActivityFormSection(false);
+                    viewModel.showActivityFormSection();
                 }) {
                 Text("Cancel")
             }
