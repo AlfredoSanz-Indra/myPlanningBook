@@ -38,9 +38,6 @@ fun NavigationGraph(
     navActions: NavigationActions = remember(navController) { NavigationActions(navController) }
 ) {
 
-    val currentNavBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = currentNavBackStackEntry?.destination?.route ?: startDestination
-
     NavHost(
         navController = navController,
         startDestination = startDestination,

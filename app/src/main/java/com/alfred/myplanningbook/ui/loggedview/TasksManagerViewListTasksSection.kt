@@ -90,7 +90,7 @@ private fun TaskListCardComponent(taskBook: TaskBook) {
 
     OutlinedCard(
         modifier = Modifier
-            .padding(vertical = 5.dp)
+            .padding(vertical = 1.dp)
             .fillMaxWidth()
             .height(170.dp)
             .wrapContentHeight(),

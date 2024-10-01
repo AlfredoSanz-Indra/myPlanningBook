@@ -11,13 +11,13 @@ class TextValidatorEmail: TextValidator {
 
     override var validatorResult: ValidatorResult = ValidatorResult.NoResult
 
-    override fun validate(thetext: String): ValidatorResult {
+    override fun validate(theText: String): ValidatorResult {
 
         validatorResult = when {
-            thetext == null ->
+            theText.isEmpty() ->
                 ValidatorResult.Error("The field value cannot be empty")
 
-            !PatternsCompat.EMAIL_ADDRESS.matcher(thetext.trim()).matches() ->
+            !PatternsCompat.EMAIL_ADDRESS.matcher(theText.trim()).matches() ->
                 ValidatorResult.Error("The email is not valid")
 
             else ->

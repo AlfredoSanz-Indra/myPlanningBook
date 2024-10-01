@@ -10,16 +10,16 @@ class TextValidatorPassword: TextValidator {
 
     override var validatorResult: ValidatorResult = ValidatorResult.NoResult
 
-    override fun validate(thetext: String): ValidatorResult {
+    override fun validate(theText: String): ValidatorResult {
 
         validatorResult = when {
-            thetext == null ->
+            theText.isEmpty() ->
                 ValidatorResult.Error("The field value cannot be empty")
 
-            !isValidPassword(thetext) ->
+            !isValidPassword(theText) ->
                 ValidatorResult.Error("The password is not well formed")
 
-            else ->
+            else                      ->
                 ValidatorResult.Success
         }
 

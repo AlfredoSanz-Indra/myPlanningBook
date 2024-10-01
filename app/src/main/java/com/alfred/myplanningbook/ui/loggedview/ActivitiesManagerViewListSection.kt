@@ -85,9 +85,9 @@ fun ActivitiesListSection() {
 private fun TaskListCardComponent(activityBook: ActivityBook) {
     OutlinedCard(
         modifier = Modifier
-            .padding(vertical = 5.dp)
+            .padding(vertical = 1.dp)
             .fillMaxWidth()
-            .height(170.dp)
+            .height(150.dp)
             .wrapContentHeight(),
         shape = MaterialTheme.shapes.medium,
         colors = CommonViewComp.gePlanningBookCardColour(),
@@ -108,9 +108,6 @@ private fun TaskListCardComponent(activityBook: ActivityBook) {
 
             Spacer(modifier = Modifier.height(10.dp))
             TaskListCardComponentRowDate(activityBook)
-
-            Spacer(modifier = Modifier.height(5.dp))
-            ActivityListCardComponentRowHours(activityBook)
         } //Column
     } //card
 }
@@ -199,29 +196,20 @@ private fun TaskListCardComponentRowDate(activityBook: ActivityBook) {
         Column(Modifier.padding(4.dp))
         {
             Text(
+                text = "De ${activityBook.getFormattedStartTime()} a  ${activityBook.getFormattedEndTime()}",
+                style = MaterialTheme.typography.titleSmall,
+            )
+        }
+
+        Column(Modifier.padding(4.dp))
+        {
+            Text(
                 text = activityBook.getStringWeekDaysList() ,
                 style = MaterialTheme.typography.titleSmall,
             )
         }
     }
 }
-
-@Composable
-private fun ActivityListCardComponentRowHours(activityBook: ActivityBook) {
-    Row (
-        Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween)
-    {
-        Column(Modifier.padding(4.dp))
-        {
-            Text(
-                text = "De ${activityBook.getFormattedStartTime()} a  ${activityBook.getFormattedEndTime()}",
-                style = MaterialTheme.typography.titleSmall,
-            )
-        }
-    }
-}
-
 
 @ExperimentalMaterial3Api
 @Composable

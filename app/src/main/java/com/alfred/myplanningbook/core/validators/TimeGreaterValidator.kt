@@ -5,8 +5,7 @@ class TimeGreaterValidator {
     var validatorResult: ValidatorResult = ValidatorResult.NoResult
 
     fun validate(startHour: Int, endHour: Int, startMinutes: Int, endMinutes: Int): ValidatorResult {
-        var valResult = 0
-        valResult = checkout(startHour, endHour)
+        var valResult = checkout(startHour, endHour)
         if(valResult == 2) {
             valResult = checkout(startMinutes, endMinutes)
         }

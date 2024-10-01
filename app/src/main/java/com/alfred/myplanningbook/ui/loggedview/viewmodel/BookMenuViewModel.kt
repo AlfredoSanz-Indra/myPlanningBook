@@ -49,7 +49,7 @@ class BookMenuViewModel(private val usersService: UsersService,
                 val resp: SimpleResponse = stateService.loadState(AppState.useremail!!)
                 Klog.line("BookMenuViewModel", "loadState", "resp: $resp")
 
-                if (resp!!.result) {
+                if (resp.result) {
                     updateIsStateLoaded(true)
                     Klog.line("BookMenuViewModel", "loadState", "AppState.useremail!!: ${AppState.useremail!!}")
                     updateLoggedUser(AppState.useremail!!)
@@ -102,16 +102,11 @@ class BookMenuViewModel(private val usersService: UsersService,
                 val resp = usersService.logoutUser()
                 Klog.linedbg("BookMenuViewModel", "logoutUser", "resp: $resp")
 
-                if (resp != null) {
-                    if (resp.result) {
-                        updateIsToLogout(true)
-                    }
-                    else {
-                        setGeneralError(" ${resp.code}: ${resp.message}")
-                    }
+                if (resp.result) {
+                    updateIsToLogout(true)
                 }
                 else {
-                    setGeneralError(" 500: Undefined Error, couldn't log out")
+                    setGeneralError(" ${resp.code}: ${resp.message}")
                 }
             }
             catch (e: Exception) {

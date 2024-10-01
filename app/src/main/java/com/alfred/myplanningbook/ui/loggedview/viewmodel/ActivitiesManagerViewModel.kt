@@ -65,7 +65,7 @@ class ActivitiesManagerViewModel(private val activityService: ActivityService,
     val activityName_maxLength = 30
     val activityDesc_maxLength = 100
 
-    fun showActivityFormSection(action: Boolean) {
+    fun showActivityFormSection() {
         updateIsToCreateActivity(false)
     }
 

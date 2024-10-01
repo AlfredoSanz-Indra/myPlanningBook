@@ -67,7 +67,7 @@ class TaskServiceImpl(private val taskRepository: TaskRepository): TaskService {
         var result: SimpleResponse
         Klog.line("TaskServiceImpl", "getTaskList", "getting the taskbook list from planningbook -> pb_id: ${planningBookId}")
 
-        if(planningBookId == null) {
+        if(planningBookId.isEmpty()) {
             Klog.line("TaskServiceImpl", "getTaskList", "Missing planningBook id")
             result = SimpleResponse(false, 404, "Fail: Missing planningBook id!", "")
             return result
