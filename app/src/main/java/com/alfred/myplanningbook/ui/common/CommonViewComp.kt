@@ -29,6 +29,9 @@ object CommonViewComp {
     val c_card_buttonWarnContainer: Color = Color(0xFFFF4500) //orangeRed
     val c_card_buttonWarnContent: Color = Color(0xFFF5F5F5) //whitesmoke
 
+    val c_button_menu_library_container: Color = Color(0xFF97BE5A)
+    val c_button_menu_library_text: Color = Color(0xFFFFFAFA)//FCFFE0)
+
     @Composable
     fun getActionsButtonColour(): ButtonColors {
         return ButtonDefaults.outlinedButtonColors(
@@ -48,6 +51,14 @@ object CommonViewComp {
             disabledContentColor = MaterialTheme.colorScheme.onSecondary,
             disabledContainerColor = MaterialTheme.colorScheme.secondary
 
+        )
+    }
+
+    @Composable
+    fun getMenuLibraryButtonColour(): ButtonColors {
+        return ButtonDefaults.outlinedButtonColors(
+            containerColor = c_button_menu_library_container,
+            contentColor = c_button_menu_library_text,
         )
     }
 

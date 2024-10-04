@@ -1,22 +1,26 @@
 package com.alfred.myplanningbook.core.di
 
 import com.alfred.myplanningbook.data.repository.ActivityRepositoryImpl
+import com.alfred.myplanningbook.data.repository.LibraryRepositoryImpl
 import com.alfred.myplanningbook.data.repository.OwnerRepositoryImpl
 import com.alfred.myplanningbook.data.repository.PlanningBookRepositoryImpl
 import com.alfred.myplanningbook.data.repository.TaskRepositoryImpl
 import com.alfred.myplanningbook.data.repository.UsersRepositoryImpl
 import com.alfred.myplanningbook.domain.repositoryapi.ActivityRepository
+import com.alfred.myplanningbook.domain.repositoryapi.LibraryRepository
 import com.alfred.myplanningbook.domain.repositoryapi.OwnerRepository
 import com.alfred.myplanningbook.domain.repositoryapi.PlanningBookRepository
 import com.alfred.myplanningbook.domain.repositoryapi.TaskRepository
 import com.alfred.myplanningbook.domain.repositoryapi.UsersRepository
 import com.alfred.myplanningbook.domain.usecase.ActivityServiceImpl
+import com.alfred.myplanningbook.domain.usecase.LibraryServiceImpl
 import com.alfred.myplanningbook.domain.usecase.OwnerServiceImpl
 import com.alfred.myplanningbook.domain.usecase.PlanningBookServiceImpl
 import com.alfred.myplanningbook.domain.usecase.StateServiceImpl
 import com.alfred.myplanningbook.domain.usecase.TaskServiceImpl
 import com.alfred.myplanningbook.domain.usecase.UsersServiceImpl
 import com.alfred.myplanningbook.domain.usecaseapi.ActivityService
+import com.alfred.myplanningbook.domain.usecaseapi.LibraryService
 import com.alfred.myplanningbook.domain.usecaseapi.OwnerService
 import com.alfred.myplanningbook.domain.usecaseapi.PlanningBookService
 import com.alfred.myplanningbook.domain.usecaseapi.StateService
@@ -36,6 +40,7 @@ import kotlinx.coroutines.Dispatchers
 import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import com.alfred.myplanningbook.ui.loggedview.library.viewmodel.LibraryViewModel
 
 val appModule = module {
 
@@ -63,6 +68,10 @@ val appModule = module {
         ActivityRepositoryImpl(get(named("IODispatcher")))
     }
 
+    single<LibraryRepository> {
+        LibraryRepositoryImpl(get(named("IODispatcher")))
+    }
+
     //factoryOf(::UsersServiceImpl) { bind<UsersService>() }
     factory<UsersService> {
         UsersServiceImpl(get())
@@ -87,6 +96,9 @@ val appModule = module {
     factory<ActivityService> {
         ActivityServiceImpl(get())
     }
+    factory<LibraryService> {
+        LibraryServiceImpl(get())
+    }
 
     viewModelOf(::MainViewModel)
     viewModelOf(::ResetPwdViewModel)
@@ -98,4 +110,5 @@ val appModule = module {
     viewModelOf(::DialogDatePickerViewModel)
     viewModelOf(::DialogTimePickerViewModel)
     viewModelOf(::ActivitiesManagerViewModel)
+    viewModelOf(::LibraryViewModel)
 }

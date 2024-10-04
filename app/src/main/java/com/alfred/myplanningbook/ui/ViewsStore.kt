@@ -5,6 +5,7 @@ import com.alfred.myplanningbook.ui.loggedview.ActivitiesManagerView
 import com.alfred.myplanningbook.ui.loggedview.BookMenuView
 import com.alfred.myplanningbook.ui.loggedview.PlanningBookManagerView
 import com.alfred.myplanningbook.ui.loggedview.TasksManagerView
+import com.alfred.myplanningbook.ui.loggedview.library.LibraryView
 
 /**
  * @author Alfredo Sanz
@@ -16,6 +17,7 @@ object ViewsStore {
     private var planningBookmangerView: PlanningBookManagerView? = null
     private var tasksManagerView: TasksManagerView? = null
     private var activitiesManagerView: ActivitiesManagerView? = null
+    private var libraryView: LibraryView? = null
 
     fun getBookMenuView(): BookMenuView {
         if(bookMenuView == null) {
@@ -47,6 +49,14 @@ object ViewsStore {
             activitiesManagerView = ActivitiesManagerView()
         }
         return activitiesManagerView!!
+    }
+
+    fun getLibraryView(): LibraryView {
+        if(libraryView == null) {
+            Klog.line("ViewsStore", "getLibraryView", "creating LibraryrView!")
+            libraryView = LibraryView()
+        }
+        return libraryView!!
     }
 
     fun cleanLoggedViews() {
