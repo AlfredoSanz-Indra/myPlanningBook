@@ -1,4 +1,4 @@
-package com.alfred.myplanningbook.domain.model
+package com.alfred.myplanningbook.domain.model.library
 
 /**
  * @author Alfredo Sanz

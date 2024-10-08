@@ -1,0 +1,45 @@
+{
+"masters":
+  [
+    {
+      "name": "format",
+      "values":
+        [
+          {
+             "name": "bolsillo",
+             "value": "Bolsillo"
+          },
+          {
+            "name": "tapablanda",
+            "value": "Tapa Blanda"
+          },
+          {
+          "name": "tapadura",
+          "value": "Tapa Dura"
+          },
+          {
+            "name": "pdf",
+            "value": "Pdf"
+          },
+          {
+            "name": "ebook",
+            "value": "Ebook"
+          }
+        ]
+    },
+    {
+      "name": "language",
+      "values":
+        [
+          {
+            "name": "ingles",
+            "value": "Inglés"
+          },
+          {
+            "name": "espanol",
+            "value": "Español"
+          }
+       ]
+    }
+  ]
+}

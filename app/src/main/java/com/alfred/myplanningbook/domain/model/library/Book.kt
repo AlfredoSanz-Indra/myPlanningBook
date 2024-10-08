@@ -1,11 +1,11 @@
-package com.alfred.myplanningbook.domain.model
+package com.alfred.myplanningbook.domain.model.library
 
 data class Book(var id: String?,
                 val title: String,
                 val read: Int,
+                val readYear: Int,
                 val haveit: Int,
                 val subtitle: String?,
-                val description: String?,
                 val notes: String?,
                 val authorName: String?,
                 val authorID: Int?,

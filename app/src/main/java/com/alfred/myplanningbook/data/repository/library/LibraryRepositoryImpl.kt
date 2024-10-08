@@ -1,6 +1,6 @@
-package com.alfred.myplanningbook.data.repository
+package com.alfred.myplanningbook.data.repository.library
 
-import com.alfred.myplanningbook.domain.repositoryapi.LibraryRepository
+import com.alfred.myplanningbook.domain.repositoryapi.library.LibraryRepository
 import kotlinx.coroutines.CoroutineDispatcher
 
 /**

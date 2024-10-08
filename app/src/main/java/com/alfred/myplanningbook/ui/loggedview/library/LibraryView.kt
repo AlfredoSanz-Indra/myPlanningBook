@@ -90,7 +90,7 @@ class LibraryView {
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
         Text(
-            "Library",
+            uiState.headerMessage,
             color = CommonViewComp.c_card_buttonOneContent,
             style = TextStyle(
                 fontSize = 20.sp,
@@ -105,25 +105,15 @@ class LibraryView {
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
         if(uiState.isToAddBook) {
-            libraryAddSection()
+            LibraryCreationSection()
         }
         else if(uiState.isToUpdateBook) {
-            libraryUpdateSection()
+            LibraryUpdateSection()
         }
         else {
             libraryHeaderActions(onBack)
             libraryListSection()
         }
-    }
-
-    @Composable
-    private fun libraryAddSection() {
-
-    }
-
-    @Composable
-    private fun libraryUpdateSection() {
-
     }
 
     @Composable

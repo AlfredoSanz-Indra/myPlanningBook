@@ -1,4 +1,4 @@
-package com.alfred.myplanningbook.domain.repositoryapi
+package com.alfred.myplanningbook.domain.repositoryapi.library
 
 /**
  * @author Alfredo Sanz
