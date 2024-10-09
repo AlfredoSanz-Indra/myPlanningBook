@@ -6,16 +6,20 @@
       "values":
         [
           {
+            "name": "tapablanda",
+            "value": "Tapa blanda"
+          },
+          {
+            "name": "tapadura",
+            "value": "Tapa dura"
+          },
+          {
              "name": "bolsillo",
              "value": "Bolsillo"
           },
           {
-            "name": "tapablanda",
-            "value": "Tapa Blanda"
-          },
-          {
-          "name": "tapadura",
-          "value": "Tapa Dura"
+            "name": "otros",
+            "value": "Otros"
           },
           {
             "name": "pdf",
@@ -32,12 +36,12 @@
       "values":
         [
           {
-            "name": "ingles",
-            "value": "Inglés"
-          },
-          {
             "name": "espanol",
             "value": "Español"
+          },
+          {
+            "name": "ingles",
+            "value": "Inglés"
           }
        ]
     }

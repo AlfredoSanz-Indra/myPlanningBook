@@ -12,11 +12,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,6 +39,19 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.loggedview.library.viewmodel.LibraryViewModel
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.alfred.myplanningbook.core.log.Klog
 
 /**
  * @author Alfredo Sanz
@@ -147,7 +162,7 @@ private fun LibraryDataFieldsComponents() {
                 .padding(horizontal = 10.dp)
                ) {
             BookFormComponent_title()
-            BookFormComponent_chips()
+            BookFormComponent_switches()
             BookFormComponent_subtitle()
             BookFormComponent_author()
             BookFormComponent_saga()
@@ -159,16 +174,6 @@ private fun LibraryDataFieldsComponents() {
             BookFormComponent_readYear()
         }
     }
-}
-
-@Composable
-private fun BookFormComponent_chips() {
-    val viewModel: LibraryViewModel = koinViewModel()
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    Row {
-
-    } //Row
 }
 
 @Composable
@@ -184,7 +189,8 @@ private fun BookFormComponent_title() {
             Arrangement.Top,
             Alignment.CenterHorizontally
         ) {
-            OutlinedTextField(value = uiState.bookTitle,
+            OutlinedTextField(
+                value = uiState.bookTitle,
                 modifier = Modifier
                     .height(90.dp)
                     .fillMaxSize(1f)
@@ -209,6 +215,73 @@ private fun BookFormComponent_title() {
 }
 
 @Composable
+private fun BookFormComponent_switches() {
+    val viewModel: LibraryViewModel = koinViewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    Row {
+        Column(
+            Modifier
+                .background(color = MaterialTheme.colorScheme.surface)
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp),
+            Arrangement.Top,
+            Alignment.Start
+        ) {
+            Row(modifier = Modifier, Arrangement.SpaceBetween) {
+                Column(modifier = Modifier
+                        .padding(vertical = 10.dp)
+                        .weight(0.5F)) {
+                    Text("I have read the book")
+                }
+
+                Column(modifier = Modifier
+                        .padding(vertical = 10.dp)) {
+                    Text("I have the book")
+                }
+            }//Row texts
+
+            Row(modifier = Modifier, Arrangement.SpaceBetween) {
+                Column(modifier = Modifier
+                        .padding(vertical = 0.dp)
+                        .weight(0.5F)) {
+                    Switch(modifier = Modifier.semantics { contentDescription = "Read" }.padding(0.dp),
+                        checked = uiState.bookRead == "y",
+                        onCheckedChange = { viewModel.updateBookRead(it) },
+                        thumbContent = {
+                            if(uiState.bookRead == "y") {
+                                Icon(
+                                    imageVector = Icons.Filled.Check,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(SwitchDefaults.IconSize),
+                                )
+                            }
+                        }
+                    )
+                }
+
+                Column(modifier = Modifier
+                        .padding(vertical = 0.dp)) {
+                    Switch(modifier = Modifier.semantics { contentDescription = "Have" }.padding(0.dp),
+                        checked = uiState.bookHave == "y",
+                        onCheckedChange = { viewModel.updateBookHave(it) },
+                        thumbContent = {
+                            if(uiState.bookHave == "y") {
+                                Icon(
+                                    imageVector = Icons.Filled.Check,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(SwitchDefaults.IconSize),
+                                )
+                            }
+                        }
+                    )
+                }
+            }//Row Switches
+        }
+    } //Row
+}
+
+@Composable
 private fun BookFormComponent_subtitle() {
     val viewModel: LibraryViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -221,7 +294,8 @@ private fun BookFormComponent_subtitle() {
             Arrangement.Top,
             Alignment.CenterHorizontally
         ) {
-            OutlinedTextField(value = uiState.bookSubtitle,
+            OutlinedTextField(
+                value = uiState.bookSubtitle,
                 modifier = Modifier
                     .height(90.dp)
                     .fillMaxSize(1f)
@@ -259,7 +333,8 @@ private fun BookFormComponent_notes() {
             Arrangement.Top,
             Alignment.CenterHorizontally
         ) {
-            OutlinedTextField(value = uiState.bookNotes,
+            OutlinedTextField(
+                value = uiState.bookNotes,
                 onValueChange = { viewModel.updateBookNotes(it) },
                 modifier = Modifier
                     .height(130.dp)
@@ -297,7 +372,8 @@ private fun BookFormComponent_author() {
             Arrangement.Top,
             Alignment.CenterHorizontally
         ) {
-            OutlinedTextField(value = uiState.bookAuthor,
+            OutlinedTextField(
+                value = uiState.bookAuthor,
                 modifier = Modifier
                     .height(90.dp)
                     .fillMaxSize(1f)
@@ -345,7 +421,8 @@ private fun BookFormComponent_saga() {
             Arrangement.Top,
             Alignment.CenterHorizontally
         ) {
-            OutlinedTextField(value = uiState.bookSaga,
+            OutlinedTextField(
+                value = uiState.bookSaga,
                 modifier = Modifier
                     .height(90.dp)
                     .fillMaxSize(1f)
@@ -393,7 +470,8 @@ private fun BookFormComponent_publisher() {
             Arrangement.Top,
             Alignment.CenterHorizontally
         ) {
-            OutlinedTextField(value = uiState.bookPublisher,
+            OutlinedTextField(
+                value = uiState.bookPublisher,
                 modifier = Modifier
                     .height(90.dp)
                     .fillMaxSize(1f)
@@ -431,7 +509,8 @@ private fun BookFormComponent_category() {
             Arrangement.Top,
             Alignment.CenterHorizontally
         ) {
-            OutlinedTextField(value = uiState.bookCategory,
+            OutlinedTextField(
+                value = uiState.bookCategory,
                 modifier = Modifier
                     .height(90.dp)
                     .fillMaxSize(1f)
@@ -466,11 +545,14 @@ private fun BookFormComponent_category() {
     } //Row
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BookFormComponent_language() {
     val viewModel: LibraryViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    var isExpanded by remember { mutableStateOf(false) }
+
     Row {
         Column(
             Modifier
@@ -479,46 +561,57 @@ private fun BookFormComponent_language() {
             Arrangement.Top,
             Alignment.CenterHorizontally
         ) {
-            OutlinedTextField(value = uiState.bookLanguage,
-                modifier = Modifier
-                    .height(90.dp)
-                    .fillMaxSize(1f)
-                    .padding(10.dp),
-                onValueChange = { viewModel.updateBookLanguage(it) },
-                label = { Text(text="Language")},
-                placeholder = { Text("Language (5-40)") },
-                singleLine = true,
-                maxLines = 1,
-                trailingIcon = {
-                    IconButton(
-                        onClick = {
-                            //TODO
-                            //viewModel.openTimeStartDi()
-                        }
-                    ) {
-                        Icon(imageVector = Icons.Outlined.FilterList , contentDescription = null)
+            ExposedDropdownMenuBox(
+                expanded = isExpanded,
+                onExpandedChange = { newValue ->
+                    isExpanded = newValue
+                }
+            ) {
+                OutlinedTextField(
+                    value = uiState.bookLanguage,
+                    modifier = Modifier.height(90.dp).fillMaxSize(1f).padding(10.dp),
+                    onValueChange = { },
+                    label = { Text(text = "Language") },
+                    placeholder = { Text("Language") },
+                    readOnly = true,
+                    singleLine = true,
+                    maxLines = 1,
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(
+                            expanded = isExpanded,
+                            modifier = Modifier.menuAnchor(MenuAnchorType.SecondaryEditable),
+                        )
+                    })
+
+                ExposedDropdownMenu(
+                    expanded = isExpanded,
+                    onDismissRequest = { isExpanded = false },
+                ) {
+                    uiState.languagesMaster?.forEach { it ->
+                        DropdownMenuItem(
+                            text = { Text(it.value, style = MaterialTheme.typography.bodyLarge) },
+                            onClick = {
+                                viewModel.updateBookLanguage(it.value)
+                                viewModel.updateBookLanguageCode(it.name)
+                                isExpanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        )
                     }
-                },
-            )
-
-            if(uiState.bookLanguageError) {
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Text(
-                    uiState.bookFieldErrorTxt, color = Color.Red, style = TextStyle(
-                        fontSize = 15.sp, color = Color.Red
-                    )
-                )
+                }
             }
         }
     } //Row
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BookFormComponent_format() {
     val viewModel: LibraryViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    var isExpanded by remember { mutableStateOf(false) }
+
     Row {
         Column(
             Modifier
@@ -527,41 +620,48 @@ private fun BookFormComponent_format() {
             Arrangement.Top,
             Alignment.CenterHorizontally
         ) {
-            OutlinedTextField(value = uiState.bookFormat,
-                modifier = Modifier
-                    .height(90.dp)
-                    .fillMaxSize(1f)
-                    .padding(10.dp),
-                onValueChange = { viewModel.updateBookFormat(it) },
-                label = { Text(text="Format")},
-                placeholder = { Text("Format (5-40)") },
-                singleLine = true,
-                maxLines = 1,
-                trailingIcon = {
-                    IconButton(
-                        onClick = {
-                            //TODO
-                            //viewModel.openTimeStartDi()
-                        }
-                    ) {
-                        Icon(imageVector = Icons.Outlined.FilterList , contentDescription = null)
+            ExposedDropdownMenuBox(
+                expanded = isExpanded,
+                onExpandedChange = { newValue ->
+                    isExpanded = newValue
+                }
+            ) {
+                OutlinedTextField(
+                    value = uiState.bookFormat,
+                    modifier = Modifier.height(90.dp).fillMaxSize(1f).padding(10.dp),
+                    onValueChange = { },
+                    label = { Text(text = "Format") },
+                    placeholder = { Text("Format") },
+                    readOnly = true,
+                    singleLine = true,
+                    maxLines = 1,
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(
+                            expanded = isExpanded,
+                            modifier = Modifier.menuAnchor(MenuAnchorType.SecondaryEditable),
+                        )
+                    })
+
+                ExposedDropdownMenu(
+                    expanded = isExpanded,
+                    onDismissRequest = { isExpanded = false },
+                ) {
+                    uiState.formatsMaster?.forEach { it ->
+                        DropdownMenuItem(
+                            text = { Text(it.value, style = MaterialTheme.typography.bodyLarge) },
+                            onClick = {
+                                viewModel.updateBookFormat(it.value)
+                                viewModel.updateBookFormatCode(it.name)
+                                isExpanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        )
                     }
-                },
-            )
-
-            if(uiState.bookFormatError) {
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Text(
-                    uiState.bookFieldErrorTxt, color = Color.Red, style = TextStyle(
-                        fontSize = 15.sp, color = Color.Red
-                    )
-                )
+                }
             }
         }
     } //Row
 }
-
 
 @Composable
 private fun BookFormComponent_readYear() {
@@ -576,7 +676,8 @@ private fun BookFormComponent_readYear() {
             Arrangement.Top,
             Alignment.CenterHorizontally
         ) {
-            OutlinedTextField(value = uiState.bookReadYear,
+            OutlinedTextField(
+                value = uiState.bookReadYear,
                 modifier = Modifier
                     .height(90.dp)
                     .fillMaxSize(1f)

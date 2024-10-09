@@ -36,6 +36,8 @@ data class LibraryUiState(
     var bookFormatError: Boolean = false,
     var bookReadYearError: Boolean = false,
     var bookTitle: String = "",
+    var bookRead: String = "n",
+    var bookHave: String = "n",
     var bookSubtitle: String = "",
     var bookNotes: String = "",
     var bookAuthor: String = "",
@@ -43,8 +45,10 @@ data class LibraryUiState(
     var bookPublisher: String = "",
     var bookCategory: String = "",
     var bookLanguage: String = "",
+    var bookLanguageCode: String = "",
     var bookFormat: String = "",
-    var bookReadYear: String = "0",
+    var bookFormatCode: String = "",
+    var bookReadYear: String = "",
     var formatsMaster: List<LMaster>? = listOf(),
     var languagesMaster: List<LMaster>? = listOf(),
 
@@ -56,7 +60,8 @@ class LibraryViewModel(): ViewModel() {
     val uiState: StateFlow<LibraryUiState> = _uiState.asStateFlow()
 
     val BOOK_TITLE_MAXLENGTH = 50
-    val BOOK_TITLE_NOTES_MAXLENGTH = 150
+    val BOOK_NOTES_MAXLENGTH = 150
+    val BOOK_YEAR_MAXLENGTH = 4
 
     suspend fun loadDesiredBookList() {
         Klog.line("LibraryViewModel", "loadDesiredBookList", "loading desired books")
@@ -66,7 +71,7 @@ class LibraryViewModel(): ViewModel() {
         updateIsDesiredBookListLoaded(false)
         updateIsDesiredBookListLoading(true)
 
-        Klog.line("LibraryViewModel", "loadDesiredBookList", "${_uiState.value.isDesiredBookListLoaded }")
+        Klog.line("LibraryViewModel", "loadDesiredBookList", "loaded -> ${_uiState.value.isDesiredBookListLoaded }")
         //TODO quitar
         delay(2000) //
 
@@ -79,13 +84,19 @@ class LibraryViewModel(): ViewModel() {
         updateIsDesiredBookListLoaded(true)
         updateIsDesiredBookListLoading(false)
 
-        Klog.line("LibraryViewModel", "loadDesiredBookList", "${_uiState.value.isDesiredBookListLoaded }")
+        Klog.line("LibraryViewModel", "loadDesiredBookList", "loaded -> ${_uiState.value.isDesiredBookListLoaded }")
     }
 
     fun showAddBook(action: Boolean) {
         updateIsToAddBook(action)
         val msg = if(action) "-> Adding Book" else ""
         updateHeaderMessage("Library $msg")
+
+        updateBookFormat(uiState.value.formatsMaster?.get(0)?.value ?: "No data")
+        updateBookFormatCode(uiState.value.formatsMaster?.get(0)?.name ?: "")
+
+        updateBookLanguage(uiState.value.languagesMaster?.get(0)?.value ?: "No data")
+        updateBookLanguageCode(uiState.value.languagesMaster?.get(0)?.name ?: "")
     }
 
     fun showUpdateBook(action: Boolean) {
@@ -235,6 +246,18 @@ class LibraryViewModel(): ViewModel() {
         }
     }
 
+    fun updateBookRead(isChecked: Boolean) {
+        _uiState.update {
+            it.copy(bookRead = if(isChecked)  "y" else "n")
+        }
+    }
+
+    fun updateBookHave(isChecked: Boolean) {
+        _uiState.update {
+            it.copy(bookHave = if(isChecked)  "y" else "n")
+        }
+    }
+
     fun updateBookSubtitle(txt: String) {
         if(txt.length <= BOOK_TITLE_MAXLENGTH) {
             _uiState.update {
@@ -244,7 +267,7 @@ class LibraryViewModel(): ViewModel() {
     }
 
     fun updateBookNotes(txt: String) {
-        if(txt.length <= BOOK_TITLE_NOTES_MAXLENGTH) {
+        if(txt.length <= BOOK_NOTES_MAXLENGTH) {
             _uiState.update {
                 it.copy(bookNotes = txt)
             }
@@ -284,23 +307,31 @@ class LibraryViewModel(): ViewModel() {
     }
 
     fun updateBookLanguage(txt: String) {
-        if(txt.length <= BOOK_TITLE_MAXLENGTH) {
-            _uiState.update {
-                it.copy(bookLanguage = txt)
-            }
+        _uiState.update {
+            it.copy(bookLanguage = txt)
+        }
+    }
+
+    fun updateBookLanguageCode(txt: String) {
+        _uiState.update {
+            it.copy(bookLanguageCode = txt)
         }
     }
 
     fun updateBookFormat(txt: String) {
-        if(txt.length <= BOOK_TITLE_MAXLENGTH) {
-            _uiState.update {
-                it.copy(bookFormat = txt)
-            }
+        _uiState.update {
+            it.copy(bookFormat = txt)
+        }
+    }
+
+    fun updateBookFormatCode(txt: String) {
+        _uiState.update {
+            it.copy(bookFormatCode = txt)
         }
     }
 
     fun updateBookReadYear(txt: String) {
-        if(txt.length <= 4) {
+        if(txt.length <= BOOK_YEAR_MAXLENGTH) {
             _uiState.update {
                 it.copy(bookReadYear = txt)
             }
