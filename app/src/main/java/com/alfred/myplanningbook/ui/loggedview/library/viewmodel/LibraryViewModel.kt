@@ -1,16 +1,22 @@
 package com.alfred.myplanningbook.ui.loggedview.library.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.alfred.myplanningbook.core.log.Klog
-import com.alfred.myplanningbook.core.resources.TheResources
+import com.alfred.myplanningbook.core.validators.ChainTextValidator
+import com.alfred.myplanningbook.core.validators.TextValidatorLength
+import com.alfred.myplanningbook.core.validators.TextValidatorOnlyNumber
+import com.alfred.myplanningbook.core.validators.ValidatorResult
+import com.alfred.myplanningbook.domain.AppState
 import com.alfred.myplanningbook.domain.LibraryState
+import com.alfred.myplanningbook.domain.model.library.Book
 import com.alfred.myplanningbook.domain.model.library.LMaster
-import com.alfred.myplanningbook.domain.model.library.LibraryMasters
-import kotlinx.coroutines.delay
+import com.alfred.myplanningbook.domain.usecaseapi.library.LibraryService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 /**
  * @author Alfredo Sanz
@@ -19,10 +25,10 @@ import kotlinx.coroutines.flow.update
 data class LibraryUiState(
     var generalError: Boolean = false,
     var generalErrorText: String = "",
-    var bookFieldErrorTxt: String = "",
     var headerMessage: String = "",
     var isDesiredBookListLoaded: Boolean = false,
     var isDesiredBookListLoading: Boolean = false,
+    var isBookActionWorking: Boolean = false,
     var isToAddBook: Boolean = false,
     var isToUpdateBook: Boolean = false,
     var bookTitleError: Boolean = false,
@@ -30,11 +36,21 @@ data class LibraryUiState(
     var bookNotesError: Boolean = false,
     var bookAuthorError: Boolean = false,
     var bookSagaError: Boolean = false,
+    var bookSagaIndexError: Boolean = false,
     var bookPublisherError: Boolean = false,
     var bookCategoryError: Boolean = false,
     var bookLanguageError: Boolean = false,
     var bookFormatError: Boolean = false,
     var bookReadYearError: Boolean = false,
+    var bookTitleErrorTxt: String = "",
+    var bookSubtitleErrorTxt: String = "",
+    var bookNotesErrorTxt: String = "",
+    var bookAuthorErrorTxt: String = "",
+    var bookSagaErrorTxt: String = "",
+    var bookSagaIndexErrorTxt: String = "",
+    var bookPublisherErrorTxt: String = "",
+    var bookCategoryErrorTxt: String = "",
+    var bookReadYearErrorTxt: String = "",
     var bookTitle: String = "",
     var bookRead: String = "n",
     var bookHave: String = "n",
@@ -42,6 +58,7 @@ data class LibraryUiState(
     var bookNotes: String = "",
     var bookAuthor: String = "",
     var bookSaga: String = "",
+    var bookSagaIndex: String = "",
     var bookPublisher: String = "",
     var bookCategory: String = "",
     var bookLanguage: String = "",
@@ -54,26 +71,23 @@ data class LibraryUiState(
 
 )
 
-class LibraryViewModel(): ViewModel() {
+class LibraryViewModel(private val libraryService: LibraryService): ViewModel() {
 
     private val _uiState = MutableStateFlow(LibraryUiState())
     val uiState: StateFlow<LibraryUiState> = _uiState.asStateFlow()
 
     val BOOK_TITLE_MAXLENGTH = 50
+    val BOOK_AUTHOR_MAXLENGTH = 50
     val BOOK_NOTES_MAXLENGTH = 150
     val BOOK_YEAR_MAXLENGTH = 4
+    val BOOK_SAGA_NUMBER_MAXLENGTH = 2
 
     suspend fun loadDesiredBookList() {
         Klog.line("LibraryViewModel", "loadDesiredBookList", "loading desired books")
-
-        updateHeaderMessage("Library")
-
         updateIsDesiredBookListLoaded(false)
         updateIsDesiredBookListLoading(true)
 
-        Klog.line("LibraryViewModel", "loadDesiredBookList", "loaded -> ${_uiState.value.isDesiredBookListLoaded }")
-        //TODO quitar
-        delay(2000) //
+        updateHeaderMessage("Library")
 
         val libraryMaster_format = LibraryState.libraryMasters?.masters?.filter { it -> it.name == "format" }
         val libraryMaster_languages = LibraryState.libraryMasters?.masters?.filter { it -> it.name == "language" }
@@ -83,7 +97,6 @@ class LibraryViewModel(): ViewModel() {
 
         updateIsDesiredBookListLoaded(true)
         updateIsDesiredBookListLoading(false)
-
         Klog.line("LibraryViewModel", "loadDesiredBookList", "loaded -> ${_uiState.value.isDesiredBookListLoaded }")
     }
 
@@ -94,9 +107,21 @@ class LibraryViewModel(): ViewModel() {
 
         updateBookFormat(uiState.value.formatsMaster?.get(0)?.value ?: "No data")
         updateBookFormatCode(uiState.value.formatsMaster?.get(0)?.name ?: "")
-
         updateBookLanguage(uiState.value.languagesMaster?.get(0)?.value ?: "No data")
         updateBookLanguageCode(uiState.value.languagesMaster?.get(0)?.name ?: "")
+
+        updateBookTitle("")
+        updateBookSubtitle("")
+        updateBookAuthor("")
+        updateBookNotes("")
+        updateBookSaga("")
+        updateBookNotes("")
+        updateBookPublisher("")
+        updateBookCategory("")
+        updateBookReadYear("")
+        updateBookRead(false)
+        updateBookHave(false)
+
     }
 
     fun showUpdateBook(action: Boolean) {
@@ -110,7 +135,40 @@ class LibraryViewModel(): ViewModel() {
     }
 
     fun createBook() {
+        Klog.line("LibraryViewModel", "createBook", "-")
+        updateBookActionWorking(true)
 
+        if(!validateFields()) {
+            Klog.linedbg("LibraryViewModel", "createBook", "Validation was unsuccessfully")
+            updateBookActionWorking(false)
+            return
+        }
+        Klog.linedbg("LibraryViewModel", "createBook", "Validation has been success")
+
+        if(AppState.useremail.isNullOrBlank()) {
+            setGeneralError("You're not currently logged in")
+            updateBookActionWorking(false)
+            return
+        }
+
+        val book = fillBookObj()
+        Klog.linedbg("LibraryViewModel", "createBook", "book->$book")
+
+        viewModelScope.launch {
+            val resp = libraryService.createBook(book, AppState.useremail!!)
+            Klog.line("LibraryViewModel", "createBook", "resp: $resp")
+            if(resp.result) {
+                clearErrors()
+                clearState()
+                updateIsToAddBook(false)
+            }
+            else {
+                setGeneralError(" ${resp.code}: ${resp.message}")
+            }
+        }
+
+        updateBookActionWorking(false)
+        Klog.linedbg("LibraryViewModel", "createBook", "is created")
     }
 
     fun updateBook() {
@@ -121,6 +179,154 @@ class LibraryViewModel(): ViewModel() {
 
     }
 
+    private fun validateFields(): Boolean {
+        clearErrors()
+
+        val chainTxtAuthor = ChainTextValidator(
+            TextValidatorLength(2, BOOK_AUTHOR_MAXLENGTH)
+        )
+        val chainTxtTitleFields = ChainTextValidator(
+            TextValidatorLength(2, BOOK_TITLE_MAXLENGTH)
+        )
+        val chainTxtNoteFields = ChainTextValidator(
+            TextValidatorLength(2, BOOK_NOTES_MAXLENGTH)
+        )
+        val chainTxtYear = ChainTextValidator(
+            TextValidatorLength(4, BOOK_YEAR_MAXLENGTH)
+        )
+        val chainTxtSagaIndex = ChainTextValidator(
+            TextValidatorLength(1, BOOK_SAGA_NUMBER_MAXLENGTH)
+        )
+        val chainTxtIsOnlyNumber = ChainTextValidator(
+            TextValidatorOnlyNumber()
+        )
+
+        val valResultAuthor = chainTxtAuthor.validate(uiState.value.bookAuthor.trim())
+        val valResultTitle = chainTxtTitleFields.validate(uiState.value.bookTitle.trim())
+        val valResultSubtitle = if(uiState.value.bookSubtitle.isNotBlank()) {
+            chainTxtTitleFields.validate(uiState.value.bookSubtitle.trim())
+        }
+        else {
+            ValidatorResult.NoResult
+        }
+        val valResultSaga = if(uiState.value.bookSaga.isNotBlank()) {
+            chainTxtTitleFields.validate(uiState.value.bookSaga.trim())
+        }
+        else {
+            ValidatorResult.NoResult
+        }
+        val valResultSagaIndex = if(uiState.value.bookSagaIndex.isNotBlank()) {
+            chainTxtSagaIndex.validate(uiState.value.bookSagaIndex.trim())
+        }
+        else {
+            ValidatorResult.NoResult
+        }
+        val valResultSagaIndexNumber = if(uiState.value.bookSagaIndex.trim().isNotBlank()) {
+            chainTxtIsOnlyNumber.validate(uiState.value.bookSagaIndex.trim())
+        }
+        else {
+            ValidatorResult.NoResult
+        }
+        val valResultCategory = if(uiState.value.bookCategory.isNotBlank()) {
+            chainTxtTitleFields.validate(uiState.value.bookCategory.trim())
+        }
+        else {
+            ValidatorResult.NoResult
+        }
+        val valResultPublisher = if(uiState.value.bookPublisher.isNotBlank()) {
+            chainTxtTitleFields.validate(uiState.value.bookPublisher.trim())
+        }
+        else {
+            ValidatorResult.NoResult
+        }
+        val valResultNotes = if(uiState.value.bookNotes.isNotBlank()) {
+            chainTxtNoteFields.validate(uiState.value.bookNotes.trim())
+        }
+        else {
+            ValidatorResult.NoResult
+        }
+        val valResultYear = if(uiState.value.bookReadYear.isNotBlank()) {
+            chainTxtYear.validate(uiState.value.bookReadYear.trim())
+        }
+        else {
+            ValidatorResult.NoResult
+        }
+        val valResultYearNumber = if(uiState.value.bookReadYear.trim().isNotBlank()) {
+            chainTxtIsOnlyNumber.validate(uiState.value.bookReadYear.trim())
+        }
+        else {
+            ValidatorResult.NoResult
+        }
+
+        var result = true
+        if(valResultAuthor is ValidatorResult.Error) {
+            updateBookAuthorError(true, valResultAuthor.message)
+            result = false
+        }
+        if(valResultTitle is ValidatorResult.Error) {
+            updateBookTitleError(true, valResultTitle.message)
+            result = false
+        }
+        if(valResultSubtitle is ValidatorResult.Error) {
+            updateBookSubtitleError(true, valResultSubtitle.message)
+            result = false
+        }
+        if(valResultSaga is ValidatorResult.Error) {
+            updateBookSagaError(true, valResultSaga.message)
+            result = false
+        }
+        if(valResultSagaIndex is ValidatorResult.Error) {
+            updateBookSagaIndexError(true, valResultSagaIndex.message)
+            result = false
+        }
+        if(valResultSagaIndexNumber is ValidatorResult.Error) {
+            updateBookSagaIndexError(true, valResultSagaIndexNumber.message)
+            result = false
+        }
+
+        if(valResultCategory is ValidatorResult.Error) {
+            updateBookCategoryError(true, valResultCategory.message)
+            result = false
+        }
+        if(valResultPublisher is ValidatorResult.Error) {
+            updateBookPublisherError(true, valResultPublisher.message)
+            result = false
+        }
+        if(valResultNotes is ValidatorResult.Error) {
+            updateBookNotesError(true, valResultNotes.message)
+            result = false
+        }
+        if(valResultYear is ValidatorResult.Error) {
+            updateBookReadYearError(true, valResultYear.message)
+            result = false
+        }
+        if(valResultYearNumber is ValidatorResult.Error) {
+            updateBookReadYearError(true, valResultYearNumber.message)
+            result = false
+        }
+
+        return result
+    }
+
+    private fun fillBookObj(): Book {
+        val result = Book(null,
+            uiState.value.bookTitle,
+            uiState.value.bookRead,
+            if(uiState.value.bookReadYear.isNotBlank()) uiState.value.bookReadYear.toInt() else null,
+            uiState.value.bookHave,
+            uiState.value.bookSubtitle,
+            uiState.value.bookNotes,
+            uiState.value.bookAuthor,
+            uiState.value.bookSaga,
+            if(uiState.value.bookSagaIndex.isNotBlank()) uiState.value.bookSagaIndex.toInt() else null,
+            uiState.value.bookPublisher,
+            uiState.value.bookCategory,
+            uiState.value.bookLanguageCode,
+            uiState.value.bookFormatCode
+        )
+
+        return result
+    }
 
     private fun updateIsDesiredBookListLoaded(action: Boolean) {
         _uiState.update {
@@ -133,6 +339,13 @@ class LibraryViewModel(): ViewModel() {
             it.copy(isDesiredBookListLoading = action)
         }
     }
+
+    private fun updateBookActionWorking(action: Boolean) {
+        _uiState.update {
+            it.copy(isBookActionWorking = action)
+        }
+    }
+
 
     private fun updateIsToAddBook(action: Boolean) {
         _uiState.update {
@@ -152,34 +365,43 @@ class LibraryViewModel(): ViewModel() {
         }
     }
 
-    private fun updateBookFieldErrorTxt(txt: String) {
-        _uiState.update {
-            it.copy(bookFieldErrorTxt = txt)
-        }
-    }
-
     private fun updateBookTitleError(err: Boolean, txt: String) {
         _uiState.update {
             it.copy(bookTitleError = err)
         }
+        updateBookTitleErrorTxt(txt)
+    }
 
-        updateBookFieldErrorTxt(txt)
+    private fun updateBookTitleErrorTxt(err: String) {
+        _uiState.update {
+            it.copy(bookTitleErrorTxt = err)
+        }
     }
 
     private fun updateBookSubtitleError(err: Boolean, txt: String) {
         _uiState.update {
             it.copy(bookSubtitleError = err)
         }
+        updateBookSubTitleErrorTxt(txt)
+    }
 
-        updateBookFieldErrorTxt(txt)
+    private fun updateBookSubTitleErrorTxt(err: String) {
+        _uiState.update {
+            it.copy(bookSubtitleErrorTxt = err)
+        }
     }
 
     private fun updateBookNotesError(err: Boolean, txt: String) {
         _uiState.update {
             it.copy(bookNotesError = err)
         }
+        updateBookNotesErrorTxt(txt)
+    }
 
-        updateBookFieldErrorTxt(txt)
+    private fun updateBookNotesErrorTxt(err: String) {
+        _uiState.update {
+            it.copy(bookNotesErrorTxt = err)
+        }
     }
 
     private fun updateBookAuthorError(err: Boolean, txt: String) {
@@ -187,7 +409,13 @@ class LibraryViewModel(): ViewModel() {
             it.copy(bookAuthorError = err)
         }
 
-        updateBookFieldErrorTxt(txt)
+        updateBookAuthorErrorTxt(txt)
+    }
+
+    private fun updateBookAuthorErrorTxt(err: String) {
+        _uiState.update {
+            it.copy(bookAuthorErrorTxt = err)
+        }
     }
 
     private fun updateBookSagaError(err: Boolean, txt: String) {
@@ -195,7 +423,27 @@ class LibraryViewModel(): ViewModel() {
             it.copy(bookSagaError = err)
         }
 
-        updateBookFieldErrorTxt(txt)
+        updateBookSagaErrorTxt(txt)
+    }
+
+    private fun updateBookSagaErrorTxt(err: String) {
+        _uiState.update {
+            it.copy(bookSagaErrorTxt = err)
+        }
+    }
+
+    private fun updateBookSagaIndexError(err: Boolean, txt: String) {
+        _uiState.update {
+            it.copy(bookSagaIndexError = err)
+        }
+
+        updateBookSagaIndexErrorTxt(txt)
+    }
+
+    private fun updateBookSagaIndexErrorTxt(err: String) {
+        _uiState.update {
+            it.copy(bookSagaIndexErrorTxt = err)
+        }
     }
 
     private fun updateBookPublisherError(err: Boolean, txt: String) {
@@ -203,7 +451,13 @@ class LibraryViewModel(): ViewModel() {
             it.copy(bookPublisherError = err)
         }
 
-        updateBookFieldErrorTxt(txt)
+        updateBookPublisherErrorTxt(txt)
+    }
+
+    private fun updateBookPublisherErrorTxt(err: String) {
+        _uiState.update {
+            it.copy(bookPublisherErrorTxt = err)
+        }
     }
 
     private fun updateBookCategoryError(err: Boolean, txt: String) {
@@ -211,23 +465,25 @@ class LibraryViewModel(): ViewModel() {
             it.copy(bookCategoryError = err)
         }
 
-        updateBookFieldErrorTxt(txt)
+        updateBookCategoryErrorTxt(txt)
+    }
+
+    private fun updateBookCategoryErrorTxt(err: String) {
+        _uiState.update {
+            it.copy(bookCategoryErrorTxt = err)
+        }
     }
 
     private fun updateBookLanguageError(err: Boolean, txt: String) {
         _uiState.update {
             it.copy(bookLanguageError = err)
         }
-
-        updateBookFieldErrorTxt(txt)
     }
 
     fun updateBookFormatError(err: Boolean, txt: String) {
         _uiState.update {
             it.copy(bookFormatError = err)
         }
-
-        updateBookFieldErrorTxt(txt)
     }
 
     private fun updateBookReadYearError(err: Boolean, txt: String) {
@@ -235,7 +491,13 @@ class LibraryViewModel(): ViewModel() {
             it.copy(bookReadYearError = err)
         }
 
-        updateBookFieldErrorTxt(txt)
+        updateBookReadYearErrorTxt(txt)
+    }
+
+    private fun updateBookReadYearErrorTxt(err: String) {
+        _uiState.update {
+            it.copy(bookReadYearErrorTxt = err)
+        }
     }
 
     fun updateBookTitle(txt: String) {
@@ -275,7 +537,7 @@ class LibraryViewModel(): ViewModel() {
     }
 
     fun updateBookAuthor(txt: String) {
-        if(txt.length <= BOOK_TITLE_MAXLENGTH) {
+        if(txt.length <= BOOK_AUTHOR_MAXLENGTH) {
             _uiState.update {
                 it.copy(bookAuthor = txt)
             }
@@ -286,6 +548,14 @@ class LibraryViewModel(): ViewModel() {
         if(txt.length <= BOOK_TITLE_MAXLENGTH) {
             _uiState.update {
                 it.copy(bookSaga = txt)
+            }
+        }
+    }
+
+    fun updateBookSagaIndex(txt: String) {
+        if(txt.length <= BOOK_SAGA_NUMBER_MAXLENGTH) {
+            _uiState.update {
+                it.copy(bookSagaIndex = txt)
             }
         }
     }
@@ -357,9 +627,6 @@ class LibraryViewModel(): ViewModel() {
         }
         _uiState.update {
             it.copy(generalErrorText = "")
-        }
-        _uiState.update {
-            it.copy(bookFieldErrorTxt = "")
         }
         updateBookTitleError(false, "")
         updateBookSubtitleError(false, "")

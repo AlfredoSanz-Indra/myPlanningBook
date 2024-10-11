@@ -16,10 +16,10 @@ class TextValidatorLength(val minLength: Int? = null,
                 ValidatorResult.Error("The field value cannot be empty")
 
             minLength != null && theText.trim().length < minLength ->
-                ValidatorResult.Error("The field value must be greater than $minLength")
+                ValidatorResult.Error("The field value must have $minLength chars at least")
 
             maxLength != null && theText.trim().length > maxLength ->
-                ValidatorResult.Error("The field value cannot be greater than $maxLength")
+                ValidatorResult.Error("The field value cannot have more than $maxLength chars")
 
             else ->
                 ValidatorResult.Success

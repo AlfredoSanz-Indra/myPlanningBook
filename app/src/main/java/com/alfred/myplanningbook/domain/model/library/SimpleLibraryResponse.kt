@@ -10,4 +10,5 @@ data class SimpleLibraryResponse(val result: Boolean,
                                  val errorcode: String) {
 
     var bookList: MutableList<Book>? = null
+    var book: Book? = null
 }

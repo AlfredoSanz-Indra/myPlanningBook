@@ -20,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.FilterList
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -150,6 +151,14 @@ private fun LibraryUpdateActions() {
 
 @Composable
 private fun LibraryDataFieldsComponents() {
+    val viewModel: LibraryViewModel = koinViewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    if(uiState.isBookActionWorking) {
+        Spacer(modifier = Modifier.height(30.dp))
+        Working()
+    }
+
     Box(
         modifier = Modifier
             .padding(15.dp)
@@ -166,6 +175,7 @@ private fun LibraryDataFieldsComponents() {
             BookFormComponent_subtitle()
             BookFormComponent_author()
             BookFormComponent_saga()
+            BookFormComponent_sagaIndex()
             BookFormComponent_notes()
             BookFormComponent_publisher()
             BookFormComponent_category()
@@ -174,6 +184,20 @@ private fun LibraryDataFieldsComponents() {
             BookFormComponent_readYear()
         }
     }
+}
+
+@Composable
+private fun Working() {
+    CircularProgressIndicator()
+
+    Text(
+        "Working ....",
+        color = CommonViewComp.c_card_buttonOneContent,
+        style = TextStyle(
+            fontSize = 20.sp,
+            background = CommonViewComp.c_snow
+        )
+    )
 }
 
 @Composable
@@ -197,7 +221,7 @@ private fun BookFormComponent_title() {
                     .padding(10.dp),
                 onValueChange = { viewModel.updateBookTitle(it) },
                 label = { Text(text="Title")},
-                placeholder = { Text("Title (2-40)") },
+                placeholder = { Text("Title (2-50)") },
                 singleLine = true,
                 maxLines = 1)
 
@@ -205,7 +229,7 @@ private fun BookFormComponent_title() {
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    uiState.bookFieldErrorTxt, color = Color.Red, style = TextStyle(
+                    uiState.bookTitleErrorTxt, color = Color.Red, style = TextStyle(
                         fontSize = 15.sp, color = Color.Red
                     )
                 )
@@ -302,7 +326,7 @@ private fun BookFormComponent_subtitle() {
                     .padding(10.dp),
                 onValueChange = { viewModel.updateBookSubtitle(it) },
                 label = { Text(text="Subtitle")},
-                placeholder = { Text("Subtitle (2-40)") },
+                placeholder = { Text("Subtitle (2-50)") },
                 singleLine = true,
                 maxLines = 1)
 
@@ -310,7 +334,7 @@ private fun BookFormComponent_subtitle() {
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    uiState.bookFieldErrorTxt, color = Color.Red, style = TextStyle(
+                    uiState.bookSubtitleErrorTxt, color = Color.Red, style = TextStyle(
                         fontSize = 15.sp, color = Color.Red
                     )
                 )
@@ -350,7 +374,7 @@ private fun BookFormComponent_notes() {
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    uiState.bookFieldErrorTxt, color = Color.Red, style = TextStyle(
+                    uiState.bookNotesErrorTxt, color = Color.Red, style = TextStyle(
                         fontSize = 15.sp, color = Color.Red
                     )
                 )
@@ -380,7 +404,7 @@ private fun BookFormComponent_author() {
                     .padding(10.dp),
                 onValueChange = { viewModel.updateBookAuthor(it) },
                 label = { Text(text="Author")},
-                placeholder = { Text("Author (5-40)") },
+                placeholder = { Text("Author (2-50)") },
                 singleLine = true,
                 maxLines = 1,
                 trailingIcon = {
@@ -399,7 +423,7 @@ private fun BookFormComponent_author() {
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    uiState.bookFieldErrorTxt, color = Color.Red, style = TextStyle(
+                    uiState.bookAuthorErrorTxt, color = Color.Red, style = TextStyle(
                         fontSize = 15.sp, color = Color.Red
                     )
                 )
@@ -429,7 +453,7 @@ private fun BookFormComponent_saga() {
                     .padding(10.dp),
                 onValueChange = { viewModel.updateBookSaga(it) },
                 label = { Text(text="Saga")},
-                placeholder = { Text("Saga (5-40)") },
+                placeholder = { Text("Saga (2-50)") },
                 singleLine = true,
                 maxLines = 1,
                 trailingIcon = {
@@ -448,7 +472,47 @@ private fun BookFormComponent_saga() {
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    uiState.bookFieldErrorTxt, color = Color.Red, style = TextStyle(
+                    uiState.bookSagaErrorTxt, color = Color.Red, style = TextStyle(
+                        fontSize = 15.sp, color = Color.Red
+                    )
+                )
+            }
+        }
+    } //Row
+}
+
+
+@Composable
+private fun BookFormComponent_sagaIndex() {
+    val viewModel: LibraryViewModel = koinViewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    Row {
+        Column(
+            Modifier
+                .background(color = MaterialTheme.colorScheme.surface)
+                .fillMaxWidth(),
+            Arrangement.Top,
+            Alignment.CenterHorizontally
+        ) {
+            OutlinedTextField(
+                value = uiState.bookSagaIndex,
+                modifier = Modifier
+                    .height(90.dp)
+                    .fillMaxSize(1f)
+                    .padding(10.dp),
+                onValueChange = { viewModel.updateBookSagaIndex(it) },
+                label = { Text(text="Saga Index")},
+                placeholder = { Text("Saga Index (number)") },
+                singleLine = true,
+                maxLines = 1,
+            )
+
+            if(uiState.bookSagaIndexError) {
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Text(
+                    uiState.bookSagaIndexErrorTxt, color = Color.Red, style = TextStyle(
                         fontSize = 15.sp, color = Color.Red
                     )
                 )
@@ -478,7 +542,7 @@ private fun BookFormComponent_publisher() {
                     .padding(10.dp),
                 onValueChange = { viewModel.updateBookPublisher(it) },
                 label = { Text(text="Publisher")},
-                placeholder = { Text("Publisher (5-40)") },
+                placeholder = { Text("Publisher (2-50)") },
                 singleLine = true,
                 maxLines = 1,
             )
@@ -487,7 +551,7 @@ private fun BookFormComponent_publisher() {
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    uiState.bookFieldErrorTxt, color = Color.Red, style = TextStyle(
+                    uiState.bookPublisherErrorTxt, color = Color.Red, style = TextStyle(
                         fontSize = 15.sp, color = Color.Red
                     )
                 )
@@ -517,7 +581,7 @@ private fun BookFormComponent_category() {
                     .padding(10.dp),
                 onValueChange = { viewModel.updateBookCategory(it) },
                 label = { Text(text="Category")},
-                placeholder = { Text("Category (5-40)") },
+                placeholder = { Text("Category (2-50)") },
                 singleLine = true,
                 maxLines = 1,
                 trailingIcon = {
@@ -536,7 +600,7 @@ private fun BookFormComponent_category() {
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    uiState.bookFieldErrorTxt, color = Color.Red, style = TextStyle(
+                    uiState.bookCategoryErrorTxt, color = Color.Red, style = TextStyle(
                         fontSize = 15.sp, color = Color.Red
                     )
                 )
@@ -693,7 +757,7 @@ private fun BookFormComponent_readYear() {
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    uiState.bookFieldErrorTxt, color = Color.Red, style = TextStyle(
+                    uiState.bookReadYearErrorTxt, color = Color.Red, style = TextStyle(
                         fontSize = 15.sp, color = Color.Red
                     )
                 )

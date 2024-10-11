@@ -10,4 +10,5 @@ object Collections {
     const val ACTIVITYBOOK: String = "ACTIVITYBOOK"
     const val PLANNINGBOOK: String = "PLANNINGBOOK"
     const val OWNER: String = "OWNER"
+    const val LIBRARYBOOKS: String = "LIBRARYBOOKS"
 }

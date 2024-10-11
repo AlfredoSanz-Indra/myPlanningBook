@@ -12,4 +12,6 @@ interface LibraryService {
 
     suspend fun listBooks(filterBook: Book): SimpleLibraryResponse
 
+    suspend fun createBook(book: Book, userEmail: String): SimpleLibraryResponse
+
 }
