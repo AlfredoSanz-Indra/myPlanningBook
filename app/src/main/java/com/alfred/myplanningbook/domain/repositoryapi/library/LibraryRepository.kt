@@ -9,4 +9,6 @@ import com.alfred.myplanningbook.domain.model.library.Book
  */
 interface LibraryRepository {
     suspend fun createBook(book: Book, userEmail: String): SimpleDataLibraryResponse
+
+    suspend fun searchBooks(filterBook: Book, userEmail: String): SimpleDataLibraryResponse
 }

@@ -64,7 +64,7 @@ class ActivitiesManagerView {
                     headerTitlePB(uiState)
 
                     Spacer(modifier = Modifier.height(30.dp))
-                    activitiesHeaderSection(onBack)
+                    activitiesBodySection(onBack)
                 }
             }
         }
@@ -120,7 +120,7 @@ class ActivitiesManagerView {
     }
 
     @Composable
-    private fun activitiesHeaderSection(onBack: () -> Unit) {
+    private fun activitiesBodySection(onBack: () -> Unit) {
         val viewModel: ActivitiesManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 

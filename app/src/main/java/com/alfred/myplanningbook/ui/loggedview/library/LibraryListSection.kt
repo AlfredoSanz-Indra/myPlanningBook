@@ -1,4 +1,4 @@
-package com.alfred.myplanningbook.ui.loggedview
+package com.alfred.myplanningbook.ui.loggedview.library
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -38,11 +38,10 @@ import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alfred.myplanningbook.core.log.Klog
-import com.alfred.myplanningbook.domain.model.ActivityBook
+import com.alfred.myplanningbook.domain.model.library.Book
 import com.alfred.myplanningbook.ui.common.CommonViewComp
-import com.alfred.myplanningbook.ui.loggedview.viewmodel.ActivitiesManagerViewModel
+import com.alfred.myplanningbook.ui.loggedview.library.viewmodel.LibraryViewModel
 import org.koin.androidx.compose.koinViewModel
-
 
 /**
  * @author Alfredo Sanz
@@ -50,12 +49,12 @@ import org.koin.androidx.compose.koinViewModel
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ActivitiesListSection() {
-    val viewModel: ActivitiesManagerViewModel = koinViewModel()
+fun LibraryListSection() {
+    val viewModel: LibraryViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    if(uiState.isToDeleteActivity) {
-        AlertDialogDeleteActivity()
+    if(uiState.isToDeleteBook) {
+        AlertDialogDeleteBook()
     }
 
     Column(
@@ -76,9 +75,9 @@ fun ActivitiesListSection() {
                     .padding(horizontal = 10.dp)
             ) {
                 //@see https://developer.android.com/codelabs/basic-android-compose-training-add-scrollable-list?hl=es-419#2
-                items( uiState.activityBookList.size, itemContent = { item ->
-                    val activityBook = uiState.activityBookList[item]
-                    TaskListCardComponent(activityBook)
+                items( uiState.bookList.size, itemContent = { item ->
+                    val book = uiState.bookList[item]
+                    LibraryListCardComponent(book)
                 })
             } //lazy
         } //Box
@@ -86,7 +85,7 @@ fun ActivitiesListSection() {
 }
 
 @Composable
-private fun TaskListCardComponent(activityBook: ActivityBook) {
+private fun LibraryListCardComponent(book: Book) {
     OutlinedCard(
         modifier = Modifier
             .padding(vertical = 1.dp)
@@ -94,7 +93,10 @@ private fun TaskListCardComponent(activityBook: ActivityBook) {
             .height(150.dp)
             .wrapContentHeight(),
         shape = MaterialTheme.shapes.medium,
-        colors = CommonViewComp.gePlanningBookCardColour(),
+        colors = when(book.have) {
+                "y" -> CommonViewComp.getLibraryCardColour()
+                else ->CommonViewComp.getLibraryCardSecondaryColour()
+            },
         elevation = CardDefaults.outlinedCardElevation(),
         border = CardDefaults.outlinedCardBorder(),
     )
@@ -105,19 +107,20 @@ private fun TaskListCardComponent(activityBook: ActivityBook) {
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.Start)
         {
-            TaskListCardComponentRowName(activityBook)
+            LibraryListCardComponentRowName(book)
 
             Spacer(modifier = Modifier.height(10.dp))
-            TaskListCardComponentRowDesc(activityBook)
+            LibraryListCardComponentRowDesc(book)
 
             Spacer(modifier = Modifier.height(10.dp))
-            TaskListCardComponentRowDate(activityBook)
+            LibraryListCardComponentRowSaga(book)
         } //Column
     } //card
 }
 
+
 @Composable
-private fun TaskListCardComponentRowName(activityBook: ActivityBook) {
+private fun LibraryListCardComponentRowName(book: Book) {
     Row (
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween)
@@ -127,56 +130,56 @@ private fun TaskListCardComponentRowName(activityBook: ActivityBook) {
             .weight(0.7F))
         {
             Text(
-                text = activityBook.name,
-                style = MaterialTheme.typography.titleMedium,
+                text = book.title!!,
+                style = MaterialTheme.typography.titleLarge,
             )
         }
         Column(Modifier.padding(4.dp))
         {
-            TaskListCardComponentButtonUpdate(activityBook)
+            LibraryListCardComponentButtonUpdate(book)
         }
         Column(Modifier.padding(4.dp))
         {
-            TaskListCardComponentButtonDelete(activityBook)
+            LibraryListCardComponentButtonDelete(book)
         }
     }
 }
 
 @Composable
-private fun TaskListCardComponentButtonUpdate(activityBook: ActivityBook) {
-    val viewModel: ActivitiesManagerViewModel = koinViewModel()
+private fun LibraryListCardComponentButtonUpdate(book: Book) {
+    val viewModel: LibraryViewModel = koinViewModel()
 
     OutlinedIconButton(modifier = Modifier
         .width(35.dp)
         .height(35.dp),
         colors = CommonViewComp.getPlanningBookCardIconButtonPrimaryColour(),
         onClick = {
-            viewModel.showActivityUpdateSection(activityBook)
+            viewModel.showUpdateBook(true, book)
         }
     ) {
-        Icon(imageVector = Icons.Outlined.Edit, contentDescription = "Edit task", Modifier.size(25.dp))
+        Icon(imageVector = Icons.Outlined.Edit, contentDescription = "Edit book", Modifier.size(25.dp))
     } //button
 }
 
 @Composable
-private fun TaskListCardComponentButtonDelete(activityBook: ActivityBook) {
-    val viewModel: ActivitiesManagerViewModel = koinViewModel()
+private fun LibraryListCardComponentButtonDelete(book: Book) {
+    val viewModel: LibraryViewModel = koinViewModel()
 
     OutlinedIconButton(modifier = Modifier
         .width(35.dp)
         .height(35.dp),
         colors = CommonViewComp.getPlanningBookCardIconButtonSecondaryColour(),
         onClick = {
-            Klog.line("taskListSection","taskListCardComponentButtonDelete","delete task button clicked")
-            viewModel.confirmDeleteActivity(activityBook, true)
+            Klog.line("libraryListSection","LibraryListCardComponentButtonDelete","delete book button clicked")
+            viewModel.confirmDeleteBook(book, true)
         },
     ) {
-        Icon(imageVector = Icons.Outlined.Delete, contentDescription = "delete activity", Modifier.size(25.dp))
+        Icon(imageVector = Icons.Outlined.Delete, contentDescription = "delete book", Modifier.size(25.dp))
     } //button
 }
 
 @Composable
-private fun TaskListCardComponentRowDesc(activityBook: ActivityBook) {
+private fun LibraryListCardComponentRowDesc(book: Book) {
     Row (
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween)
@@ -184,45 +187,56 @@ private fun TaskListCardComponentRowDesc(activityBook: ActivityBook) {
         Column(Modifier.padding(4.dp))
         {
             Text(
-                text = activityBook.getDescriptionInShort(),
-                style = MaterialTheme.typography.titleSmall,
+                text = book.authorName!!,
+                style = MaterialTheme.typography.titleMedium,
             )
         }
     }
 }
 
 @Composable
-private fun TaskListCardComponentRowDate(activityBook: ActivityBook) {
-    Row (
-        Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween)
-    {
-        Column(Modifier.padding(4.dp))
-        {
+private fun LibraryListCardComponentRowSaga(book: Book) {
+    var saga = if(!book.sagaName.isNullOrBlank()) book.sagaName else ""
+    saga += if(book.sagaIndex != null && book.sagaIndex > 0) " (${book.sagaIndex})" else ""
+
+    var isRead = if(book.read == "y") "Read" else "Not Read"
+    var isMine = if(book.have == "y") "Got it" else "Wish List"
+
+    Row(
+        Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(Modifier.padding(4.dp)) {
             Text(
-                text = "De ${activityBook.getFormattedStartTime()} a  ${activityBook.getFormattedEndTime()}",
+                text = saga,
                 style = MaterialTheme.typography.titleSmall,
             )
         }
 
-        Column(Modifier.padding(4.dp))
-        {
+        Column(Modifier.padding(4.dp)) {
             Text(
-                text = activityBook.getStringWeekDaysList() ,
+                text = isRead,
                 style = MaterialTheme.typography.titleSmall,
             )
         }
+
+        Column(Modifier.padding(4.dp)) {
+            Text(
+                text = isMine,
+                style = MaterialTheme.typography.titleSmall,
+            )
+        }
+
     }
 }
 
 @ExperimentalMaterial3Api
 @Composable
-private fun AlertDialogDeleteActivity() {
-    val viewModel: ActivitiesManagerViewModel = koinViewModel()
+private fun AlertDialogDeleteBook() {
+    val viewModel: LibraryViewModel = koinViewModel()
 
     BasicAlertDialog(
         onDismissRequest = {
-            viewModel.confirmDeleteActivity(null, false )
+            viewModel.confirmDeleteBook(null, false )
         }
     ) {
         Surface(
@@ -234,7 +248,7 @@ private fun AlertDialogDeleteActivity() {
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "You are about to delete an Activity.  Do you want to continue?",
+                    text = "You are about to delete a Book.  Do you want to continue?",
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -247,30 +261,30 @@ private fun AlertDialogDeleteActivity() {
                         .height(35.dp),
                         colors = CommonViewComp.getPlanningBookCardButtonPrimaryColour(),
                         onClick = {
-                            Klog.line("activitiesListSection","alertDialogDeleteActivity","confirm delete button clicked")
-                            viewModel.deleteActivity()
+                            Klog.line("LibraryListSection","AlertDialogDeleteBook","confirm delete button clicked")
+                            viewModel.deleteBook()
                         }
                     ) {
                         Text(
                             "Confirm",
                             style = MaterialTheme.typography.titleMedium,
                         )
-                    }//button
+                    } //button
 
                     OutlinedButton(modifier = Modifier
                         .width(110.dp)
                         .height(35.dp),
                         colors = CommonViewComp.getPlanningBookCardButtonSecondaryColour(),
                         onClick = {
-                            Klog.line("activitiesListSection","alertDialogDeleteActivity","cancel delete button clicked")
-                            viewModel.confirmDeleteActivity(null, false)
+                            Klog.line("LibraryListSection","AlertDialogDeleteBook","cancel delete button clicked")
+                            viewModel.confirmDeleteBook(null, false)
                         }
                     ) {
                         Text(
                             "Cancel",
                             style = MaterialTheme.typography.titleMedium,
                         )
-                    }//button
+                    } //button
                 }
             }
         }

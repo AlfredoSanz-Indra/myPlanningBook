@@ -1,5 +1,6 @@
 package com.alfred.myplanningbook.ui.loggedview.library.viewmodel
 
+import androidx.compose.ui.text.toLowerCase
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alfred.myplanningbook.core.log.Klog
@@ -31,6 +32,8 @@ data class LibraryUiState(
     var isBookActionWorking: Boolean = false,
     var isToAddBook: Boolean = false,
     var isToUpdateBook: Boolean = false,
+    var isToFilterBooks: Boolean = false,
+    var isToDeleteBook: Boolean = false,
     var bookTitleError: Boolean = false,
     var bookSubtitleError: Boolean = false,
     var bookNotesError: Boolean = false,
@@ -66,9 +69,12 @@ data class LibraryUiState(
     var bookFormat: String = "",
     var bookFormatCode: String = "",
     var bookReadYear: String = "",
-    var formatsMaster: List<LMaster>? = listOf(),
-    var languagesMaster: List<LMaster>? = listOf(),
-
+    var formatsMaster: MutableList<LMaster>? = mutableListOf(),
+    var formatsMasterFilter: MutableList<LMaster>? = mutableListOf(),
+    var languagesMaster: MutableList<LMaster>? = mutableListOf(),
+    var languagesMasterFilter: MutableList<LMaster>? = mutableListOf(),
+    var bookToDelete: Book? = null,
+    var bookList: MutableList<Book> = mutableListOf(),
 )
 
 class LibraryViewModel(private val libraryService: LibraryService): ViewModel() {
@@ -82,22 +88,37 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
     val BOOK_YEAR_MAXLENGTH = 4
     val BOOK_SAGA_NUMBER_MAXLENGTH = 2
 
-    suspend fun loadDesiredBookList() {
+    fun loadDesiredBookList() {
         Klog.line("LibraryViewModel", "loadDesiredBookList", "loading desired books")
         updateIsDesiredBookListLoaded(false)
-        updateIsDesiredBookListLoading(true)
 
         updateHeaderMessage("Library")
 
-        val libraryMaster_format = LibraryState.libraryMasters?.masters?.filter { it -> it.name == "format" }
-        val libraryMaster_languages = LibraryState.libraryMasters?.masters?.filter { it -> it.name == "language" }
+        if(_uiState.value.isDesiredBookListLoading) {
+            return
+        }
 
-        _uiState.value.formatsMaster = libraryMaster_format?.get(0)?.values
-        _uiState.value.languagesMaster = libraryMaster_languages?.get(0)?.values
+        val masterTodos = LMaster("todos", "Todos")
+        if(_uiState.value.formatsMaster.isNullOrEmpty()) {
+            val libraryMasterFormat = LibraryState.libraryMasters?.masters?.filter { it -> it.name == "format" }
+            updateFormatMaster(libraryMasterFormat?.get(0)?.values?.toMutableList() ?: mutableListOf())
 
-        updateIsDesiredBookListLoaded(true)
-        updateIsDesiredBookListLoading(false)
-        Klog.line("LibraryViewModel", "loadDesiredBookList", "loaded -> ${_uiState.value.isDesiredBookListLoaded }")
+            val libraryMasterFormatFilter = libraryMasterFormat?.get(0)?.values?.toMutableList()
+            libraryMasterFormatFilter?.add(0, masterTodos)
+            updateFormatMasterFilter(libraryMasterFormatFilter ?: mutableListOf())
+        }
+        if(_uiState.value.languagesMaster.isNullOrEmpty()) {
+            val libraryMasterLanguages = LibraryState.libraryMasters?.masters?.filter { it -> it.name == "language" }
+            updateLanguagesMaster(libraryMasterLanguages?.get(0)?.values?.toMutableList() ?: mutableListOf())
+
+            val libraryMasterLanguagesFilter = libraryMasterLanguages?.get(0)?.values?.toMutableList()
+            libraryMasterLanguagesFilter?.add(0, masterTodos)
+            updateLanguagesMasterFilter(libraryMasterLanguagesFilter ?: mutableListOf())
+        }
+
+        val filterBook = fillEmptyBookObj()
+        updateIsDesiredBookListLoading(true)
+        searchBooks(filterBook)
     }
 
     fun showAddBook(action: Boolean) {
@@ -105,6 +126,35 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
         val msg = if(action) "-> Adding Book" else ""
         updateHeaderMessage("Library $msg")
 
+        clearForm()
+        clearErrors()
+    }
+
+    fun showUpdateBook(action: Boolean, book: Book?) {
+        updateIsToUpdateBook(action)
+        val msg = if(action) "-> Editing Book" else ""
+        updateHeaderMessage("Library $msg")
+
+        clearForm()
+        clearErrors()
+    }
+
+    fun showFilterBooks(action: Boolean) {
+        updateIsToFilterBooks(action)
+        val msg = if(action) "-> Filter" else ""
+        updateHeaderMessage("Library $msg")
+
+        clearForm()
+        clearErrors()
+        updateBookFormat(uiState.value.formatsMasterFilter?.get(0)?.value ?: "No data")
+        updateBookFormatCode(uiState.value.formatsMasterFilter?.get(0)?.name ?: "")
+        updateBookLanguage(uiState.value.languagesMasterFilter?.get(0)?.value ?: "No data")
+        updateBookLanguageCode(uiState.value.languagesMasterFilter?.get(0)?.name ?: "")
+        updateBookRead("t")
+        updateBookHave("t")
+    }
+
+    private fun clearForm() {
         updateBookFormat(uiState.value.formatsMaster?.get(0)?.value ?: "No data")
         updateBookFormatCode(uiState.value.formatsMaster?.get(0)?.name ?: "")
         updateBookLanguage(uiState.value.languagesMaster?.get(0)?.value ?: "No data")
@@ -115,23 +165,13 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
         updateBookAuthor("")
         updateBookNotes("")
         updateBookSaga("")
+        updateBookSagaIndex("")
         updateBookNotes("")
         updateBookPublisher("")
         updateBookCategory("")
         updateBookReadYear("")
-        updateBookRead(false)
-        updateBookHave(false)
-
-    }
-
-    fun showUpdateBook(action: Boolean) {
-        updateIsToUpdateBook(action)
-        val msg = if(action) "-> Editing Book" else ""
-        updateHeaderMessage("Library $msg")
-    }
-
-    fun openFilterBooksDi() {
-
+        updateBookRead("n")
+        updateBookHave("n")
     }
 
     fun createBook() {
@@ -152,7 +192,6 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
         }
 
         val book = fillBookObj()
-        Klog.linedbg("LibraryViewModel", "createBook", "book->$book")
 
         viewModelScope.launch {
             val resp = libraryService.createBook(book, AppState.useremail!!)
@@ -179,6 +218,31 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
 
     }
 
+    fun filterBooks() {
+        Klog.line("LibraryViewModel", "filterBooks", "-")
+        updateIsDesiredBookListLoaded(false)
+
+        if(!validateFields()) {
+            Klog.linedbg("LibraryViewModel", "filterBooks", "Validation was unsuccessfully")
+            updateIsDesiredBookListLoaded(true)
+            return
+        }
+        Klog.linedbg("LibraryViewModel", "filterBooks", "Validation has been success")
+
+        if(AppState.useremail.isNullOrBlank()) {
+            setGeneralError("You're not currently logged in")
+            updateIsDesiredBookListLoaded(true)
+            return
+        }
+
+        val book = fillBookObj()
+        updateIsDesiredBookListLoading(true)
+        updateIsToFilterBooks(false)
+        Klog.linedbg("LibraryViewModel", "filterBooks", "book->$book")
+
+        searchBooks(book)
+    }
+
     private fun validateFields(): Boolean {
         clearErrors()
 
@@ -201,8 +265,27 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
             TextValidatorOnlyNumber()
         )
 
-        val valResultAuthor = chainTxtAuthor.validate(uiState.value.bookAuthor.trim())
-        val valResultTitle = chainTxtTitleFields.validate(uiState.value.bookTitle.trim())
+        var valResultAuthor: ValidatorResult
+        var valResultTitle: ValidatorResult
+        if(uiState.value.isToFilterBooks) {
+            valResultAuthor = if(uiState.value.bookAuthor.isNotBlank()) {
+                chainTxtAuthor.validate(uiState.value.bookAuthor.trim())
+            }
+            else {
+                ValidatorResult.NoResult
+            }
+            valResultTitle = if(uiState.value.bookTitle.isNotBlank()) {
+                chainTxtTitleFields.validate(uiState.value.bookTitle.trim())
+            }
+            else {
+                ValidatorResult.NoResult
+            }
+        }
+        else {
+            valResultAuthor = chainTxtAuthor.validate(uiState.value.bookAuthor.trim())
+            valResultTitle = chainTxtTitleFields.validate(uiState.value.bookTitle.trim())
+        }
+
         val valResultSubtitle = if(uiState.value.bookSubtitle.isNotBlank()) {
             chainTxtTitleFields.validate(uiState.value.bookSubtitle.trim())
         }
@@ -310,22 +393,86 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
 
     private fun fillBookObj(): Book {
         val result = Book(null,
-            uiState.value.bookTitle,
+            capitalizeString(uiState.value.bookTitle),
             uiState.value.bookRead,
-            if(uiState.value.bookReadYear.isNotBlank()) uiState.value.bookReadYear.toInt() else null,
+            if(uiState.value.bookReadYear.isNotBlank()) uiState.value.bookReadYear.toInt() else 1900,
             uiState.value.bookHave,
             uiState.value.bookSubtitle,
             uiState.value.bookNotes,
-            uiState.value.bookAuthor,
-            uiState.value.bookSaga,
-            if(uiState.value.bookSagaIndex.isNotBlank()) uiState.value.bookSagaIndex.toInt() else null,
-            uiState.value.bookPublisher,
-            uiState.value.bookCategory,
+            capitalizeString(uiState.value.bookAuthor),
+            capitalizeString(uiState.value.bookSaga),
+            if(uiState.value.bookSagaIndex.isNotBlank()) uiState.value.bookSagaIndex.toInt() else 0,
+            capitalizeString(uiState.value.bookPublisher),
+            capitalizeString(uiState.value.bookCategory),
             uiState.value.bookLanguageCode,
             uiState.value.bookFormatCode
         )
 
         return result
+    }
+
+    private fun capitalizeString(words: String): String {
+        if(words.isNullOrBlank()) {
+            return words
+        }
+        val lowWords = words.lowercase()
+        val lowWordsList: MutableList<String> = lowWords.split(" ").toMutableList()
+        val firstWord = lowWordsList[0].replaceFirstChar { char ->
+            char.titlecase()
+        }
+        lowWordsList[0] = firstWord
+        return lowWordsList.joinToString(" ")
+    }
+
+    private fun fillEmptyBookObj(): Book {
+        val result = Book(null,
+            null,
+            "n",
+            null,
+            "n",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null)
+        return result
+    }
+
+    private fun searchBooks(filterBook: Book) {
+        Klog.linedbg("LibraryViewModel", "searchBooks", "filterBook->$filterBook")
+
+        viewModelScope.launch {
+            val resp = libraryService.searchBooks(filterBook, AppState.useremail!!)
+            Klog.line("LibraryViewModel", "searchBooks", "resp: $resp")
+            if(resp.result) {
+                updateBookList(resp.bookList ?: mutableListOf())
+                clearErrors()
+                clearState()
+            }
+            else {
+                Klog.line("LibraryViewModel", "searchBooks", "error")
+                setGeneralError(" ${resp.code}: ${resp.message}")
+                updateBookList(mutableListOf())
+            }
+            updateIsDesiredBookListLoaded(true)
+            updateIsDesiredBookListLoading(false)
+        }
+    }
+
+    fun deleteBook() {
+        Klog.linedbg("LibraryViewModel", "deleteBook", "Book id: ${_uiState.value.bookToDelete?.id}")
+    }
+
+    fun confirmDeleteBook(book: Book?, action: Boolean) {
+        Klog.linedbg("LibraryViewModel","confirmDeleteBook", "click, book -> $book, action-> $action")
+        clearErrors()
+
+        updateBookToDelete(book)
+        updateIsToDeleteBook(action)
     }
 
     private fun updateIsDesiredBookListLoaded(action: Boolean) {
@@ -356,6 +503,24 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
     private fun updateIsToUpdateBook(action: Boolean) {
         _uiState.update {
             it.copy(isToUpdateBook = action)
+        }
+    }
+
+    private fun updateIsToFilterBooks(action: Boolean) {
+        _uiState.update {
+            it.copy(isToFilterBooks = action)
+        }
+    }
+
+    private fun updateBookToDelete(book: Book?) {
+        _uiState.update {
+            it.copy(bookToDelete = book)
+        }
+    }
+
+    private fun updateIsToDeleteBook(action: Boolean) {
+        _uiState.update {
+            it.copy(isToDeleteBook = action)
         }
     }
 
@@ -474,18 +639,6 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
         }
     }
 
-    private fun updateBookLanguageError(err: Boolean, txt: String) {
-        _uiState.update {
-            it.copy(bookLanguageError = err)
-        }
-    }
-
-    fun updateBookFormatError(err: Boolean, txt: String) {
-        _uiState.update {
-            it.copy(bookFormatError = err)
-        }
-    }
-
     private fun updateBookReadYearError(err: Boolean, txt: String) {
         _uiState.update {
             it.copy(bookReadYearError = err)
@@ -508,15 +661,15 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
         }
     }
 
-    fun updateBookRead(isChecked: Boolean) {
+    fun updateBookRead(isChecked: String) {
         _uiState.update {
-            it.copy(bookRead = if(isChecked)  "y" else "n")
+            it.copy(bookRead = isChecked)
         }
     }
 
-    fun updateBookHave(isChecked: Boolean) {
+    fun updateBookHave(isChecked: String) {
         _uiState.update {
-            it.copy(bookHave = if(isChecked)  "y" else "n")
+            it.copy(bookHave = isChecked)
         }
     }
 
@@ -608,6 +761,35 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
         }
     }
 
+    private fun updateFormatMaster(formatMaster: MutableList<LMaster>) {
+        _uiState.update {
+            it.copy(formatsMaster = formatMaster)
+        }
+    }
+
+    private fun updateFormatMasterFilter(formatMaster: MutableList<LMaster>) {
+        _uiState.update {
+            it.copy(formatsMasterFilter = formatMaster)
+        }
+    }
+
+    private fun updateLanguagesMaster(lanMaster: MutableList<LMaster>) {
+        _uiState.update {
+            it.copy(languagesMaster = lanMaster)
+        }
+    }
+
+    private fun updateLanguagesMasterFilter(lanMaster: MutableList<LMaster>) {
+        _uiState.update {
+            it.copy(languagesMasterFilter = lanMaster)
+        }
+    }
+    private fun updateBookList(bookList: MutableList<Book>) {
+        _uiState.update {
+            it.copy(bookList = bookList)
+        }
+    }
+
     private fun clearState() {
         updateHeaderMessage("Library")
     }
@@ -633,10 +815,9 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
         updateBookNotesError(false, "")
         updateBookAuthorError(false, "")
         updateBookSagaError(false, "")
+        updateBookSagaIndexError(false, "")
         updateBookPublisherError(false, "")
         updateBookCategoryError(false, "")
-        updateBookLanguageError(false, "")
-        updateBookFormatError(false, "")
         updateBookReadYearError(false, "")
     }
 }

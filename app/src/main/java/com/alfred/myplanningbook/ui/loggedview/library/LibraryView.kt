@@ -18,14 +18,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.loggedview.library.viewmodel.LibraryViewModel
-import com.alfred.myplanningbook.ui.loggedview.viewmodel.ActivitiesManagerViewModel
 import org.koin.androidx.compose.koinViewModel
 
 /**
@@ -61,10 +60,11 @@ class LibraryView {
                 }
                 else {
                     Spacer(modifier = Modifier.height(30.dp))
+                    errorGeneralField()
                     headerTitleLibrary()
 
                     Spacer(modifier = Modifier.height(30.dp))
-                    libraryHeaderSection(onBack)
+                    libraryBodySection(onBack)
                 }
             }
         }
@@ -85,6 +85,27 @@ class LibraryView {
     }
 
     @Composable
+    private fun errorGeneralField() {
+        val viewModel: LibraryViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+        if(uiState.generalError) {
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                uiState.generalErrorText,
+                color = Color.Red,
+                style = TextStyle(
+                    fontSize = 15.sp,
+                    color = Color.Red
+                )
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+    }
+
+    @Composable
     private fun headerTitleLibrary() {
         val viewModel: LibraryViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -100,7 +121,7 @@ class LibraryView {
     }
 
     @Composable
-    private fun libraryHeaderSection(onBack: () -> Unit) {
+    private fun libraryBodySection(onBack: () -> Unit) {
         val viewModel: LibraryViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -110,14 +131,17 @@ class LibraryView {
         else if(uiState.isToUpdateBook) {
             LibraryUpdateSection()
         }
+        else if(uiState.isToFilterBooks) {
+            LibraryFilterSection()
+        }
         else {
-            libraryHeaderActions(onBack)
-            libraryListSection()
+            LibraryHeaderActions(onBack)
+            LibraryListSection()
         }
     }
 
     @Composable
-    private fun libraryHeaderActions(onBack: () -> Unit) {
+    private fun LibraryHeaderActions(onBack: () -> Unit) {
         val viewModel: LibraryViewModel = koinViewModel()
 
         Column {
@@ -155,17 +179,12 @@ class LibraryView {
                         modifier = Modifier.width(200.dp).height(70.dp),
                         colors = CommonViewComp.getActionsButtonColour(),
                         onClick = {
-                            viewModel.openFilterBooksDi();
+                            viewModel.showFilterBooks(true);
                         }) {
                         Text("Filter Books")
                     }
                 }
             }
         }
-    }
-
-    @Composable
-    private fun libraryListSection() {
-
     }
 }

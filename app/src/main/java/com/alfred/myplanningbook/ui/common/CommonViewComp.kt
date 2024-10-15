@@ -24,6 +24,8 @@ object CommonViewComp {
     val c_cardContainer: Color = Color(0xFFFDF5E6) //oldlace
     val c_cardContentSecondary: Color = Color(0xFF000080) //
     val c_cardContainerSecondary: Color = Color(0xFFF4A0A0) //
+    val c_cardContainerTertiary: Color = Color(0xFFFFD740) //
+    val c_cardContentTertiary: Color = Color(0xFF000080) //
     val c_card_buttonOneContainer: Color = Color(0xFFF1E4C3)
     val c_card_buttonOneContent: Color = Color(0xFF597E52)
     val c_card_buttonWarnContainer: Color = Color(0xFFFF4500) //orangeRed
@@ -75,6 +77,22 @@ object CommonViewComp {
         return CardDefaults.cardColors(
             containerColor = c_cardContainerSecondary,
             contentColor = c_cardContentSecondary
+        )
+    }
+
+    @Composable
+    fun getLibraryCardColour(): CardColors {
+        return CardDefaults.cardColors(
+            containerColor = c_cardContainer,
+            contentColor = c_cardContent
+        )
+    }
+
+    @Composable
+    fun getLibraryCardSecondaryColour(): CardColors {
+        return CardDefaults.cardColors(
+            containerColor = c_cardContainerTertiary,
+            contentColor = c_cardContentTertiary
         )
     }
 

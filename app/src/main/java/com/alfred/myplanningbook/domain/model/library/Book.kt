@@ -1,7 +1,7 @@
 package com.alfred.myplanningbook.domain.model.library
 
 data class Book(var id: String?,
-                val title: String,
+                val title: String?,
                 val read: String,
                 val readYear: Int?,
                 val have: String,

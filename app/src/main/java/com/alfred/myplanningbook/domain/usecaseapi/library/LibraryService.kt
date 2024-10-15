@@ -10,7 +10,7 @@ import com.alfred.myplanningbook.domain.model.library.SimpleLibraryResponse
  */
 interface LibraryService {
 
-    suspend fun listBooks(filterBook: Book): SimpleLibraryResponse
+    suspend fun searchBooks(filterBook: Book, userEmail: String): SimpleLibraryResponse
 
     suspend fun createBook(book: Book, userEmail: String): SimpleLibraryResponse
 

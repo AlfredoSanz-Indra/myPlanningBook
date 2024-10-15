@@ -21,38 +21,39 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Gray
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.alfred.myplanningbook.ui.common.CommonViewComp
-import com.alfred.myplanningbook.ui.loggedview.library.viewmodel.LibraryViewModel
-import org.koin.androidx.compose.koinViewModel
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alfred.myplanningbook.core.log.Klog
+import com.alfred.myplanningbook.domain.model.library.LMaster
+import com.alfred.myplanningbook.ui.common.CommonViewComp
+import com.alfred.myplanningbook.ui.loggedview.library.viewmodel.LibraryViewModel
+import org.koin.androidx.compose.koinViewModel
 
 /**
  * @author Alfredo Sanz
@@ -68,6 +69,13 @@ fun LibraryCreationSection() {
 @Composable
 fun LibraryUpdateSection() {
     LibraryUpdateActions()
+    Spacer(modifier = Modifier.height(10.dp))
+    LibraryDataFieldsComponents()
+}
+
+@Composable
+fun LibraryFilterSection() {
+    LibraryFilterActions()
     Spacer(modifier = Modifier.height(10.dp))
     LibraryDataFieldsComponents()
 }
@@ -122,10 +130,12 @@ private fun LibraryUpdateActions() {
                 }
 
                 OutlinedButton(
-                    modifier = Modifier.width(200.dp).height(70.dp),
+                    modifier = Modifier
+                        .width(200.dp)
+                        .height(70.dp),
                     colors = CommonViewComp.getSecondaryButtonColour(),
                     onClick = {
-                        viewModel.showUpdateBook(false);
+                        viewModel.showUpdateBook( false, null);
                     }) {
                     Text("Cancel")
                 }
@@ -137,13 +147,44 @@ private fun LibraryUpdateActions() {
                 Alignment.CenterHorizontally) {
 
                 OutlinedButton(
-                    modifier = Modifier.width(200.dp).height(70.dp),
+                    modifier = Modifier
+                        .width(200.dp)
+                        .height(70.dp),
                     colors = CommonViewComp.getActionsButtonColour(),
                     onClick = {
                         viewModel.cloneBook();
                     }) {
                     Text("Clone with changes")
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LibraryFilterActions() {
+    val viewModel: LibraryViewModel = koinViewModel()
+
+    Column {
+        Row {
+            OutlinedButton(modifier = Modifier
+                .width(200.dp)
+                .height(70.dp),
+                colors = CommonViewComp.getActionsButtonColour(),
+                onClick = {
+                    viewModel.filterBooks();
+                }) {
+                Text("Search")
+            }
+
+            OutlinedButton(modifier = Modifier
+                .width(200.dp)
+                .height(70.dp),
+                colors = CommonViewComp.getSecondaryButtonColour(),
+                onClick = {
+                    viewModel.showFilterBooks(false);
+                }) {
+                Text("Cancel")
             }
         }
     }
@@ -166,22 +207,29 @@ private fun LibraryDataFieldsComponents() {
             .fillMaxWidth()
             .fillMaxHeight()
     ) {
-        Column(Modifier
+        Column(
+            Modifier
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 10.dp)
                ) {
             BookFormComponent_title()
             BookFormComponent_switches()
-            BookFormComponent_subtitle()
+            if(!uiState.isToFilterBooks) {
+                BookFormComponent_subtitle()
+            }
             BookFormComponent_author()
             BookFormComponent_saga()
-            BookFormComponent_sagaIndex()
-            BookFormComponent_notes()
+            if(!uiState.isToFilterBooks) {
+                BookFormComponent_sagaIndex()
+                BookFormComponent_notes()
+            }
             BookFormComponent_publisher()
             BookFormComponent_category()
             BookFormComponent_language()
             BookFormComponent_format()
-            BookFormComponent_readYear()
+            if(!uiState.isToFilterBooks) {
+                BookFormComponent_readYear()
+            }
         }
     }
 }
@@ -254,8 +302,8 @@ private fun BookFormComponent_switches() {
         ) {
             Row(modifier = Modifier, Arrangement.SpaceBetween) {
                 Column(modifier = Modifier
-                        .padding(vertical = 10.dp)
-                        .weight(0.5F)) {
+                    .padding(vertical = 10.dp)
+                    .weight(0.5F)) {
                     Text("I have read the book")
                 }
 
@@ -267,11 +315,13 @@ private fun BookFormComponent_switches() {
 
             Row(modifier = Modifier, Arrangement.SpaceBetween) {
                 Column(modifier = Modifier
-                        .padding(vertical = 0.dp)
-                        .weight(0.5F)) {
-                    Switch(modifier = Modifier.semantics { contentDescription = "Read" }.padding(0.dp),
+                    .padding(vertical = 0.dp)
+                    .weight(0.5F)) {
+                    Switch(modifier = Modifier
+                        .semantics { contentDescription = "Read" }
+                        .padding(0.dp),
                         checked = uiState.bookRead == "y",
-                        onCheckedChange = { viewModel.updateBookRead(it) },
+                        onCheckedChange = { viewModel.updateBookRead( if(it) "y" else "n" ) },
                         thumbContent = {
                             if(uiState.bookRead == "y") {
                                 Icon(
@@ -285,10 +335,13 @@ private fun BookFormComponent_switches() {
                 }
 
                 Column(modifier = Modifier
-                        .padding(vertical = 0.dp)) {
-                    Switch(modifier = Modifier.semantics { contentDescription = "Have" }.padding(0.dp),
+                        .padding(vertical = 0.dp)
+                        .width(120.dp)) {
+                    Switch(modifier = Modifier
+                        .semantics { contentDescription = "Have" }
+                        .padding(0.dp),
                         checked = uiState.bookHave == "y",
-                        onCheckedChange = { viewModel.updateBookHave(it) },
+                        onCheckedChange = { viewModel.updateBookHave( if(it) "y" else "n" ) },
                         thumbContent = {
                             if(uiState.bookHave == "y") {
                                 Icon(
@@ -633,7 +686,10 @@ private fun BookFormComponent_language() {
             ) {
                 OutlinedTextField(
                     value = uiState.bookLanguage,
-                    modifier = Modifier.height(90.dp).fillMaxSize(1f).padding(10.dp),
+                    modifier = Modifier
+                        .height(90.dp)
+                        .fillMaxSize(1f)
+                        .padding(10.dp),
                     onValueChange = { },
                     label = { Text(text = "Language") },
                     placeholder = { Text("Language") },
@@ -651,7 +707,13 @@ private fun BookFormComponent_language() {
                     expanded = isExpanded,
                     onDismissRequest = { isExpanded = false },
                 ) {
-                    uiState.languagesMaster?.forEach { it ->
+                    val listMasters: MutableList<LMaster> = if(uiState.isToFilterBooks) {
+                        uiState.languagesMasterFilter ?: mutableListOf()
+                    }
+                    else {
+                        uiState.languagesMaster ?: mutableListOf()
+                    }
+                    listMasters?.forEach { it ->
                         DropdownMenuItem(
                             text = { Text(it.value, style = MaterialTheme.typography.bodyLarge) },
                             onClick = {
@@ -692,7 +754,10 @@ private fun BookFormComponent_format() {
             ) {
                 OutlinedTextField(
                     value = uiState.bookFormat,
-                    modifier = Modifier.height(90.dp).fillMaxSize(1f).padding(10.dp),
+                    modifier = Modifier
+                        .height(90.dp)
+                        .fillMaxSize(1f)
+                        .padding(10.dp),
                     onValueChange = { },
                     label = { Text(text = "Format") },
                     placeholder = { Text("Format") },
@@ -710,7 +775,13 @@ private fun BookFormComponent_format() {
                     expanded = isExpanded,
                     onDismissRequest = { isExpanded = false },
                 ) {
-                    uiState.formatsMaster?.forEach { it ->
+                    val listMasters: MutableList<LMaster> = if(uiState.isToFilterBooks) {
+                        uiState.formatsMasterFilter ?: mutableListOf()
+                    }
+                    else {
+                        uiState.formatsMaster ?: mutableListOf()
+                    }
+                    listMasters?.forEach { it ->
                         DropdownMenuItem(
                             text = { Text(it.value, style = MaterialTheme.typography.bodyLarge) },
                             onClick = {
@@ -765,20 +836,3 @@ private fun BookFormComponent_readYear() {
         }
     } //Row
 }
-/**
- *                 val title: String,
- *                 val read: Int,
- *                 val haveit: Int,
- *                 val subtitle: String?,
- *                 val description: String?,
- *                 val notes: String?,
- *                 val authorName: String?,
- *                 val authorID: Int?,
- *                 val sagaName: String?,
- *                 val sagaID: Int?,
- *                 val editorial: String?,
- *                 val categoryName: String?,
- *                 val categoryID: Int?,
- *                 val language: String?,
- *                 val format: String?,
- */

@@ -2,6 +2,7 @@ package com.alfred.myplanningbook.domain.usecase.library
 
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.data.model.SimpleDataLibraryResponse
+import com.alfred.myplanningbook.domain.model.SimpleResponse
 import com.alfred.myplanningbook.domain.model.library.Book
 import com.alfred.myplanningbook.domain.model.library.SimpleLibraryResponse
 import com.alfred.myplanningbook.domain.repositoryapi.library.LibraryRepository
@@ -13,10 +14,33 @@ import com.alfred.myplanningbook.domain.usecaseapi.library.LibraryService
  */
 class LibraryServiceImpl(private val libraryRepository: LibraryRepository): LibraryService {
 
-    override suspend fun listBooks(filterBook: Book): SimpleLibraryResponse {
-
+    override suspend fun searchBooks(filterBook: Book, userEmail: String): SimpleLibraryResponse {
         var result: SimpleLibraryResponse =  SimpleLibraryResponse(false, 404, "0", "")
+        Klog.line("LibraryServiceImpl", "searchBooks", "searching books for userEmail -> $userEmail")
 
+        if(userEmail.isEmpty()) {
+            Klog.line("LibraryServiceImpl", "searchBooks", "Missing userEmail")
+            result = SimpleLibraryResponse(false, 404, "Fail: Missing userEmail!", "")
+            return result
+        }
+
+        try {
+            val resp = libraryRepository.searchBooks(filterBook, userEmail)
+
+            if(resp.result && resp.code == 200) {
+                result = SimpleLibraryResponse(true,200, "found", "")
+                result.bookList = resp.bookList
+            }
+            else {
+                result = SimpleLibraryResponse(false, resp.code, "not found", resp.message)
+            }
+        }
+        catch(e: Exception) {
+            Klog.line("LibraryServiceImpl", "searchBooks", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleLibraryResponse(false, 500, e.localizedMessage, "")
+        }
+
+        Klog.line("LibraryServiceImpl", "searchBooks", "result: $result")
         return result
     }
 
