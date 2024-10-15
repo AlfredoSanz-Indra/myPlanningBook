@@ -1,0 +1,49 @@
+{
+"masters":
+  [
+    {
+      "name": "format",
+      "values":
+        [
+          {
+            "name": "tapablanda",
+            "value": "Tapa blanda"
+          },
+          {
+            "name": "tapadura",
+            "value": "Tapa dura"
+          },
+          {
+             "name": "bolsillo",
+             "value": "Bolsillo"
+          },
+          {
+            "name": "otros",
+            "value": "Otros"
+          },
+          {
+            "name": "pdf",
+            "value": "Pdf"
+          },
+          {
+            "name": "ebook",
+            "value": "Ebook"
+          }
+        ]
+    },
+    {
+      "name": "language",
+      "values":
+        [
+          {
+            "name": "espanol",
+            "value": "Español"
+          },
+          {
+            "name": "ingles",
+            "value": "Inglés"
+          }
+       ]
+    }
+  ]
+}

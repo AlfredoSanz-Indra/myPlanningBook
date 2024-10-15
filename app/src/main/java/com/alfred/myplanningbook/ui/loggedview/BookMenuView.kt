@@ -41,6 +41,7 @@ class BookMenuView {
     fun CreateView(onPlanningBooks: () -> Unit,
                    onTasks: () -> Unit,
                    onActivities: () -> Unit,
+                   onLibrary: () -> Unit,
                    onLogout: () -> Unit) {
 
         val viewModel: BookMenuViewModel = koinViewModel()
@@ -65,7 +66,7 @@ class BookMenuView {
                     Bottombar()
                 },
                 content = { innerPadding ->
-                    Content(onPlanningBooks, onTasks, onActivities, onLogout, innerPadding)
+                    Content(onPlanningBooks, onTasks, onActivities, onLibrary, onLogout, innerPadding)
                 }
             )
         }
@@ -120,6 +121,7 @@ class BookMenuView {
     private fun Content(onPlanningBooks: () -> Unit,
                         onTasks: () -> Unit,
                         onActivities: () -> Unit,
+                        onLibrary: () -> Unit,
                         onLogout: () -> Unit,
                         innerPadding: PaddingValues) {
         Column(
@@ -150,6 +152,11 @@ class BookMenuView {
                 .height(30.dp)
                 .padding(innerPadding))
             ActivitiesButton(onActivities)
+
+            Spacer(modifier = Modifier
+                .height(30.dp)
+                .padding(innerPadding))
+            LibraryButton(onLibrary)
 
             Spacer(modifier = Modifier
                 .height(30.dp)
@@ -275,6 +282,31 @@ class BookMenuView {
     }
 
     @Composable
+    private fun LibraryButton(onLibrary: () -> Unit) {
+        val viewModel: BookMenuViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+        OutlinedButton(modifier = Modifier
+            .width(200.dp)
+            .height(70.dp),
+            colors = CommonViewComp.getMenuLibraryButtonColour(),
+            onClick = {
+                Klog.line("BookMenuView", "LibraryButton", "library button clicked")
+                viewModel.libraryView();
+            }
+        ) {
+            Text("Library")
+        }
+
+        LaunchedEffect(uiState.isToLibrary) {
+            if(uiState.isToLibrary) {
+                viewModel.clearFields()
+                onLibrary()
+            }
+        }
+    }
+
+    @Composable
     private fun LogoutButton(onLogout: () -> Unit) {
         val viewModel: BookMenuViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -351,7 +383,7 @@ class BookMenuView {
         {
             Column(Modifier.padding(4.dp)) {
                 Text(
-                    text = "version 1.4.17", color = CommonViewComp.c_card_buttonOneContent, style = TextStyle(
+                    text = "version 1.5.4", color = CommonViewComp.c_card_buttonOneContent, style = TextStyle(
                         fontSize = 15.sp, background = CommonViewComp.c_snow
                     )
                 )

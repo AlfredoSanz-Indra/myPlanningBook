@@ -9,6 +9,7 @@ import com.alfred.myplanningbook.AppScreens.RESETPWD_SCREEN
 import com.alfred.myplanningbook.AppScreens.PLANNINGBOOKMANAGER_SCREEN
 import com.alfred.myplanningbook.AppScreens.TASKS_SCREEN
 import com.alfred.myplanningbook.AppScreens.ACTIVITIES_SCREEN
+import com.alfred.myplanningbook.AppScreens.LIBRARY_SCREEN
 
 
 /**
@@ -25,6 +26,7 @@ private object AppScreens {
     const val PLANNINGBOOKMANAGER_SCREEN = "planningbook"
     const val TASKS_SCREEN = "tasks"
     const val ACTIVITIES_SCREEN = "activities"
+    const val LIBRARY_SCREEN = "library"
 }
 
 object AppArgs {
@@ -41,6 +43,7 @@ object AppRoutes {
     const val PLANNINGBOOKMANAGER_ROUTE = "$PLANNINGBOOKMANAGER_SCREEN"
     const val TASKS_ROUTE = "$TASKS_SCREEN"
     const val ACTIVITIES_ROUTE = "$ACTIVITIES_SCREEN"
+    const val LIBRARY_ROUTE = "$LIBRARY_SCREEN"
 }
 
 class NavigationActions(private val navController: NavHostController) {
@@ -74,5 +77,9 @@ class NavigationActions(private val navController: NavHostController) {
 
     fun navigateToActivities() {
         navController.navigate("$ACTIVITIES_SCREEN")
+    }
+
+    fun navigateToLibrary() {
+        navController.navigate("$LIBRARY_SCREEN")
     }
 }

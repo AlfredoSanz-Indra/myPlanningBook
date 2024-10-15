@@ -26,6 +26,7 @@ data class BookMenuUiState(
     var isToPlanningBookManager: Boolean = false,
     var isToTasksManager: Boolean = false,
     var isToActivitiesManager: Boolean = false,
+    var isToLibrary: Boolean = false,
     var isToBack: Boolean = false,
     var showBack: Boolean = false,
     var loggedUser: String = ""
@@ -127,6 +128,10 @@ class BookMenuViewModel(private val usersService: UsersService,
         updateIsToActivitiesManager(true)
     }
 
+    fun libraryView() {
+        updateIsToLibrary(true)
+    }
+
     fun planningbookView() {
 
         updateIsToPlanningBookManager(true)
@@ -170,6 +175,12 @@ class BookMenuViewModel(private val usersService: UsersService,
     private fun updateIsToActivitiesManager(action: Boolean) {
         _uiState.update {
             it.copy(isToActivitiesManager = action)
+        }
+    }
+
+    private fun updateIsToLibrary(action: Boolean) {
+        _uiState.update {
+            it.copy(isToLibrary  = action)
         }
     }
 
@@ -231,6 +242,10 @@ class BookMenuViewModel(private val usersService: UsersService,
 
         _uiState.update {
             it.copy(isToActivitiesManager = false)
+        }
+
+        _uiState.update {
+            it.copy(isToLibrary = false)
         }
 
         _uiState.update {

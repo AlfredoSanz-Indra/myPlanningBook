@@ -62,7 +62,7 @@ class TasksManagerView {
                     headerTitlePB(uiState)
 
                     Spacer(modifier = Modifier.height(30.dp))
-                    tasksHeaderSection(onBack)
+                    TasksBodySection(onBack)
                 }
             }
         }
@@ -117,7 +117,7 @@ class TasksManagerView {
     }
 
     @Composable
-    private fun tasksHeaderSection(onBack: () -> Unit) {
+    private fun TasksBodySection(onBack: () -> Unit) {
         val viewModel: TasksManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 

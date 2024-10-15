@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -55,7 +56,7 @@ class ActivitiesManagerView {
             ) {
                 if(uiState.currentPlanningBook.isEmpty()) {
                     Spacer(modifier = Modifier.height(30.dp))
-                    loading()
+                    Loading()
                 }
                 else {
                     Spacer(modifier = Modifier.height(30.dp))
@@ -63,7 +64,7 @@ class ActivitiesManagerView {
                     headerTitlePB(uiState)
 
                     Spacer(modifier = Modifier.height(30.dp))
-                    activitiesHeaderSection(onBack)
+                    activitiesBodySection(onBack)
                 }
             }
         }
@@ -91,16 +92,17 @@ class ActivitiesManagerView {
     }
 
     @Composable
-    private fun loading() {
-        OutlinedButton(modifier = Modifier
-            .width(200.dp)
-            .height(70.dp),
-            colors = CommonViewComp.getActionsButtonColour(),
-            onClick = {
-            }
-        ) {
-            Text("Loading State!! Please Wait")
-        }
+    private fun Loading() {
+        CircularProgressIndicator()
+
+        Text(
+            "Loading State!! Please Wait...",
+            color = CommonViewComp.c_card_buttonOneContent,
+            style = TextStyle(
+                fontSize = 20.sp,
+                background = CommonViewComp.c_snow
+            )
+        )
     }
 
     @Composable
@@ -118,7 +120,7 @@ class ActivitiesManagerView {
     }
 
     @Composable
-    private fun activitiesHeaderSection(onBack: () -> Unit) {
+    private fun activitiesBodySection(onBack: () -> Unit) {
         val viewModel: ActivitiesManagerViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 

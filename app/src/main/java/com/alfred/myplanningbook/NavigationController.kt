@@ -1,16 +1,15 @@
 package com.alfred.myplanningbook
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.alfred.myplanningbook.AppRoutes.ACTIVITIES_ROUTE
 import com.alfred.myplanningbook.AppRoutes.BOOKMENU_ROUTE
+import com.alfred.myplanningbook.AppRoutes.LIBRARY_ROUTE
 import com.alfred.myplanningbook.AppRoutes.LOGIN_ROUTE
 import com.alfred.myplanningbook.AppRoutes.MAIN_ROUTE
 import com.alfred.myplanningbook.AppRoutes.PLANNINGBOOKMANAGER_ROUTE
@@ -132,6 +131,10 @@ fun NavigationGraph(
                     Klog.line("NavigationController", "NavigationGraph", "navHost bookmenu go to Activities!")
                     navActions.navigateToActivities()
                 },
+                onLibrary = {
+                    Klog.line("NavigationController", "NavigationGraph", "navHost bookmenu go to Library!")
+                    navActions.navigateToLibrary()
+                },
                 onLogout = {
                     Klog.line("NavigationController", "NavigationGraph", "navHost bookmenu go to logout!")
                     ViewsStore.cleanLoggedViews()
@@ -153,8 +156,8 @@ fun NavigationGraph(
         composable(TASKS_ROUTE,
             arguments = listOf()
         ) {
-            val tasksManagerViewModel = ViewsStore.getTasksManagerView()
-            tasksManagerViewModel.createView(
+            val tasksManagerView = ViewsStore.getTasksManagerView()
+            tasksManagerView.createView(
                 onBack = {
                     Klog.line("NavigationController", "NavigationGraph", "navHost tasksManager go back!")
                     navController.popBackStack()
@@ -165,10 +168,22 @@ fun NavigationGraph(
             ACTIVITIES_ROUTE,
             arguments = listOf()
         ) {
-            val activitiesManagerViewModel = ViewsStore.getActivitiesManagerView()
-            activitiesManagerViewModel.createView(
+            val activitiesManagerView = ViewsStore.getActivitiesManagerView()
+            activitiesManagerView.createView(
                 onBack = {
                     Klog.line("NavigationController", "NavigationGraph", "navHost activitiesManager go back!")
+                    navController.popBackStack()
+                })
+        }
+
+        composable(
+            LIBRARY_ROUTE,
+            arguments = listOf()
+        ) {
+            val libraryView = ViewsStore.getLibraryView()
+            libraryView.createView(
+                onBack = {
+                    Klog.line("NavigationController", "NavigationGraph", "navHost Library go back!")
                     navController.popBackStack()
                 })
         }
