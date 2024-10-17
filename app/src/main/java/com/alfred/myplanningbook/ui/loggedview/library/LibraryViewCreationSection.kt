@@ -19,14 +19,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedButton
@@ -49,7 +47,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.alfred.myplanningbook.core.log.Klog
+import com.alfred.myplanningbook.domain.model.library.BookField
 import com.alfred.myplanningbook.domain.model.library.LMaster
 import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.loggedview.library.viewmodel.LibraryViewModel
@@ -436,10 +434,13 @@ private fun BookFormComponent_notes() {
     } //Row
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BookFormComponent_author() {
     val viewModel: LibraryViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    var isExpanded by remember { mutableStateOf(false) }
 
     Row {
         Column(
@@ -449,28 +450,44 @@ private fun BookFormComponent_author() {
             Arrangement.Top,
             Alignment.CenterHorizontally
         ) {
-            OutlinedTextField(
-                value = uiState.bookAuthor,
-                modifier = Modifier
-                    .height(90.dp)
-                    .fillMaxSize(1f)
-                    .padding(10.dp),
-                onValueChange = { viewModel.updateBookAuthor(it) },
-                label = { Text(text="Author")},
-                placeholder = { Text("Author (2-50)") },
-                singleLine = true,
-                maxLines = 1,
-                trailingIcon = {
-                    IconButton(
-                        onClick = {
-                            //TODO
-                            //viewModel.openTimeStartDi()
-                        }
-                    ) {
-                        Icon(imageVector = Icons.Outlined.FilterList , contentDescription = null)
+            ExposedDropdownMenuBox(
+                expanded = isExpanded,
+                onExpandedChange = { newValue ->
+                    isExpanded = newValue
+                }
+            ) {
+                OutlinedTextField(value = uiState.bookAuthor,
+                    modifier = Modifier.height(90.dp).fillMaxSize(1f).padding(10.dp),
+                    onValueChange = { viewModel.updateBookAuthor(it) },
+                    label = { Text(text = "Author") },
+                    placeholder = { Text("Author (2-50)") },
+                    singleLine = true,
+                    maxLines = 1,
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(
+                            expanded = isExpanded,
+                            modifier = Modifier.menuAnchor(MenuAnchorType.SecondaryEditable),
+                        )
                     }
-                },
                 )
+
+                ExposedDropdownMenu(
+                    expanded = isExpanded,
+                    onDismissRequest = { isExpanded = false },
+                ) {
+                    val listAuthors: MutableList<BookField> = uiState.authorListFiltered ?: mutableListOf()
+                    listAuthors?.forEach { it ->
+                        DropdownMenuItem(
+                            text = { Text(it.name, style = MaterialTheme.typography.bodyLarge) },
+                            onClick = {
+                                viewModel.updateBookAuthor(it.name)
+                                isExpanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        )
+                    }
+                }
+            }
 
             if(uiState.bookAuthorError) {
                 Spacer(modifier = Modifier.height(10.dp))
@@ -485,10 +502,13 @@ private fun BookFormComponent_author() {
     } //Row
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BookFormComponent_saga() {
     val viewModel: LibraryViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    var isExpanded by remember { mutableStateOf(false) }
 
     Row {
         Column(
@@ -498,28 +518,47 @@ private fun BookFormComponent_saga() {
             Arrangement.Top,
             Alignment.CenterHorizontally
         ) {
-            OutlinedTextField(
-                value = uiState.bookSaga,
-                modifier = Modifier
-                    .height(90.dp)
-                    .fillMaxSize(1f)
-                    .padding(10.dp),
-                onValueChange = { viewModel.updateBookSaga(it) },
-                label = { Text(text="Saga")},
-                placeholder = { Text("Saga (2-50)") },
-                singleLine = true,
-                maxLines = 1,
-                trailingIcon = {
-                    IconButton(
-                        onClick = {
-                            //TODO
-                            //viewModel.openTimeStartDi()
-                        }
-                    ) {
-                        Icon(imageVector = Icons.Outlined.FilterList , contentDescription = null)
+            ExposedDropdownMenuBox(
+                expanded = isExpanded,
+                onExpandedChange = { newValue ->
+                    isExpanded = newValue
+                }
+            ) {
+                OutlinedTextField(
+                    value = uiState.bookSaga,
+                    modifier = Modifier
+                        .height(90.dp)
+                        .fillMaxSize(1f)
+                        .padding(10.dp),
+                    onValueChange = { viewModel.updateBookSaga(it) },
+                    label = { Text(text="Saga")},
+                    placeholder = { Text("Saga (2-50)") },
+                    singleLine = true,
+                    maxLines = 1,
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(
+                            expanded = isExpanded,
+                            modifier = Modifier.menuAnchor(MenuAnchorType.SecondaryEditable),
+                        )
+                    },
+                )
+                ExposedDropdownMenu(
+                    expanded = isExpanded,
+                    onDismissRequest = { isExpanded = false },
+                ) {
+                    val listSagas: MutableList<BookField> = uiState.sagaListFiltered
+                    listSagas?.forEach { it ->
+                        DropdownMenuItem(
+                            text = { Text(it.name, style = MaterialTheme.typography.bodyLarge) },
+                            onClick = {
+                                viewModel.updateBookSaga(it.name)
+                                isExpanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        )
                     }
-                },
-            )
+                }
+            }
 
             if(uiState.bookSagaError) {
                 Spacer(modifier = Modifier.height(10.dp))
@@ -574,10 +613,13 @@ private fun BookFormComponent_sagaIndex() {
     } //Row
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BookFormComponent_publisher() {
     val viewModel: LibraryViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    var isExpanded by remember { mutableStateOf(false) }
 
     Row {
         Column(
@@ -587,18 +629,48 @@ private fun BookFormComponent_publisher() {
             Arrangement.Top,
             Alignment.CenterHorizontally
         ) {
-            OutlinedTextField(
-                value = uiState.bookPublisher,
-                modifier = Modifier
-                    .height(90.dp)
-                    .fillMaxSize(1f)
-                    .padding(10.dp),
-                onValueChange = { viewModel.updateBookPublisher(it) },
-                label = { Text(text="Publisher")},
-                placeholder = { Text("Publisher (2-50)") },
-                singleLine = true,
-                maxLines = 1,
-            )
+            ExposedDropdownMenuBox(
+                expanded = isExpanded,
+                onExpandedChange = { newValue ->
+                    isExpanded = newValue
+                }
+            ) {
+                OutlinedTextField(
+                    value = uiState.bookPublisher,
+                    modifier = Modifier
+                        .height(90.dp)
+                        .fillMaxSize(1f)
+                        .padding(10.dp),
+                    onValueChange = { viewModel.updateBookPublisher(it) },
+                    label = { Text(text="Publisher")},
+                    placeholder = { Text("Publisher (2-50)") },
+                    singleLine = true,
+                    maxLines = 1,
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(
+                            expanded = isExpanded,
+                            modifier = Modifier.menuAnchor(MenuAnchorType.SecondaryEditable),
+                        )
+                    },
+                )
+
+                ExposedDropdownMenu(
+                    expanded = isExpanded,
+                    onDismissRequest = { isExpanded = false },
+                ) {
+                    val listPublisher: MutableList<BookField> = uiState.publisherListFiltered
+                    listPublisher?.forEach { it ->
+                        DropdownMenuItem(
+                            text = { Text(it.name, style = MaterialTheme.typography.bodyLarge) },
+                            onClick = {
+                                viewModel.updateBookPublisher(it.name)
+                                isExpanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        )
+                    }
+                }
+            }
 
             if(uiState.bookPublisherError) {
                 Spacer(modifier = Modifier.height(10.dp))
@@ -613,10 +685,14 @@ private fun BookFormComponent_publisher() {
     } //Row
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BookFormComponent_category() {
     val viewModel: LibraryViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+
+    var isExpanded by remember { mutableStateOf(false) }
 
     Row {
         Column(
@@ -626,28 +702,44 @@ private fun BookFormComponent_category() {
             Arrangement.Top,
             Alignment.CenterHorizontally
         ) {
-            OutlinedTextField(
-                value = uiState.bookCategory,
-                modifier = Modifier
-                    .height(90.dp)
-                    .fillMaxSize(1f)
-                    .padding(10.dp),
-                onValueChange = { viewModel.updateBookCategory(it) },
-                label = { Text(text="Category")},
-                placeholder = { Text("Category (2-50)") },
-                singleLine = true,
-                maxLines = 1,
-                trailingIcon = {
-                    IconButton(
-                        onClick = {
-                            //TODO
-                            //viewModel.openTimeStartDi()
-                        }
-                    ) {
-                        Icon(imageVector = Icons.Outlined.FilterList , contentDescription = null)
+            ExposedDropdownMenuBox(
+                expanded = isExpanded,
+                onExpandedChange = { newValue ->
+                    isExpanded = newValue
+                }
+            ) {
+                OutlinedTextField(
+                    value = uiState.bookCategory,
+                    modifier = Modifier.height(90.dp).fillMaxSize(1f).padding(10.dp),
+                    onValueChange = { viewModel.updateBookCategory(it) },
+                    label = { Text(text = "Category") },
+                    placeholder = { Text("Category (2-50)") },
+                    singleLine = true,
+                    maxLines = 1,
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(
+                            expanded = isExpanded,
+                            modifier = Modifier.menuAnchor(MenuAnchorType.SecondaryEditable),
+                        )
+                    },
+                )
+                ExposedDropdownMenu(
+                    expanded = isExpanded,
+                    onDismissRequest = { isExpanded = false },
+                ) {
+                    val categoryPublisher: MutableList<BookField> = uiState.categoryListFiltered
+                    categoryPublisher?.forEach { it ->
+                        DropdownMenuItem(
+                            text = { Text(it.name, style = MaterialTheme.typography.bodyLarge) },
+                            onClick = {
+                                viewModel.updateBookCategory(it.name)
+                                isExpanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        )
                     }
-                },
-            )
+                }
+            }
 
             if(uiState.bookCategoryError) {
                 Spacer(modifier = Modifier.height(10.dp))

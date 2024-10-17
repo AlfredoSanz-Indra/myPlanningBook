@@ -1,6 +1,5 @@
 package com.alfred.myplanningbook.ui.loggedview.library.viewmodel
 
-import androidx.compose.ui.text.toLowerCase
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alfred.myplanningbook.core.log.Klog
@@ -11,6 +10,7 @@ import com.alfred.myplanningbook.core.validators.ValidatorResult
 import com.alfred.myplanningbook.domain.AppState
 import com.alfred.myplanningbook.domain.LibraryState
 import com.alfred.myplanningbook.domain.model.library.Book
+import com.alfred.myplanningbook.domain.model.library.BookField
 import com.alfred.myplanningbook.domain.model.library.LMaster
 import com.alfred.myplanningbook.domain.usecaseapi.library.LibraryService
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -75,6 +75,14 @@ data class LibraryUiState(
     var languagesMasterFilter: MutableList<LMaster>? = mutableListOf(),
     var bookToDelete: Book? = null,
     var bookList: MutableList<Book> = mutableListOf(),
+    var authorList: MutableList<BookField> = mutableListOf(),
+    var categoryList: MutableList<BookField> = mutableListOf(),
+    var publisherList: MutableList<BookField> = mutableListOf(),
+    var sagaList: MutableList<BookField> = mutableListOf(),
+    var authorListFiltered: MutableList<BookField> = mutableListOf(),
+    var categoryListFiltered: MutableList<BookField> = mutableListOf(),
+    var publisherListFiltered: MutableList<BookField> = mutableListOf(),
+    var sagaListFiltered: MutableList<BookField> = mutableListOf(),
 )
 
 class LibraryViewModel(private val libraryService: LibraryService): ViewModel() {
@@ -87,6 +95,7 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
     val BOOK_NOTES_MAXLENGTH = 150
     val BOOK_YEAR_MAXLENGTH = 4
     val BOOK_SAGA_NUMBER_MAXLENGTH = 2
+    val MAX_LENGTH_BOOKFIELD_LISTS = 6
 
     fun loadDesiredBookList() {
         Klog.line("LibraryViewModel", "loadDesiredBookList", "loading desired books")
@@ -98,6 +107,15 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
             return
         }
 
+        setMastersList()
+        loadBookFields()
+
+        val filterBook = fillEmptyBookObj()
+        updateIsDesiredBookListLoading(true)
+        searchBooks(filterBook)
+    }
+
+    private fun setMastersList() {
         val masterTodos = LMaster("todos", "Todos")
         if(_uiState.value.formatsMaster.isNullOrEmpty()) {
             val libraryMasterFormat = LibraryState.libraryMasters?.masters?.filter { it -> it.name == "format" }
@@ -115,10 +133,49 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
             libraryMasterLanguagesFilter?.add(0, masterTodos)
             updateLanguagesMasterFilter(libraryMasterLanguagesFilter ?: mutableListOf())
         }
+    }
 
-        val filterBook = fillEmptyBookObj()
-        updateIsDesiredBookListLoading(true)
-        searchBooks(filterBook)
+    private fun loadBookFields() {
+        Klog.line("LibraryViewModel", "loadBookFields", "loading bookFields")
+
+        viewModelScope.launch {
+            val resp = libraryService.loadBookFields(AppState.useremail!!)
+            if(resp.result) {
+                updateAuthorList(resp.authorList ?: mutableListOf())
+                updateAuthorListFiltered(resp.authorList ?: mutableListOf())
+                updateCategoryList(resp.categoryList ?: mutableListOf())
+                updateCategoryListFiltered(resp.categoryList ?: mutableListOf())
+                updatePublisherList(resp.publisherList ?: mutableListOf())
+                updatePublisherListFiltered(resp.publisherList ?: mutableListOf())
+                updateSagaList(resp.sagaList ?: mutableListOf())
+                updateSagaListFiltered(resp.sagaList ?: mutableListOf())
+            }
+            else {
+                Klog.line("LibraryViewModel", "loadBookFields", "error")
+                setGeneralError(" ${resp.code}: ${resp.message}")
+                updateBookList(mutableListOf())
+            }
+        }
+    }
+
+    private fun filterAuthorsList(txt: String) {
+        val newList = _uiState.value.authorList.filter { it -> it.name.startsWith(txt, true) }.toMutableList()
+        updateAuthorListFiltered(newList)
+    }
+
+    private fun filterSagaList(txt: String) {
+        val newList = _uiState.value.sagaList.filter { it -> it.name.startsWith(txt, true) }.toMutableList()
+        updateSagaListFiltered(newList)
+    }
+
+    private fun filterCategoryList(txt: String) {
+        val newList = _uiState.value.categoryList.filter { it -> it.name.startsWith(txt, true) }.toMutableList()
+        updateCategoryListFiltered(newList)
+    }
+
+    private fun filterPublisherList(txt: String) {
+        val newList = _uiState.value.publisherList.filter { it -> it.name.startsWith(txt, true) }.toMutableList()
+        updatePublisherListFiltered(newList)
     }
 
     fun showAddBook(action: Boolean) {
@@ -159,6 +216,10 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
         updateBookFormatCode(uiState.value.formatsMaster?.get(0)?.name ?: "")
         updateBookLanguage(uiState.value.languagesMaster?.get(0)?.value ?: "No data")
         updateBookLanguageCode(uiState.value.languagesMaster?.get(0)?.name ?: "")
+        updateAuthorListFiltered(uiState.value.authorList)
+        updateAuthorListFiltered(uiState.value.categoryList)
+        updateAuthorListFiltered(uiState.value.publisherList)
+        updateAuthorListFiltered(uiState.value.sagaList)
 
         updateBookTitle("")
         updateBookSubtitle("")
@@ -204,10 +265,11 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
             else {
                 setGeneralError(" ${resp.code}: ${resp.message}")
             }
-        }
+            updateBookActionWorking(false)
+            Klog.linedbg("LibraryViewModel", "createBook", "is created")
 
-        updateBookActionWorking(false)
-        Klog.linedbg("LibraryViewModel", "createBook", "is created")
+            loadDesiredBookList()
+        }
     }
 
     fun updateBook() {
@@ -695,6 +757,7 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
                 it.copy(bookAuthor = txt)
             }
         }
+        filterAuthorsList(txt)
     }
 
     fun updateBookSaga(txt: String) {
@@ -703,6 +766,7 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
                 it.copy(bookSaga = txt)
             }
         }
+        filterSagaList(txt)
     }
 
     fun updateBookSagaIndex(txt: String) {
@@ -718,6 +782,7 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
             _uiState.update {
                 it.copy(bookPublisher = txt)
             }
+            filterPublisherList(txt)
         }
     }
 
@@ -726,6 +791,7 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
             _uiState.update {
                 it.copy(bookCategory = txt)
             }
+            filterCategoryList(txt)
         }
     }
 
@@ -784,9 +850,58 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
             it.copy(languagesMasterFilter = lanMaster)
         }
     }
+
     private fun updateBookList(bookList: MutableList<Book>) {
         _uiState.update {
             it.copy(bookList = bookList)
+        }
+    }
+
+    private fun updateAuthorList(authorList: MutableList<BookField>) {
+        _uiState.update {
+            it.copy(authorList = authorList)
+        }
+    }
+
+    private fun updateCategoryList(categoryList: MutableList<BookField>) {
+        _uiState.update {
+            it.copy(categoryList = categoryList)
+        }
+    }
+
+    private fun updatePublisherList(publisherList: MutableList<BookField>) {
+        _uiState.update {
+            it.copy(publisherList = publisherList)
+        }
+    }
+
+    private fun updateSagaList(sagaList: MutableList<BookField>) {
+        _uiState.update {
+            it.copy(sagaList = sagaList)
+        }
+    }
+
+    private fun updateAuthorListFiltered(authorList: MutableList<BookField>) {
+        _uiState.update {
+            it.copy(authorListFiltered = authorList.take(MAX_LENGTH_BOOKFIELD_LISTS).toMutableList())
+        }
+    }
+
+    private fun updateCategoryListFiltered(categoryList: MutableList<BookField>) {
+        _uiState.update {
+            it.copy(categoryListFiltered = categoryList.take(MAX_LENGTH_BOOKFIELD_LISTS).toMutableList())
+        }
+    }
+
+    private fun updatePublisherListFiltered(publisherList: MutableList<BookField>) {
+        _uiState.update {
+            it.copy(publisherListFiltered = publisherList.take(MAX_LENGTH_BOOKFIELD_LISTS).toMutableList())
+        }
+    }
+
+    private fun updateSagaListFiltered(sagaList: MutableList<BookField>) {
+        _uiState.update {
+            it.copy(sagaListFiltered = sagaList.take(MAX_LENGTH_BOOKFIELD_LISTS).toMutableList())
         }
     }
 

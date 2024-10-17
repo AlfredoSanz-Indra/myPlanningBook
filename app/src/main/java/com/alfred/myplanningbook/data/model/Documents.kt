@@ -51,4 +51,16 @@ object Documents {
     const val LIBRARYBOOK_READ: String = "READ"
     const val LIBRARYBOOK_HAVE: String = "HAVE"
     const val LIBRARYBOOK_READYEAR: String = "READYEAR"
+
+    const val LIBRARYAUTHORS_NAME: String = "NAME"
+    const val LIBRARYAUTHORS_USEREMAIL: String = "USER_EMAIL"
+
+    const val LIBRARYCATEGORY_NAME: String = "NAME"
+    const val LIBRARYCATEGORY_USEREMAIL: String = "USER_EMAIL"
+
+    const val LIBRARYPUBLISHER_NAME: String = "NAME"
+    const val LIBRARYPUBLISHER_USEREMAIL: String = "USER_EMAIL"
+
+    const val LIBRARYSAGA_NAME: String = "NAME"
+    const val LIBRARYSAGA_USEREMAIL: String = "USER_EMAIL"
 }
