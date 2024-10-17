@@ -11,4 +11,8 @@ data class SimpleLibraryResponse(val result: Boolean,
 
     var bookList: MutableList<Book>? = null
     var book: Book? = null
+    var authorList: MutableList<BookField>? = null
+    var categoryList: MutableList<BookField>? = null
+    var publisherList: MutableList<BookField>? = null
+    var sagaList: MutableList<BookField>? = null
 }

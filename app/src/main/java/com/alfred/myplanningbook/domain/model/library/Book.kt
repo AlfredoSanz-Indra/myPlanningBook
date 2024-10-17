@@ -16,6 +16,6 @@ data class Book(var id: String?,
                 val format: String?,
                 )
 /**
- * haveit -> { 0: false, 1: true }
- * read   -> { 0: false, 1: true }
+ * haveit -> { n: false, y: true }
+ * read   -> { n: false, y: true }
  */

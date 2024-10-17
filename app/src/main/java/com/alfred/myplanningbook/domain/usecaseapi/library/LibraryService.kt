@@ -14,4 +14,15 @@ interface LibraryService {
 
     suspend fun createBook(book: Book, userEmail: String): SimpleLibraryResponse
 
+    suspend fun saveAuthor(book: Book, userEmail: String): SimpleLibraryResponse
+
+    suspend fun saveCategory(book: Book, userEmail: String): SimpleLibraryResponse
+
+    suspend fun savePublisher(book: Book, userEmail: String): SimpleLibraryResponse
+
+    suspend fun saveSaga(book: Book, userEmail: String): SimpleLibraryResponse
+
+    suspend fun loadBookFields(userEmail: String): SimpleLibraryResponse
+
+    suspend fun getBookFieldList(userEmail: String, field: Int): SimpleLibraryResponse
 }
