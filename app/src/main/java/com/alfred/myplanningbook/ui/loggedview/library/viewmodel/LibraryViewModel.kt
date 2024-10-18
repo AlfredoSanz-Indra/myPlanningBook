@@ -364,7 +364,10 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
     }
 
     fun cloneBook() {
-
+        Klog.line("LibraryViewModel", "cloneBook", " is to clone book with changes")
+        createBook()
+        updateIsToUpdateBook(false)
+        Klog.line("LibraryViewModel", "cloneBook", "book cloned")
     }
 
     fun filterBooks() {

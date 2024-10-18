@@ -383,7 +383,7 @@ class BookMenuView {
         {
             Column(Modifier.padding(4.dp)) {
                 Text(
-                    text = "version 1.5.6", color = CommonViewComp.c_card_buttonOneContent, style = TextStyle(
+                    text = "version 1.5.7", color = CommonViewComp.c_card_buttonOneContent, style = TextStyle(
                         fontSize = 15.sp, background = CommonViewComp.c_snow
                     )
                 )
