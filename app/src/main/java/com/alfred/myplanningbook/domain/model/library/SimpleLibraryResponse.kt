@@ -5,8 +5,8 @@ package com.alfred.myplanningbook.domain.model.library
  * @time 2024
  */
 data class SimpleLibraryResponse(val result: Boolean,
-                                 val code: Int,
-                                 val message: String,
+                                 var code: Int,
+                                 var message: String,
                                  val errorcode: String) {
 
     var bookList: MutableList<Book>? = null

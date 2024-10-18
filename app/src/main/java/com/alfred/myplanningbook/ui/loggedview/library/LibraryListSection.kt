@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -86,11 +87,13 @@ fun LibraryListSection() {
 
 @Composable
 private fun LibraryListCardComponent(book: Book) {
+    Spacer(modifier = Modifier.height(5.dp))
+
     OutlinedCard(
         modifier = Modifier
-            .padding(vertical = 1.dp)
+            .padding(vertical = 0.dp)
             .fillMaxWidth()
-            .height(150.dp)
+            .height(130.dp)
             .wrapContentHeight(),
         shape = MaterialTheme.shapes.medium,
         colors = when(book.have) {
@@ -109,10 +112,10 @@ private fun LibraryListCardComponent(book: Book) {
         {
             LibraryListCardComponentRowName(book)
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(1.dp))
             LibraryListCardComponentRowDesc(book)
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(1.dp))
             LibraryListCardComponentRowSaga(book)
         } //Column
     } //card
