@@ -310,4 +310,48 @@ class LibraryServiceImpl(private val libraryRepository: LibraryRepository): Libr
         Klog.line("LibraryServiceImpl", "getBookFieldList", "result: $result")
         return result
     }
+
+    override suspend fun updateBook(book: Book, userEmail: String): SimpleLibraryResponse {
+        Klog.line("LibraryServiceImpl", "updateBook", "updating Book -> book: ${book.title}")
+        Klog.line("LibraryServiceImpl", "updateBook", "updating Book -> userEmail: $userEmail")
+
+        val respUpdateBook = updatingBook(book, userEmail)
+        if(respUpdateBook.result) {
+            val respSaveAuth = saveAuthor(book, userEmail)
+            val respSaveCategory = saveCategory(book, userEmail)
+            val respSavePublisher = savePublisher(book, userEmail)
+            val respSaveSaga = saveSaga(book, userEmail)
+            Klog.line("LibraryServiceImpl", "updateBook", "creating Book -> respSaveAuth: $respSaveAuth")
+            Klog.line("LibraryServiceImpl", "updateBook", "creating Book -> respSaveCategory: $respSaveCategory")
+            Klog.line("LibraryServiceImpl", "updateBook", "creating Book -> respSavePublisher: $respSavePublisher")
+            Klog.line("LibraryServiceImpl", "updateBook", "creating Book -> respSaveSaga: $respSaveSaga")
+        }
+
+        return respUpdateBook
+    }
+
+    private suspend fun updatingBook(book: Book, userEmail: String): SimpleLibraryResponse {
+        var result: SimpleLibraryResponse
+        Klog.line("LibraryServiceImpl", "updatingBook", "updating Book -> book: ${book.title}")
+
+        try {
+            val resp: SimpleDataLibraryResponse = libraryRepository.updateBook(book, userEmail)
+            Klog.linedbg("LibraryServiceImpl", "updatingBook", "resp: $resp")
+
+            if(!resp.result) {
+                result = SimpleLibraryResponse(false, resp.code, resp.message, "")
+            }
+            else {
+                result = SimpleLibraryResponse(true, 200, "got it", "")
+                result.book = resp.book
+            }
+        }
+        catch(e: Exception) {
+            Klog.line("LibraryServiceImpl", "updatingBook", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleLibraryResponse(false, 500, e.localizedMessage, "" )
+        }
+
+        Klog.linedbg("LibraryServiceImpl", "updatingBook", "result: $result")
+        return result
+    }
 }
