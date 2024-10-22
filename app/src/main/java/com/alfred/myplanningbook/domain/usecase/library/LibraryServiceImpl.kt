@@ -2,6 +2,7 @@ package com.alfred.myplanningbook.domain.usecase.library
 
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.data.model.SimpleDataLibraryResponse
+import com.alfred.myplanningbook.domain.model.SimpleResponse
 import com.alfred.myplanningbook.domain.model.library.Book
 import com.alfred.myplanningbook.domain.model.library.SimpleLibraryResponse
 import com.alfred.myplanningbook.domain.repositoryapi.library.LibraryRepository
@@ -371,6 +372,29 @@ class LibraryServiceImpl(private val libraryRepository: LibraryRepository): Libr
             result = SimpleLibraryResponse(false, 501, errMsg, "")
         }
 
+        return result
+    }
+
+    override suspend fun deleteBook(bookID: String): SimpleLibraryResponse {
+        var result: SimpleLibraryResponse
+        Klog.line("LibraryServiceImpl", "deleteBook", "updating Book -> book: $bookID")
+
+        try {
+            val resp = libraryRepository.deleteBook(bookID)
+
+            result = if (resp.result && resp.code == 200) {
+                SimpleLibraryResponse(true, 200, "got it", "")
+            }
+            else {
+                SimpleLibraryResponse(false, resp.code, resp.message, "")
+            }
+        }
+        catch(e: Exception) {
+            Klog.line("LibraryServiceImpl", "deleteBook", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleLibraryResponse(false, 500, e.localizedMessage, "")
+        }
+
+        Klog.linedbg("LibraryServiceImpl", "deleteBook", "result: $result")
         return result
     }
 }

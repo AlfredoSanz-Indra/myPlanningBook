@@ -27,4 +27,6 @@ interface LibraryService {
     suspend fun getBookFieldList(userEmail: String, field: Int): SimpleLibraryResponse
 
     suspend fun updateBook(book: Book, userEmail: String): SimpleLibraryResponse
+
+    suspend fun deleteBook(bookID: String): SimpleLibraryResponse
 }

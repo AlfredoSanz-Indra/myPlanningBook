@@ -29,5 +29,7 @@ interface LibraryRepository {
     suspend fun getSagaList(userEmail: String): SimpleDataLibraryResponse
 
     suspend fun updateBook(book: Book, userEmail: String): SimpleDataLibraryResponse
+
+    suspend fun deleteBook(bookID: String): SimpleDataLibraryResponse
 }
 

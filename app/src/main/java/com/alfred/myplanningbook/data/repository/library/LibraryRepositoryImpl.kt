@@ -5,6 +5,7 @@ import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.data.model.Collections
 import com.alfred.myplanningbook.data.model.Documents
 import com.alfred.myplanningbook.data.model.SimpleDataLibraryResponse
+import com.alfred.myplanningbook.data.model.SimpleDataResponse
 import com.alfred.myplanningbook.domain.model.library.Book
 import com.alfred.myplanningbook.domain.model.library.BookField
 import com.alfred.myplanningbook.domain.repositoryapi.library.LibraryRepository
@@ -572,6 +573,40 @@ class LibraryRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): Libr
         } //scope
 
         Klog.linedbg("LibraryRepositoryImpl", "updateBook", "result: $result")
+        return result
+    }
+
+    override suspend fun deleteBook(bookID: String): SimpleDataLibraryResponse {
+        var result = SimpleDataLibraryResponse(false, 404, "not found")
+        Klog.line("LibraryRepositoryImpl", "deleteBook", "bookID: $bookID")
+
+        withContext(ioDispatcher) {
+            val defer = async(ioDispatcher) {
+                val task: Task<Void> = FirebaseSession.db.collection(Collections.LIBRARYBOOKS)
+                    .document(bookID)
+                    .delete()
+                    .addOnSuccessListener {}
+
+                task.await()
+
+                var taskResp: SimpleDataLibraryResponse = if(task.isSuccessful) {
+                    Klog.line("LibraryRepositoryImpl", "deleteBook", "task is successfull")
+                    SimpleDataLibraryResponse(true, 200, "Book removed")
+                }
+                else {
+                    Klog.line("LibraryRepositoryImpl", "deleteBook", "error cause: ${task.exception?.cause}")
+                    Klog.line("LibraryRepositoryImpl", "deleteBook", "error message: ${task.exception?.message}")
+
+                    SimpleDataLibraryResponse(false, 400, "Removing Book failed.")
+                }
+
+                return@async taskResp
+            }
+
+            result = defer.await()
+        }//scope
+
+        Klog.line("TaskRepositoryImpl", "deleteBook", "result: $result")
         return result
     }
 }
