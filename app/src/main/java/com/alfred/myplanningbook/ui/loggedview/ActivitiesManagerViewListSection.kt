@@ -87,9 +87,11 @@ fun ActivitiesListSection() {
 
 @Composable
 private fun TaskListCardComponent(activityBook: ActivityBook) {
+    Spacer(modifier = Modifier.height(5.dp))
+
     OutlinedCard(
         modifier = Modifier
-            .padding(vertical = 1.dp)
+            .padding(vertical = 0.dp)
             .fillMaxWidth()
             .height(150.dp)
             .wrapContentHeight(),
@@ -119,7 +121,9 @@ private fun TaskListCardComponent(activityBook: ActivityBook) {
 @Composable
 private fun TaskListCardComponentRowName(activityBook: ActivityBook) {
     Row (
-        Modifier.fillMaxWidth(),
+        Modifier
+            .fillMaxWidth()
+            .height(40.dp),
         horizontalArrangement = Arrangement.SpaceBetween)
     {
         Column(modifier = Modifier
@@ -178,7 +182,9 @@ private fun TaskListCardComponentButtonDelete(activityBook: ActivityBook) {
 @Composable
 private fun TaskListCardComponentRowDesc(activityBook: ActivityBook) {
     Row (
-        Modifier.fillMaxWidth(),
+        Modifier
+            .fillMaxWidth()
+            .height(45.dp),
         horizontalArrangement = Arrangement.SpaceBetween)
     {
         Column(Modifier.padding(4.dp))
