@@ -85,14 +85,15 @@ fun TaskListSection() {
 @Composable
 private fun TaskListCardComponent(taskBook: TaskBook) {
     val viewModel: TasksManagerViewModel = koinViewModel()
-
     val isToday = viewModel.taskDateIsToday(taskBook)
+
+    Spacer(modifier = Modifier.height(5.dp))
 
     OutlinedCard(
         modifier = Modifier
-            .padding(vertical = 1.dp)
+            .padding(vertical = 0.dp)
             .fillMaxWidth()
-            .height(170.dp)
+            .height(150.dp)
             .wrapContentHeight(),
         shape = MaterialTheme.shapes.medium,
         colors = when(isToday) {
@@ -111,10 +112,10 @@ private fun TaskListCardComponent(taskBook: TaskBook) {
         {
             TaskListCardComponentRowName(taskBook)
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(1.dp))
             TaskListCardComponentRowDesc(taskBook)
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(1.dp))
             TaskListCardComponentRowDate(taskBook)
             TaskListCardComponentRowTime(taskBook)
         } //Column
@@ -185,7 +186,9 @@ private fun TaskListCardComponentButtonDelete(taskBook: TaskBook) {
 @Composable
 private fun TaskListCardComponentRowDesc(taskBook: TaskBook) {
     Row (
-        Modifier.fillMaxWidth(),
+        Modifier
+            .fillMaxWidth()
+            .height(50.dp),
         horizontalArrangement = Arrangement.SpaceBetween)
     {
         Column(Modifier.padding(4.dp))

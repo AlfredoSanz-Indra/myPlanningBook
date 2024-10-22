@@ -87,7 +87,7 @@ fun LibraryListSection() {
 
 @Composable
 private fun LibraryListCardComponent(book: Book) {
-    Spacer(modifier = Modifier.height(5.dp))
+    Spacer(modifier = Modifier.height(10.dp))
 
     OutlinedCard(
         modifier = Modifier
@@ -125,7 +125,7 @@ private fun LibraryListCardComponent(book: Book) {
 @Composable
 private fun LibraryListCardComponentRowName(book: Book) {
     Row (
-        Modifier.fillMaxWidth(),
+        Modifier.fillMaxWidth().height(60.dp),
         horizontalArrangement = Arrangement.SpaceBetween)
     {
         Column(modifier = Modifier
