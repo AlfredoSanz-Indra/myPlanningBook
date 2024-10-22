@@ -5,6 +5,7 @@ import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.data.model.Collections
 import com.alfred.myplanningbook.data.model.Documents
 import com.alfred.myplanningbook.data.model.SimpleDataLibraryResponse
+import com.alfred.myplanningbook.data.model.SimpleDataResponse
 import com.alfred.myplanningbook.domain.model.library.Book
 import com.alfred.myplanningbook.domain.model.library.BookField
 import com.alfred.myplanningbook.domain.repositoryapi.library.LibraryRepository
@@ -57,7 +58,6 @@ class LibraryRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): Libr
                     Klog.line("LibraryRepositoryImpl", "createBook", "task is successful")
                     bookResp = SimpleDataLibraryResponse(true, 200, "Book created - ${task.result.id}")
                     book.id = task.result.id
-                    Klog.line("LibraryRepositoryImpl", "createBook", "book: $book")
                     bookResp.book = book
                 }
                 else {
@@ -521,6 +521,92 @@ class LibraryRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): Libr
         } //scope
 
         Klog.line("LibraryRepositoryImpl", "getSagaList", "result: $result")
+        return result
+    }
+
+    override suspend fun updateBook(book: Book, userEmail: String): SimpleDataLibraryResponse {
+        var result = SimpleDataLibraryResponse(false, 100, "not created")
+        Klog.line("LibraryRepositoryImpl", "updateBook", "name: ${book.title}")
+
+        val bookData = hashMapOf(
+            Documents.LIBRARYBOOK_USEREMAIL to userEmail,
+            Documents.LIBRARYBOOK_TITLE to book.title,
+            Documents.LIBRARYBOOK_AUTHOR to book.authorName,
+            Documents.LIBRARYBOOK_SUBTITLE to book.subtitle,
+            Documents.LIBRARYBOOK_NOTES to book.notes,
+            Documents.LIBRARYBOOK_CATEGORY to book.categoryName,
+            Documents.LIBRARYBOOK_SAGA to book.sagaName,
+            Documents.LIBRARYBOOK_SAGA_INDEX to book.sagaIndex,
+            Documents.LIBRARYBOOK_PUBLISHER to book.editorial,
+            Documents.LIBRARYBOOK_FORMAT to book.format,
+            Documents.LIBRARYBOOK_LANGUAGE to book.language,
+            Documents.LIBRARYBOOK_READ to book.read,
+            Documents.LIBRARYBOOK_HAVE to book.have,
+            Documents.LIBRARYBOOK_READYEAR to book.readYear
+        )
+
+        withContext(ioDispatcher) {
+            val defer = async(ioDispatcher) {
+                val task: Task<Void> = FirebaseSession.db.collection(Collections.LIBRARYBOOKS).document(book.id!!)
+                    .set(bookData)
+                    .addOnSuccessListener {}
+
+                task.await()
+
+                var bookResp: SimpleDataLibraryResponse
+                if(task.isSuccessful) {
+                    Klog.line("LibraryRepositoryImpl", "updateBook", "task is successful")
+                    bookResp = SimpleDataLibraryResponse(true, 200, "Book updated - ${book.id}")
+                    bookResp.book = book
+                }
+                else {
+                    Klog.line("LibraryRepositoryImpl", "updateBook", "error cause: ${task.exception?.cause}")
+                    Klog.line("LibraryRepositoryImpl", "updateBook", "error message: ${task.exception?.message}")
+
+                    bookResp = SimpleDataLibraryResponse(false, 400, "Updating Book failed.")
+                }
+
+                return@async bookResp
+            }
+
+            result = defer.await()
+        } //scope
+
+        Klog.linedbg("LibraryRepositoryImpl", "updateBook", "result: $result")
+        return result
+    }
+
+    override suspend fun deleteBook(bookID: String): SimpleDataLibraryResponse {
+        var result = SimpleDataLibraryResponse(false, 404, "not found")
+        Klog.line("LibraryRepositoryImpl", "deleteBook", "bookID: $bookID")
+
+        withContext(ioDispatcher) {
+            val defer = async(ioDispatcher) {
+                val task: Task<Void> = FirebaseSession.db.collection(Collections.LIBRARYBOOKS)
+                    .document(bookID)
+                    .delete()
+                    .addOnSuccessListener {}
+
+                task.await()
+
+                var taskResp: SimpleDataLibraryResponse = if(task.isSuccessful) {
+                    Klog.line("LibraryRepositoryImpl", "deleteBook", "task is successfull")
+                    SimpleDataLibraryResponse(true, 200, "Book removed")
+                }
+                else {
+                    Klog.line("LibraryRepositoryImpl", "deleteBook", "error cause: ${task.exception?.cause}")
+                    Klog.line("LibraryRepositoryImpl", "deleteBook", "error message: ${task.exception?.message}")
+
+                    SimpleDataLibraryResponse(false, 400, "Removing Book failed.")
+                }
+
+                return@async taskResp
+            }
+
+            result = defer.await()
+        }//scope
+
+        Klog.line("TaskRepositoryImpl", "deleteBook", "result: $result")
         return result
     }
 }

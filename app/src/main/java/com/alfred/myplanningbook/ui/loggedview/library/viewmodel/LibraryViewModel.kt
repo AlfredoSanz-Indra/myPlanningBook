@@ -3,6 +3,7 @@ package com.alfred.myplanningbook.ui.loggedview.library.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alfred.myplanningbook.core.log.Klog
+import com.alfred.myplanningbook.core.util.StringUtils
 import com.alfred.myplanningbook.core.validators.ChainTextValidator
 import com.alfred.myplanningbook.core.validators.TextValidatorLength
 import com.alfred.myplanningbook.core.validators.TextValidatorOnlyNumber
@@ -74,6 +75,8 @@ data class LibraryUiState(
     var languagesMaster: MutableList<LMaster>? = mutableListOf(),
     var languagesMasterFilter: MutableList<LMaster>? = mutableListOf(),
     var bookToDelete: Book? = null,
+    var bookToUpdate: Book? = null,
+    var lastFilterBook: Book? = null,
     var bookList: MutableList<Book> = mutableListOf(),
     var authorList: MutableList<BookField> = mutableListOf(),
     var categoryList: MutableList<BookField> = mutableListOf(),
@@ -110,7 +113,11 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
         setMastersList()
         loadBookFields()
 
-        val filterBook = fillEmptyBookObj()
+        val filterBook = if(uiState.value.lastFilterBook != null)
+            uiState.value.lastFilterBook!!
+        else {
+            fillEmptyBookObj()
+        }
         updateIsDesiredBookListLoading(true)
         searchBooks(filterBook)
     }
@@ -185,6 +192,10 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
 
         clearForm()
         clearErrors()
+
+        if(!action) {
+            return
+        }
     }
 
     fun showUpdateBook(action: Boolean, book: Book?) {
@@ -194,6 +205,16 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
 
         clearForm()
         clearErrors()
+
+        if(!action) {
+            return
+        }
+        if(book == null) {
+            setGeneralError("Missing book data")
+            return
+        }
+
+        fillForm(book)
     }
 
     fun showFilterBooks(action: Boolean) {
@@ -203,6 +224,11 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
 
         clearForm()
         clearErrors()
+
+        if(!action) {
+            return
+        }
+
         updateBookFormat(uiState.value.formatsMasterFilter?.get(0)?.value ?: "No data")
         updateBookFormatCode(uiState.value.formatsMasterFilter?.get(0)?.name ?: "")
         updateBookLanguage(uiState.value.languagesMasterFilter?.get(0)?.value ?: "No data")
@@ -235,6 +261,32 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
         updateBookHave("n")
     }
 
+    private fun fillForm(book: Book) {
+        updateBookToUpdate(book)
+        updateBookAuthor(book?.authorName!!)
+        updateBookTitle(book.title!!)
+        updateBookSubtitle(book.subtitle ?: "")
+        updateBookCategory(book.categoryName ?: "")
+        updateBookPublisher(book.editorial ?: "")
+        updateBookSaga(book.sagaName ?: "")
+        updateBookSagaIndex(if(book.sagaIndex != 0) book.sagaIndex.toString() else "")
+        updateBookNotes(book.notes ?: "")
+        updateBookHave(book.have)
+        updateBookRead(book.read)
+        updateBookReadYear(book.readYear!!.toString())
+
+        val formatMaster = uiState.value.formatsMaster?.find { it -> it.name == book.format!! }
+        if(formatMaster != null) {
+            updateBookFormatCode(formatMaster.name)
+            updateBookFormat(formatMaster.value)
+        }
+        val langMaster = uiState.value.languagesMaster?.find { it -> it.name == book.language!! }
+        if(langMaster != null) {
+            updateBookLanguageCode(langMaster.name)
+            updateBookLanguage(langMaster.value)
+        }
+    }
+
     fun createBook() {
         Klog.line("LibraryViewModel", "createBook", "-")
         updateBookActionWorking(true)
@@ -261,23 +313,62 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
                 clearErrors()
                 clearState()
                 updateIsToAddBook(false)
+                Klog.linedbg("LibraryViewModel", "createBook", "is created")
+                updateBookActionWorking(false)
+                loadDesiredBookList()
             }
             else {
                 setGeneralError(" ${resp.code}: ${resp.message}")
+                updateBookActionWorking(false)
+                Klog.linedbg("LibraryViewModel", "createBook", "error creating book")
             }
-            updateBookActionWorking(false)
-            Klog.linedbg("LibraryViewModel", "createBook", "is created")
-
-            loadDesiredBookList()
         }
     }
 
     fun updateBook() {
+        Klog.line("LibraryViewModel", "updateBook", "-")
+        updateBookActionWorking(true)
 
+        if(!validateFields()) {
+            Klog.linedbg("LibraryViewModel", "updateBook", "Validation was unsuccessfully")
+            updateBookActionWorking(false)
+            return
+        }
+        Klog.linedbg("LibraryViewModel", "updateBook", "Validation has been success")
+
+        if(AppState.useremail.isNullOrBlank()) {
+            setGeneralError("You're not currently logged in")
+            updateBookActionWorking(false)
+            return
+        }
+
+        val book = fillBookObj()
+        book.id = uiState.value.bookToUpdate!!.id
+        Klog.line("LibraryViewModel", "updateBook", "**book: $book")
+        viewModelScope.launch {
+            val resp = libraryService.updateBook(book, AppState.useremail!!)
+            Klog.line("LibraryViewModel", "updateBook", "resp: $resp")
+            if(resp.result) {
+                clearErrors()
+                clearState()
+                updateIsToUpdateBook(false)
+                Klog.linedbg("LibraryViewModel", "updateBook", "is updated")
+                updateBookActionWorking(false)
+                loadDesiredBookList()
+            }
+            else {
+                setGeneralError(" ${resp.code}: ${resp.message}")
+                updateBookActionWorking(false)
+                Klog.linedbg("LibraryViewModel", "updateBook", "error updating book")
+            }
+        }
     }
 
     fun cloneBook() {
-
+        Klog.line("LibraryViewModel", "cloneBook", " is to clone book with changes")
+        createBook()
+        updateIsToUpdateBook(false)
+        Klog.line("LibraryViewModel", "cloneBook", "book cloned")
     }
 
     fun filterBooks() {
@@ -302,6 +393,7 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
         updateIsToFilterBooks(false)
         Klog.linedbg("LibraryViewModel", "filterBooks", "book->$book")
 
+        updateLastFilterBook(book)
         searchBooks(book)
     }
 
@@ -455,35 +547,22 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
 
     private fun fillBookObj(): Book {
         val result = Book(null,
-            capitalizeString(uiState.value.bookTitle),
+            StringUtils.capitalizeString(uiState.value.bookTitle),
             uiState.value.bookRead,
             if(uiState.value.bookReadYear.isNotBlank()) uiState.value.bookReadYear.toInt() else 1900,
             uiState.value.bookHave,
             uiState.value.bookSubtitle,
             uiState.value.bookNotes,
-            capitalizeString(uiState.value.bookAuthor),
-            capitalizeString(uiState.value.bookSaga),
+            StringUtils.capitalizeString(uiState.value.bookAuthor),
+            StringUtils.capitalizeString(uiState.value.bookSaga),
             if(uiState.value.bookSagaIndex.isNotBlank()) uiState.value.bookSagaIndex.toInt() else 0,
-            capitalizeString(uiState.value.bookPublisher),
-            capitalizeString(uiState.value.bookCategory),
+            StringUtils.capitalizeString(uiState.value.bookPublisher),
+            StringUtils.capitalizeString(uiState.value.bookCategory),
             uiState.value.bookLanguageCode,
             uiState.value.bookFormatCode
         )
 
         return result
-    }
-
-    private fun capitalizeString(words: String): String {
-        if(words.isNullOrBlank()) {
-            return words
-        }
-        val lowWords = words.lowercase()
-        val lowWordsList: MutableList<String> = lowWords.split(" ").toMutableList()
-        val firstWord = lowWordsList[0].replaceFirstChar { char ->
-            char.titlecase()
-        }
-        lowWordsList[0] = firstWord
-        return lowWordsList.joinToString(" ")
     }
 
     private fun fillEmptyBookObj(): Book {
@@ -525,16 +604,49 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
         }
     }
 
-    fun deleteBook() {
-        Klog.linedbg("LibraryViewModel", "deleteBook", "Book id: ${_uiState.value.bookToDelete?.id}")
-    }
-
     fun confirmDeleteBook(book: Book?, action: Boolean) {
         Klog.linedbg("LibraryViewModel","confirmDeleteBook", "click, book -> $book, action-> $action")
         clearErrors()
 
         updateBookToDelete(book)
         updateIsToDeleteBook(action)
+    }
+
+    fun deleteBook() {
+        Klog.linedbg("LibraryViewModel", "deleteBook", "Book id: ${_uiState.value.bookToDelete?.id}")
+        updateBookActionWorking(true)
+
+        if(_uiState.value.bookToDelete == null || _uiState.value.bookToDelete?.id.isNullOrEmpty()) {
+            Klog.linedbg("LibraryViewModel","deleteBook", "Book to delete is missing")
+            updateBookActionWorking(false)
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val resp = libraryService.deleteBook(_uiState.value.bookToDelete!!.id!!)
+                Klog.linedbg("LibraryViewModel", "deleteBook", "resp: $resp")
+                if (resp.result && resp.code == 200) {
+                    clearErrors()
+                    clearState()
+                    updateIsToDeleteBook(false)
+                    Klog.linedbg("LibraryViewModel", "deleteBook", "is deleted")
+                    updateBookActionWorking(false)
+                    loadDesiredBookList()
+                }
+                else {
+                    setGeneralError(" ${resp.code}: ${resp.message}")
+                    updateBookActionWorking(false)
+                }
+                Klog.linedbg("LibraryViewModel", "deleteBook", "Book has been deleted or not")
+            }
+            catch (e: Exception) {
+                Klog.stackTrace("LibraryViewModel", "deleteBook", e.stackTrace)
+                Klog.line("LibraryViewModel","deleteBook"," Exception localizedMessage: ${e.localizedMessage}")
+                setGeneralError(" 500: ${e.message}, Error deleting Book!")
+                updateBookActionWorking(false)
+            }
+        }//launch
     }
 
     private fun updateIsDesiredBookListLoaded(action: Boolean) {
@@ -577,6 +689,18 @@ class LibraryViewModel(private val libraryService: LibraryService): ViewModel() 
     private fun updateBookToDelete(book: Book?) {
         _uiState.update {
             it.copy(bookToDelete = book)
+        }
+    }
+
+    private fun updateBookToUpdate(book: Book?) {
+        _uiState.update {
+            it.copy(bookToUpdate = book)
+        }
+    }
+
+    private fun updateLastFilterBook(book: Book) {
+        _uiState.update {
+            it.copy(lastFilterBook = book)
         }
     }
 
