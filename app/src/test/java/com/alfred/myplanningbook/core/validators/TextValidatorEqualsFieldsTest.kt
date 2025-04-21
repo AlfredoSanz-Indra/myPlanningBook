@@ -17,13 +17,13 @@ class TextValidatorEqualsFieldsTest {
         assertEquals(valResult, ValidatorResult.Success)
 
         val chainTxt2 = ChainTextValidator(
-            TextValidatorEqualsFields("")
+            TextValidatorEqualsFields("hoy es mañana")
         )
-        val valResult2 = chainTxt2.validate("")
+        val valResult2 = chainTxt2.validate("hoy es mañana")
         assertEquals(valResult2, ValidatorResult.Success)
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     @DisplayName("validate -> InCorrect")
     fun validate_isNotCorrect() {
         val chainTxt = ChainTextValidator(
