@@ -10,6 +10,7 @@ import com.alfred.myplanningbook.AppScreens.PLANNINGBOOKMANAGER_SCREEN
 import com.alfred.myplanningbook.AppScreens.TASKS_SCREEN
 import com.alfred.myplanningbook.AppScreens.ACTIVITIES_SCREEN
 import com.alfred.myplanningbook.AppScreens.LIBRARY_SCREEN
+import com.alfred.myplanningbook.AppScreens.VEHICLES_SCREEN
 
 
 /**
@@ -27,6 +28,7 @@ private object AppScreens {
     const val TASKS_SCREEN = "tasks"
     const val ACTIVITIES_SCREEN = "activities"
     const val LIBRARY_SCREEN = "library"
+    const val VEHICLES_SCREEN = "vehicles"
 }
 
 object AppArgs {
@@ -44,6 +46,7 @@ object AppRoutes {
     const val TASKS_ROUTE = "$TASKS_SCREEN"
     const val ACTIVITIES_ROUTE = "$ACTIVITIES_SCREEN"
     const val LIBRARY_ROUTE = "$LIBRARY_SCREEN"
+    const val VEHICLES_ROUTE = "$VEHICLES_SCREEN"
 }
 
 class NavigationActions(private val navController: NavHostController) {
@@ -81,5 +84,9 @@ class NavigationActions(private val navController: NavHostController) {
 
     fun navigateToLibrary() {
         navController.navigate("$LIBRARY_SCREEN")
+    }
+
+    fun navigateToVehicles() {
+        navController.navigate("$VEHICLES_SCREEN")
     }
 }

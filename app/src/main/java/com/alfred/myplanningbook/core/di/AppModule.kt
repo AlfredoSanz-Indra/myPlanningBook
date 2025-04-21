@@ -41,6 +41,7 @@ import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import com.alfred.myplanningbook.ui.loggedview.library.viewmodel.LibraryViewModel
+import com.alfred.myplanningbook.ui.loggedview.vehicles.viewmodel.VehiclesViewModel
 
 val appModule = module {
 
@@ -111,4 +112,5 @@ val appModule = module {
     viewModelOf(::DialogTimePickerViewModel)
     viewModelOf(::ActivitiesManagerViewModel)
     viewModelOf(::LibraryViewModel)
+    viewModelOf(::VehiclesViewModel)
 }
