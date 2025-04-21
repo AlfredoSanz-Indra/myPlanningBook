@@ -16,6 +16,7 @@ import com.alfred.myplanningbook.AppRoutes.PLANNINGBOOKMANAGER_ROUTE
 import com.alfred.myplanningbook.AppRoutes.REGISTER_ROUTE
 import com.alfred.myplanningbook.AppRoutes.RESETPWD_ROUTE
 import com.alfred.myplanningbook.AppRoutes.TASKS_ROUTE
+import com.alfred.myplanningbook.AppRoutes.VEHICLES_ROUTE
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.ui.ViewsStore
 import com.alfred.myplanningbook.ui.view.LoginView
@@ -27,8 +28,6 @@ import com.alfred.myplanningbook.ui.view.ResetPwdView
  * @author Alfredo Sanz
  * @time 2023
  */
-
-
 @Composable
 fun NavigationGraph(
     modifier: Modifier = Modifier,
@@ -135,6 +134,10 @@ fun NavigationGraph(
                     Klog.line("NavigationController", "NavigationGraph", "navHost bookmenu go to Library!")
                     navActions.navigateToLibrary()
                 },
+                onVehicles = {
+                    Klog.line("NavigationController", "NavigationGraph", "navHost bookmenu go to Vehicles!")
+                    navActions.navigateToVehicles()
+                },
                 onLogout = {
                     Klog.line("NavigationController", "NavigationGraph", "navHost bookmenu go to logout!")
                     ViewsStore.cleanLoggedViews()
@@ -187,6 +190,18 @@ fun NavigationGraph(
                     navController.popBackStack()
                 })
         }
+
+        composable(VEHICLES_ROUTE,
+                   arguments = listOf()
+        ) {
+            val vehiclesView = ViewsStore.getVehiclesView()
+            vehiclesView.createView(
+                onBack = {
+                    Klog.line("NavigationController", "NavigationGraph", "navHost Vehicles go back!")
+                    navController.popBackStack()
+                })
+        }
+
     }
 }
 

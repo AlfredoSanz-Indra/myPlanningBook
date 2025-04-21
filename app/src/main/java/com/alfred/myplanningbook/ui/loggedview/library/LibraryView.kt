@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -18,12 +17,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alfred.myplanningbook.ui.common.CommonViewComp
+import com.alfred.myplanningbook.ui.common.ErrorGeneralField
+import com.alfred.myplanningbook.ui.common.ExecutingRowComponent
+import com.alfred.myplanningbook.ui.common.TitleViewComponent
 import com.alfred.myplanningbook.ui.loggedview.library.viewmodel.LibraryViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -32,7 +31,6 @@ import org.koin.androidx.compose.koinViewModel
  * @time 2024
  */
 class LibraryView {
-
 
     @Composable
     fun createView(onBack: () -> Unit) {
@@ -56,68 +54,23 @@ class LibraryView {
             ) {
                 if(uiState.isDesiredBookListLoading) {
                     Spacer(modifier = Modifier.height(30.dp))
-                    Loading()
+                    ExecutingRowComponent.show("Loading ...")
                 }
                 else {
                     Spacer(modifier = Modifier.height(30.dp))
-                    errorGeneralField()
-                    headerTitleLibrary()
+                    if(uiState.generalError) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        ErrorGeneralField.showRow(uiState.generalErrorText)
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+
+                    TitleViewComponent.show(uiState.headerMessage)
 
                     Spacer(modifier = Modifier.height(30.dp))
                     libraryBodySection(onBack)
                 }
             }
         }
-    }
-
-    @Composable
-    private fun Loading() {
-        CircularProgressIndicator()
-
-        Text(
-            "Loading ....",
-            color = CommonViewComp.c_card_buttonOneContent,
-            style = TextStyle(
-                fontSize = 20.sp,
-                background = CommonViewComp.c_snow
-            )
-        )
-    }
-
-    @Composable
-    private fun errorGeneralField() {
-        val viewModel: LibraryViewModel = koinViewModel()
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-        if(uiState.generalError) {
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Text(
-                uiState.generalErrorText,
-                color = Color.Red,
-                style = TextStyle(
-                    fontSize = 15.sp,
-                    color = Color.Red
-                )
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-        }
-    }
-
-    @Composable
-    private fun headerTitleLibrary() {
-        val viewModel: LibraryViewModel = koinViewModel()
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-        Text(
-            uiState.headerMessage,
-            color = CommonViewComp.c_card_buttonOneContent,
-            style = TextStyle(
-                fontSize = 20.sp,
-                background = CommonViewComp.c_snow
-            )
-        )
     }
 
     @Composable
