@@ -217,7 +217,7 @@ class BookMenuView {
             colors = CommonViewComp.getActionsButtonColour(),
             onClick = {
                 Klog.line("BookMenuView", "planningBooksButton", "planningBooks button clicked")
-                viewModel.planningbookView();
+                viewModel.planningbookView()
             }
         ) {
             Text("Manage Planning Book")
@@ -242,7 +242,7 @@ class BookMenuView {
             colors = CommonViewComp.getActionsButtonColour(),
             onClick = {
                 Klog.line("BookMenuView", "tasksButton", "tasks button clicked")
-                viewModel.tasksView();
+                viewModel.tasksView()
             }
         ) {
             Text("Tasks")
@@ -267,7 +267,7 @@ class BookMenuView {
             colors = CommonViewComp.getActionsButtonColour(),
             onClick = {
                 Klog.line("BookMenuView", "activitiesButton", "activities button clicked")
-                viewModel.activitiesView();
+                viewModel.activitiesView()
             }
         ) {
             Text("Activities")
@@ -292,7 +292,7 @@ class BookMenuView {
             colors = CommonViewComp.getMenuLibraryButtonColour(),
             onClick = {
                 Klog.line("BookMenuView", "LibraryButton", "library button clicked")
-                viewModel.libraryView();
+                viewModel.libraryView()
             }
         ) {
             Text("Library")
@@ -383,7 +383,7 @@ class BookMenuView {
         {
             Column(Modifier.padding(4.dp)) {
                 Text(
-                    text = "version 1.5.10", color = CommonViewComp.c_card_buttonOneContent, style = TextStyle(
+                    text = "version 1.5.11", color = CommonViewComp.c_card_buttonOneContent, style = TextStyle(
                         fontSize = 15.sp, background = CommonViewComp.c_snow
                     )
                 )

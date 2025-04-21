@@ -7,7 +7,6 @@ import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.core.log.KlogLevel
 import com.alfred.myplanningbook.core.resources.TheResources
 import com.alfred.myplanningbook.domain.LibraryState
-import com.alfred.myplanningbook.domain.model.SimpleResponse
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.GlobalContext.startKoin
@@ -15,7 +14,7 @@ import org.koin.core.context.GlobalContext.startKoin
 /**
  * @author Alfredo Sanz
  * @time 2023
- * @version 1.5.10
+ * @version 1.5.11
  */
 class MyPlanningBookApp  : Application() {
 
