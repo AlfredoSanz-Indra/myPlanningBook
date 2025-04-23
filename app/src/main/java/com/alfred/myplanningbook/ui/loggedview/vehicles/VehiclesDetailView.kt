@@ -20,19 +20,19 @@ import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.ui.common.ErrorGeneralField
 import com.alfred.myplanningbook.ui.common.ExecutingRowComponent
 import com.alfred.myplanningbook.ui.common.TitleViewComponent
-import com.alfred.myplanningbook.ui.loggedview.vehicles.sections.VehHeaderSection
-import com.alfred.myplanningbook.ui.loggedview.vehicles.sections.VehListSection
-import com.alfred.myplanningbook.ui.loggedview.vehicles.viewmodel.VehiclesViewModel
+import com.alfred.myplanningbook.ui.loggedview.vehicles.sections.VehDetailFormSection
+import com.alfred.myplanningbook.ui.loggedview.vehicles.sections.VehDetailHeaderSection
+import com.alfred.myplanningbook.ui.loggedview.vehicles.viewmodel.VehiclesDetailViewModel
 import org.koin.androidx.compose.koinViewModel
 
 /**
  * @author Alfredo Sanz
  * @time 2025
  */
-class VehiclesView {
+class VehiclesDetailView {
     @Composable
-    fun createView(onNew: () -> Unit, onBack: () -> Unit) {
-        val viewModel: VehiclesViewModel = koinViewModel()
+    fun createView(onBack: () -> Unit) {
+        val viewModel: VehiclesDetailViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
         val isInitialized = remember { mutableStateOf(false) }
@@ -43,33 +43,35 @@ class VehiclesView {
         MaterialTheme(colorScheme = MaterialTheme.colorScheme) {
             Column(
                 Modifier.background(color = MaterialTheme.colorScheme.surface)
-                        .fillMaxWidth()
-                        .fillMaxHeight(),
+                    .fillMaxWidth()
+                    .fillMaxHeight(),
                 Arrangement.Top,
                 Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(20.dp))
-                TitleViewComponent.show("Vehicles")
+                TitleViewComponent.show("New vehicle")
                 Spacer(modifier = Modifier.height(10.dp))
-                VehHeaderSection.show(onNew = {
-                                          Klog.line("onNew pressed *****")
-                                          onNew()
-                                      },
-                                      onBack = {
-                                          Klog.line("onBack pressed *****")
-                                          onBack()
-                                      })
+
+                VehDetailHeaderSection.show(onSave = {
+                                                Klog.line("Saving clicked!!!!**")
+                                                viewModel.save()
+                                            },
+                                            onCancel = {
+                                                onBack()
+                                            })
+
                 if(uiState.isVehiclesLoading) {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    ExecutingRowComponent.show("Loading ...")
+                    Spacer(modifier = Modifier.height(20.dp))
+                    ExecutingRowComponent.show("${uiState.vehiclesLoadingMessage} ...")
                     Spacer(modifier = Modifier.height(10.dp))
                 }
                 if(uiState.generalError) {
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
                     ErrorGeneralField.showRow(uiState.generalErrorText)
                     Spacer(modifier = Modifier.height(10.dp))
                 }
-                VehListSection.show()
+
+                VehDetailFormSection.show()
             }
         }
     }

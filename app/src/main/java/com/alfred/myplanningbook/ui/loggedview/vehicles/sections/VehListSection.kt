@@ -1,10 +1,16 @@
 package com.alfred.myplanningbook.ui.loggedview.vehicles.sections
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.alfred.myplanningbook.ui.loggedview.vehicles.viewmodel.VehiclesDetailUiState
+import com.alfred.myplanningbook.ui.loggedview.vehicles.viewmodel.VehiclesDetailViewModel
 import com.alfred.myplanningbook.ui.loggedview.vehicles.viewmodel.VehiclesUiState
+import com.alfred.myplanningbook.ui.loggedview.vehicles.viewmodel.VehiclesViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.koin.androidx.compose.koinViewModel
 
 /**
  * @author Alfredo Sanz
@@ -12,9 +18,9 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 object VehListSection {
     @Composable
-    fun showSection() {
-        val _uiState = MutableStateFlow(VehiclesUiState())
-        val uiState: StateFlow<VehiclesUiState> = _uiState.asStateFlow()
+    fun show() {
+        val viewModel: VehiclesViewModel = koinViewModel()
+        val uiState: State<VehiclesUiState> = viewModel.uiState.collectAsStateWithLifecycle()
 
 
     }
