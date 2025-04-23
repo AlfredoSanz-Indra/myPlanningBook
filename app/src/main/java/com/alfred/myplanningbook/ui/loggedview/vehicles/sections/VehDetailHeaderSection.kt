@@ -15,25 +15,25 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.common.MenuButtonComponent
-import com.alfred.myplanningbook.ui.loggedview.vehicles.viewmodel.VehiclesUiState
-import com.alfred.myplanningbook.ui.loggedview.vehicles.viewmodel.VehiclesViewModel
+import com.alfred.myplanningbook.ui.loggedview.vehicles.viewmodel.VehiclesDetailUiState
+import com.alfred.myplanningbook.ui.loggedview.vehicles.viewmodel.VehiclesDetailViewModel
 import org.koin.androidx.compose.koinViewModel
 
 /**
  * @author Alfredo Sanz
  * @time 2025
  */
-object VehHeaderSection {
+object VehDetailHeaderSection {
     @Composable
-    fun show(onNew: () -> Unit, onBack: () -> Unit) {
-        val viewModel: VehiclesViewModel = koinViewModel()
-        val uiState: State<VehiclesUiState> = viewModel.uiState.collectAsStateWithLifecycle()
+    fun show(onSave: () -> Unit, onCancel: () -> Unit) {
+        val viewModel: VehiclesDetailViewModel = koinViewModel()
+        val uiState: State<VehiclesDetailUiState> = viewModel.uiState.collectAsStateWithLifecycle()
 
-        rowActionButtons(onNew, onBack)
+        rowActionButtons(onSave, onCancel)
     }
 
     @Composable
-    private fun rowActionButtons(onNewVeh: () -> Unit, onBack: () -> Unit) {
+    private fun rowActionButtons(onSave: () -> Unit, onCancel: () -> Unit) {
         Row(
             Modifier.background(color = Color(0xFFf7f6ff))
                     .fillMaxWidth(),
@@ -41,16 +41,16 @@ object VehHeaderSection {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Spacer(Modifier.width(20.dp))
-            MenuButtonComponent.show("New",
+            MenuButtonComponent.show("Save",
                                      CommonViewComp.getActionsButtonColour(),
                                      onClick = {
-                                         onNewVeh()
+                                        onSave()
                                      } )
             Spacer(Modifier.width(20.dp))
-            MenuButtonComponent.show("Back",
+            MenuButtonComponent.show("Cancel",
                                      CommonViewComp.getSecondaryButtonColour(),
                                      onClick = {
-                                         onBack()
+                                         onCancel()
                                      } )
         }//Row
     }

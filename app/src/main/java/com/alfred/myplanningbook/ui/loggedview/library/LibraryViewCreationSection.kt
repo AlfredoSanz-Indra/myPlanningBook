@@ -254,18 +254,16 @@ private fun BookFormComponent_title() {
 
     Row {
         Column(
-            Modifier
-                .background(color = MaterialTheme.colorScheme.surface)
-                .fillMaxWidth(),
+            Modifier.background(color = MaterialTheme.colorScheme.surface)
+                    .fillMaxWidth(),
             Arrangement.Top,
             Alignment.CenterHorizontally
         ) {
             OutlinedTextField(
                 value = uiState.bookTitle,
-                modifier = Modifier
-                    .height(90.dp)
-                    .fillMaxSize(1f)
-                    .padding(10.dp),
+                modifier = Modifier.height(90.dp)
+                                   .fillMaxSize(1f)
+                                   .padding(10.dp),
                 onValueChange = { viewModel.updateBookTitle(it) },
                 label = { Text(text="Title")},
                 placeholder = { Text("Title (2-50)") },

@@ -24,11 +24,7 @@ class VehiclesViewModel: ViewModel() {
     fun init() {
         clearState()
         updateFlagInitial(false)
-
-
     }
-
-
 
     private fun updateFlagInitial(flag: Boolean) {
         _uiState.update {

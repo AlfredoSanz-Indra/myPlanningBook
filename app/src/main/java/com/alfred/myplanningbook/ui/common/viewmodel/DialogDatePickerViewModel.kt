@@ -28,7 +28,7 @@ class DialogDatePickerViewModel(): ViewModel() {
     }
 
     fun onConfirmationClick(date: Long?) {
-        Klog.line("DialogDatePickerViewModel", "onConfirmationClick", "date")
+        Klog.line("DialogDatePickerViewModel", "onConfirmationClick", "date: $date")
         updateDate(date)
     }
 

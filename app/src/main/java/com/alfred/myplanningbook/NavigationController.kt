@@ -16,6 +16,7 @@ import com.alfred.myplanningbook.AppRoutes.PLANNINGBOOKMANAGER_ROUTE
 import com.alfred.myplanningbook.AppRoutes.REGISTER_ROUTE
 import com.alfred.myplanningbook.AppRoutes.RESETPWD_ROUTE
 import com.alfred.myplanningbook.AppRoutes.TASKS_ROUTE
+import com.alfred.myplanningbook.AppRoutes.VEHICLES_DETAIL_ROUTE
 import com.alfred.myplanningbook.AppRoutes.VEHICLES_ROUTE
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.ui.ViewsStore
@@ -196,12 +197,26 @@ fun NavigationGraph(
         ) {
             val vehiclesView = ViewsStore.getVehiclesView()
             vehiclesView.createView(
+                onNew = {
+                    Klog.line("NavigationController", "NavigationGraph", "navHost vehiclesView go to VehiclesDetailView!")
+                    navActions.navigateToVehiclesDetail()
+                },
                 onBack = {
                     Klog.line("NavigationController", "NavigationGraph", "navHost Vehicles go back!")
                     navController.popBackStack()
                 })
         }
 
+        composable(VEHICLES_DETAIL_ROUTE,
+            arguments = listOf()
+        ) {
+            val vehiclesDetailView = ViewsStore.getVehiclesDetailView()
+            vehiclesDetailView.createView(
+                onBack = {
+                    Klog.line("NavigationController", "NavigationGraph", "navHost VehiclesDetail go back!")
+                    navController.popBackStack()
+                })
+        }
     }
 }
 
