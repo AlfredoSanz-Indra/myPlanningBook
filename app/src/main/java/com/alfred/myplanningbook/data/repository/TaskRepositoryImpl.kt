@@ -5,8 +5,6 @@ import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.data.model.Collections
 import com.alfred.myplanningbook.data.model.Documents
 import com.alfred.myplanningbook.data.model.SimpleDataResponse
-import com.alfred.myplanningbook.domain.model.Owner
-import com.alfred.myplanningbook.domain.model.PlanningBook
 import com.alfred.myplanningbook.domain.model.TaskBook
 import com.alfred.myplanningbook.domain.model.TaskBookNatureEnum
 import com.alfred.myplanningbook.domain.repositoryapi.TaskRepository

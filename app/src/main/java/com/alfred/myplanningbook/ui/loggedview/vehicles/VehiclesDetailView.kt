@@ -53,7 +53,6 @@ class VehiclesDetailView {
                 Spacer(modifier = Modifier.height(10.dp))
 
                 VehDetailHeaderSection.show(onSave = {
-                                                Klog.line("Saving clicked!!!!**")
                                                 viewModel.save()
                                             },
                                             onCancel = {
