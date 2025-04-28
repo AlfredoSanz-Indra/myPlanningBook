@@ -26,6 +26,7 @@ data class VehiclesDetailUiState(
     var generalError: Boolean = false,
     var generalErrorText: String = "",
     var flagInitial: Boolean = true,
+    var flagFinal: Boolean = false,
     var isVehiclesLoading: Boolean = false,
     var vehiclesLoadingMessage: String = "",
     var vehicleName: String = "",
@@ -70,6 +71,7 @@ class VehiclesDetailViewModel(private val vehicleService: VehicleService): ViewM
             if(resp.result) {
                 clearErrors()
                 clearState()
+                updateFlagFinal(true)
                 Klog.linedbg("VehiclesDetailViewModel", "save", "is created")
             }
             else {
@@ -196,6 +198,12 @@ class VehiclesDetailViewModel(private val vehicleService: VehicleService): ViewM
         }
     }
 
+    private fun updateFlagFinal(flag: Boolean) {
+        _uiState.update {
+            it.copy(flagFinal = flag)
+        }
+    }
+
     private fun updateGeneralError(state: Boolean, text: String) {
         _uiState.update {
             it.copy(generalError = state)
@@ -206,7 +214,8 @@ class VehiclesDetailViewModel(private val vehicleService: VehicleService): ViewM
     }
 
     private fun clearState() {
-        updateFlagInitial(false)
+        updateFlagInitial(true)
+        updateFlagFinal(false)
         updateIsVehiclesLoading(false)
         updateVehiclesLoadingMessage("")
         updateVehicleModel("")

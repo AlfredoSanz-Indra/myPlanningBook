@@ -21,10 +21,9 @@ import kotlinx.coroutines.withContext
 class VehicleRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): VehicleRepository {
 
     override suspend fun insertVehicle(entity: Vehicle, userEmail: String): SimpleDataVehicleResponse {
-        var result = SimpleDataVehicleResponse(false, 100, "fail inserting")
         Klog.line("VehicleRepositoryImpl", "insertVehicle", "name: ${entity.name}")
-        Klog.line("VehicleRepositoryImpl", "insertVehicle", "entity: $entity")
-        Klog.line("VehicleRepositoryImpl", "insertVehicle", "userEmail: $userEmail")
+        var result = SimpleDataVehicleResponse(false, 100, "fail inserting")
+
         val vehicleData = hashMapOf(
             Documents.VEHICLE_USEREMAIL to userEmail,
             Documents.VEHICLE_NAME to entity.name,
@@ -36,20 +35,14 @@ class VehicleRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): Vehi
             Documents.VEHICLE_ADQUISITION_DAY to entity.day
         )
         try {
-            Klog.line("VehicleRepositoryImpl", "insertVehicle", "mapped")
-            Klog.line("VehicleRepositoryImpl", "insertVehicle", " FirebaseSession.isUserSignedAndValidated(): ${FirebaseSession.isUserSignedAndValidated()}")
             withContext(ioDispatcher) {
                 val defer = async(ioDispatcher) {
                     val task: Task<DocumentReference?> = FirebaseSession.db.collection(Collections.VEHICLES)
                             .add(vehicleData)
-                            .addOnSuccessListener { Klog.line("VehicleRepositoryImpl", "insertVehicle", "addOnSuccessListener -> it: $it")}
-                            .addOnCompleteListener { Klog.line("VehicleRepositoryImpl", "insertVehicle", "addOnCompleteListener -> it: $it")  }
-                            .addOnCanceledListener { Klog.line("VehicleRepositoryImpl", "insertVehicle", "addOnCanceledListener -> ") }
+                            .addOnSuccessListener { Klog.line("VehicleRepositoryImpl", "insertVehicle", "addOnSuccessListener -> it: ${it.id}")}
                             .addOnFailureListener { e -> Klog.line("VehicleRepositoryImpl", "insertVehicle", "addOnFailureListener -> ERR -> $e") }
 
-                    Klog.line("VehicleRepositoryImpl", "insertVehicle", "task.isSuc: ${task.isSuccessful}")
                     task.await()
-                    Klog.line("VehicleRepositoryImpl", "insertVehicle", "after await")
                     var vehicleResp: SimpleDataVehicleResponse
                     if(task.isSuccessful) {
                         Klog.line("VehicleRepositoryImpl", "insertVehicle", "task is successful")
@@ -64,7 +57,7 @@ class VehicleRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): Vehi
                         vehicleResp = SimpleDataVehicleResponse(false, 400, "Inserting Vehicle failed.")
                     }
                     Klog.line("VehicleRepositoryImpl", "insertVehicle", "Before return")
-                    return@async result
+                    return@async vehicleResp
                 }
 
                 Klog.line("VehicleRepositoryImpl", "insertVehicle", "Before final await")

@@ -40,6 +40,10 @@ class VehiclesDetailView {
             viewModel.init()
         }
 
+        if(uiState.flagFinal) {
+            onBack()
+        }
+
         MaterialTheme(colorScheme = MaterialTheme.colorScheme) {
             Column(
                 Modifier.background(color = MaterialTheme.colorScheme.surface)

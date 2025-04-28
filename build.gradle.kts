@@ -9,3 +9,4 @@ plugins {
     id("org.jetbrains.kotlin.android") version "2.1.10" apply false
     id("org.jetbrains.kotlin.plugin.compose") version "2.1.10"
 }
+val sourceCompatibility by extra(JavaVersion.VERSION_17)
