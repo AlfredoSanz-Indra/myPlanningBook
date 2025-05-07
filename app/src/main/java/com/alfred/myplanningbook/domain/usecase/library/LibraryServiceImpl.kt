@@ -2,7 +2,6 @@ package com.alfred.myplanningbook.domain.usecase.library
 
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.data.model.SimpleDataLibraryResponse
-import com.alfred.myplanningbook.domain.model.SimpleResponse
 import com.alfred.myplanningbook.domain.model.library.Book
 import com.alfred.myplanningbook.domain.model.library.SimpleLibraryResponse
 import com.alfred.myplanningbook.domain.repositoryapi.library.LibraryRepository

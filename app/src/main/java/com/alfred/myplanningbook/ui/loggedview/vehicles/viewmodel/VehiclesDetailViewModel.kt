@@ -1,18 +1,22 @@
 package com.alfred.myplanningbook.ui.loggedview.vehicles.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.core.util.DateTimeUtils
 import com.alfred.myplanningbook.core.validators.ChainTextValidator
 import com.alfred.myplanningbook.core.validators.TextValidatorLength
 import com.alfred.myplanningbook.core.validators.TextValidatorOnlyNumber
 import com.alfred.myplanningbook.core.validators.ValidatorResult
+import com.alfred.myplanningbook.domain.AppState
 import com.alfred.myplanningbook.domain.model.vehicle.Vehicle
+import com.alfred.myplanningbook.domain.usecaseapi.vehicle.VehicleService
 import com.alfred.myplanningbook.ui.common.ValidationResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 /**
  * @author Alfredo Sanz
@@ -22,6 +26,7 @@ data class VehiclesDetailUiState(
     var generalError: Boolean = false,
     var generalErrorText: String = "",
     var flagInitial: Boolean = true,
+    var flagFinal: Boolean = false,
     var isVehiclesLoading: Boolean = false,
     var vehiclesLoadingMessage: String = "",
     var vehicleName: String = "",
@@ -30,7 +35,7 @@ data class VehiclesDetailUiState(
     var vehicleDate: Long = 0,
     var vehicleDateFormatted: String = "",
     )
-class VehiclesDetailViewModel: ViewModel() {
+class VehiclesDetailViewModel(private val vehicleService: VehicleService): ViewModel() {
     private val _uiState = MutableStateFlow(VehiclesDetailUiState())
     val uiState: StateFlow<VehiclesDetailUiState> = _uiState.asStateFlow()
 
@@ -59,6 +64,21 @@ class VehiclesDetailViewModel: ViewModel() {
         Klog.linedbg("VehiclesDetailViewModel", "save", "Validation has been success")
 
         val veh: Vehicle = fillObj()
+
+        viewModelScope.launch {
+            val resp = vehicleService.createVehicle(veh, AppState.useremail!!)
+            Klog.line("VehiclesDetailViewModel", "save", "resp: $resp")
+            if(resp.result) {
+                clearErrors()
+                clearState()
+                updateFlagFinal(true)
+            }
+            else {
+                updateGeneralError(true, "${resp.code}: ${resp.message}")
+                Klog.linedbg("VehiclesDetailViewModel", "save", "error saving new Vehicle")
+            }
+            updateIsVehiclesLoading(false)
+        }
     }
 
     private fun validateFields(): ValidationResult {
@@ -177,6 +197,12 @@ class VehiclesDetailViewModel: ViewModel() {
         }
     }
 
+    private fun updateFlagFinal(flag: Boolean) {
+        _uiState.update {
+            it.copy(flagFinal = flag)
+        }
+    }
+
     private fun updateGeneralError(state: Boolean, text: String) {
         _uiState.update {
             it.copy(generalError = state)
@@ -187,7 +213,8 @@ class VehiclesDetailViewModel: ViewModel() {
     }
 
     private fun clearState() {
-        updateFlagInitial(false)
+        updateFlagInitial(true)
+        updateFlagFinal(false)
         updateIsVehiclesLoading(false)
         updateVehiclesLoadingMessage("")
         updateVehicleModel("")
