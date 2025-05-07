@@ -13,11 +13,11 @@ android {
 
     defaultConfig {
         applicationId = "com.alfred.myPlanningbook"
-        minSdk = 35
+        minSdk = 34
         //noinspection EditedTargetSdkVersion
         targetSdk = 35
         versionCode = 1
-        versionName = "1.6.4"
+        versionName = "1.6.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

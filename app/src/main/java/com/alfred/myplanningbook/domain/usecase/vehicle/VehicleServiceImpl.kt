@@ -19,8 +19,6 @@ class VehicleServiceImpl(private val vehicleRepository: VehicleRepository): Vehi
 
         try {
             val resp: SimpleDataVehicleResponse = vehicleRepository.insertVehicle(vehicle, userEmail)
-            Klog.linedbg("VehicleServiceImpl", "createVehicle", "resp: $resp")
-
             if(!resp.result) {
                 result = SimpleVehicleResponse(false, resp.code, "error", resp.message)
             }
@@ -36,5 +34,29 @@ class VehicleServiceImpl(private val vehicleRepository: VehicleRepository): Vehi
 
         Klog.linedbg("VehicleServiceImpl", "createVehicle", "result: $result")
         return result
+    }
+
+    override suspend fun getVehicles(userEmail: String): SimpleVehicleResponse {
+        var result: SimpleVehicleResponse
+        Klog.line("VehicleServiceImpl", "getVehicles", "getting Vehicles")
+
+        try {
+            val resp: SimpleDataVehicleResponse = vehicleRepository.getVehicles(userEmail)
+            if(!resp.result) {
+                result = SimpleVehicleResponse(false, resp.code, "error", resp.message)
+            }
+            else {
+                result = SimpleVehicleResponse(true, resp.code, resp.message, "")
+                result.vehicleList = resp.vehicleList
+            }
+        }
+        catch(e: Exception) {
+            Klog.line("VehicleServiceImpl", "getVehicles", " Exception localizedMessage: ${e.localizedMessage}")
+            result = SimpleVehicleResponse(false, 500, e.localizedMessage, "")
+        }
+
+        Klog.linedbg("VehicleServiceImpl", "getVehicles", "result: $result")
+        return result
+
     }
 }

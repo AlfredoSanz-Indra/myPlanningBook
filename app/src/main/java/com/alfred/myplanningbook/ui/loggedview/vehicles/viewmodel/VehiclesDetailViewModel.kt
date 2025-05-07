@@ -72,7 +72,6 @@ class VehiclesDetailViewModel(private val vehicleService: VehicleService): ViewM
                 clearErrors()
                 clearState()
                 updateFlagFinal(true)
-                Klog.linedbg("VehiclesDetailViewModel", "save", "is created")
             }
             else {
                 updateGeneralError(true, "${resp.code}: ${resp.message}")

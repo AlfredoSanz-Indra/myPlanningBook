@@ -11,4 +11,6 @@ interface VehicleRepository {
 
     suspend fun insertVehicle(entity: Vehicle, userEmail: String): SimpleDataVehicleResponse
 
+    suspend fun getVehicles(userEmail: String): SimpleDataVehicleResponse
+
 }

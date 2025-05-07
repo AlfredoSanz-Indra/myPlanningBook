@@ -10,4 +10,6 @@ data class SimpleVehicleResponse(val result: Boolean,
                                  val errorcode: String) {
 
     var vehicle: Vehicle? = null
+    var vehicleList: List<Vehicle>? = null
+
 }

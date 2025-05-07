@@ -11,4 +11,7 @@ interface VehicleService {
 
     suspend fun createVehicle(vehicle: Vehicle, userEmail: String): SimpleVehicleResponse
 
+    suspend fun getVehicles(userEmail: String): SimpleVehicleResponse
+
+
 }

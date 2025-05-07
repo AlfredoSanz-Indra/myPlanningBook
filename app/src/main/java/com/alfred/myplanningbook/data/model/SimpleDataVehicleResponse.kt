@@ -10,4 +10,5 @@ data class SimpleDataVehicleResponse(val result: Boolean,
                                      val code: Int,
                                      var message: String) {
     var vehicle: Vehicle? = null
+    var vehicleList: MutableList<Vehicle>? = null
 }
