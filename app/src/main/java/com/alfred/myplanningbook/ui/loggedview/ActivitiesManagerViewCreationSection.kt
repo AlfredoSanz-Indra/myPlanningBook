@@ -25,7 +25,6 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alfred.myplanningbook.core.util.DateTimeUtils
+import com.alfred.myplanningbook.ui.common.ActionButtonComponent
 import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.common.DialogTimePickerView
 import com.alfred.myplanningbook.ui.loggedview.viewmodel.ActivitiesManagerViewModel
@@ -61,25 +61,19 @@ private fun activityFormActions() {
 
     Column {
         Row {
-            OutlinedButton(modifier = Modifier
-                .width(200.dp)
-                .height(70.dp),
-                colors = CommonViewComp.getActionsButtonColour(),
+            ActionButtonComponent.show("Save",
+                CommonViewComp.getActionsButtonColour(),
                 onClick = {
-                    viewModel.createActivity();
-                }) {
-                Text("Save")
-            }
+                    viewModel.createActivity()
+                }
+            )
 
-            OutlinedButton(modifier = Modifier
-                .width(200.dp)
-                .height(70.dp),
-                colors = CommonViewComp.getSecondaryButtonColour(),
+            ActionButtonComponent.show("Cancel",
+                CommonViewComp.getSecondaryButtonColour(),
                 onClick = {
-                    viewModel.showActivityFormSection();
-                }) {
-                Text("Cancel")
-            }
+                    viewModel.showActivityFormSection()
+                }
+            )
         }
     }
 }
@@ -101,24 +95,19 @@ private fun activityUpdateActions() {
             Alignment.CenterHorizontally) {
 
             Row {
-                OutlinedButton(modifier = Modifier
-                    .width(200.dp)
-                    .height(70.dp),
-                    colors = CommonViewComp.getActionsButtonColour(),
-                    onClick = {
-                        viewModel.updateActivity();
-                    }) {
-                    Text("Save")
-                }
+                ActionButtonComponent.show("Save",
+                                            CommonViewComp.getActionsButtonColour(),
+                                            onClick = {
+                                                viewModel.updateActivity()
+                                            }
+                )
 
-                OutlinedButton(
-                    modifier = Modifier.width(200.dp).height(70.dp),
-                    colors = CommonViewComp.getSecondaryButtonColour(),
-                    onClick = {
-                        viewModel.hideActivityUpdateSection();
-                    }) {
-                    Text("Cancel")
-                }
+                ActionButtonComponent.show("Cancel",
+                                            CommonViewComp.getSecondaryButtonColour(),
+                                            onClick = {
+                                                viewModel.hideActivityUpdateSection()
+                                            }
+                )
             }
         }
         Row {
@@ -126,14 +115,12 @@ private fun activityUpdateActions() {
                 Arrangement.Top,
                 Alignment.CenterHorizontally) {
 
-                OutlinedButton(
-                    modifier = Modifier.width(200.dp).height(70.dp),
-                    colors = CommonViewComp.getActionsButtonColour(),
-                    onClick = {
-                        viewModel.cloneActivity();
-                    }) {
-                    Text("Clone with changes")
-                }
+                ActionButtonComponent.show("Clone with changes",
+                                            CommonViewComp.getActionsButtonColour(),
+                                            onClick = {
+                                                viewModel.cloneActivity()
+                                            }
+                )
             }
         }
     }

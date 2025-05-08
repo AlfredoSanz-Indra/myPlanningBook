@@ -13,8 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.alfred.myplanningbook.ui.common.ActionButtonComponent
 import com.alfred.myplanningbook.ui.common.CommonViewComp
-import com.alfred.myplanningbook.ui.common.MenuButtonComponent
 import com.alfred.myplanningbook.ui.loggedview.vehicles.viewmodel.VehiclesUiState
 import com.alfred.myplanningbook.ui.loggedview.vehicles.viewmodel.VehiclesViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -41,13 +41,13 @@ object VehHeaderSection {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Spacer(Modifier.width(20.dp))
-            MenuButtonComponent.show("New",
+            ActionButtonComponent.show("New",
                                      CommonViewComp.getActionsButtonColour(),
                                      onClick = {
                                          onNewVeh()
                                      } )
-            Spacer(Modifier.width(20.dp))
-            MenuButtonComponent.show("Back",
+            Spacer(Modifier.width(5.dp))
+            ActionButtonComponent.show("Back",
                                      CommonViewComp.getSecondaryButtonColour(),
                                      onClick = {
                                          onBack()

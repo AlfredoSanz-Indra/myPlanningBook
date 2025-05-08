@@ -8,10 +8,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,6 +21,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.alfred.myplanningbook.ui.common.ActionButtonComponent
 import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.loggedview.viewmodel.ActivitiesManagerUiState
 import com.alfred.myplanningbook.ui.loggedview.viewmodel.ActivitiesManagerViewModel
@@ -141,27 +140,19 @@ class ActivitiesManagerView {
         val viewModel: ActivitiesManagerViewModel = koinViewModel()
 
         Row {
-            OutlinedButton(modifier = Modifier
-                .width(200.dp)
-                .height(70.dp),
-                colors = CommonViewComp.getActionsButtonColour(),
-                onClick = {
-                    viewModel.showActivityCreationSection(true);
-                }
-            ) {
-                Text("Create Activity")
-            }
+            ActionButtonComponent.show("Create Activity",
+                                        CommonViewComp.getActionsButtonColour(),
+                                        onClick = {
+                                            viewModel.showActivityCreationSection(true)
+                                        }
+            )
 
-            OutlinedButton(modifier = Modifier
-                .width(200.dp)
-                .height(70.dp),
-                colors = CommonViewComp.getSecondaryButtonColour(),
-                onClick = {
-                    onBack()
-                }
-            ) {
-                Text("Back")
-            }
+            ActionButtonComponent.show("Back",
+                                        CommonViewComp.getSecondaryButtonColour(),
+                                        onClick = {
+                                            onBack()
+                                        }
+            )
         }
     }
 }

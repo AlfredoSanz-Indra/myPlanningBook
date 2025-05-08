@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.waterfallPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.East
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -23,7 +25,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.alfred.myplanningbook.domain.model.vehicle.Vehicle
-import com.alfred.myplanningbook.ui.common.MenuButtonComponent
 
 /**
  * @author Alfredo Sanz
@@ -37,7 +38,7 @@ object VehicleCardComponent {
             modifier = Modifier
                 .padding(vertical = 3.dp)
                 .fillMaxWidth()
-                .height(125.dp)
+                .height(90.dp)
                 .waterfallPadding(),
             shape = MaterialTheme.shapes.medium,
             colors = CardDefaults.outlinedCardColors(
@@ -59,7 +60,7 @@ object VehicleCardComponent {
             {
                 Spacer(modifier = Modifier.height(5.dp))
                 rowOne(veh)
-                Spacer(modifier = Modifier.height(5.dp))
+                Spacer(modifier = Modifier.height(20.dp))
                 rowTwo(veh, onEdit, onDelete, onNavigate)
             } //Column
         } //card
@@ -70,7 +71,7 @@ object VehicleCardComponent {
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal= 20.dp, vertical = 2.dp),
+                .padding(horizontal = 20.dp, vertical = 2.dp),
         ) {
             Column(modifier = Modifier
                 .padding(horizontal = 0.dp)
@@ -78,7 +79,7 @@ object VehicleCardComponent {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.Start) {
                 Text(
-                    text = veh.name + veh.model,
+                    text = "${veh.name} ${veh.model}",
                     style = TextStyle(
                         color = Color.White
                     ),
@@ -95,40 +96,48 @@ object VehicleCardComponent {
         Row(
             Modifier
                 .fillMaxWidth(1f)
-                .padding(horizontal= 20.dp, vertical = 2.dp),
+                .padding(horizontal = 20.dp, vertical = 2.dp),
         ) {
-            Column(modifier = Modifier
-                .fillMaxWidth(1f),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.End) {
+            Column(modifier = Modifier.fillMaxWidth(0.7f),
+                   verticalArrangement = Arrangement.Center,
+                   horizontalAlignment = Alignment.Start) {
 
-                Row(horizontalArrangement = Arrangement.End,) {
+                Row(horizontalArrangement = Arrangement.Start,) {
                     VehicleCardButton.show("Edit",
                                             Color(0xFF35682d),
                                             90.dp,
                                             Icons.Filled.Edit,
                                             onClick = {
                                                 onEdit()
-                                            })
+                                            }
+                    )
 
                     Spacer(modifier = Modifier.width(5.dp))
                     VehicleCardButton.show("Del",
                                            Color(0xFFe51d2e),
                                            90.dp,
-                                           Icons.Filled.Edit,
+                                           Icons.Filled.Delete,
                                            onClick = {
                                                onDelete()
-                                           })
+                                           }
+                    )
 
+                }
+            }
+            Column(modifier = Modifier.fillMaxWidth(1f),
+                   verticalArrangement = Arrangement.Center,
+                   horizontalAlignment = Alignment.End) {
 
-                    Spacer(modifier = Modifier.width(5.dp))
-                    VehicleCardButton.show("History",
+                Row(horizontalArrangement = Arrangement.End,) {
+                    VehicleCardButton.show("Mant",
                                            Color(0xFF35682d),
-                                           90.dp,
-                                           Icons.Filled.Edit,
+                                           140.dp,
+                                           Icons.Filled.East,
                                            onClick = {
                                                onNavigate()
-                                           })
+                                           }
+                    )
+
                 }
             }
         }

@@ -13,12 +13,12 @@ import androidx.compose.ui.unit.dp
  * @author Alfredo Sanz
  * @time 2025
  */
-object MenuButtonComponent {
+object ActionButtonComponent {
     @Composable
     fun show(text: String, colors: ButtonColors, onClick: () -> Unit) {
         OutlinedButton(
-            modifier = Modifier.width(200.dp)
-                               .height(70.dp),
+            modifier = Modifier.width(180.dp)
+                .height(70.dp),
             colors = colors,
             onClick = {
                 onClick()
