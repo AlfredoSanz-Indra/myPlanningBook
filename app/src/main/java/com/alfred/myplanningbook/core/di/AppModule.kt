@@ -41,7 +41,7 @@ import com.alfred.myplanningbook.ui.view.viewmodel.ResetPwdViewModel
 import com.alfred.myplanningbook.ui.common.viewmodel.DialogDatePickerViewModel
 import com.alfred.myplanningbook.ui.common.viewmodel.DialogTimePickerViewModel
 import kotlinx.coroutines.Dispatchers
-import org.koin.androidx.viewmodel.dsl.viewModelOf
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import com.alfred.myplanningbook.ui.loggedview.library.viewmodel.LibraryViewModel

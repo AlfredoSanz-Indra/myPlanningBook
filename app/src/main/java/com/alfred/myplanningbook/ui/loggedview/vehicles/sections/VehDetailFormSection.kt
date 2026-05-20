@@ -53,7 +53,7 @@ object VehDetailFormSection {
 
                 TextWithDatePickerComponent.show(uiState.value.vehicleDateFormatted,
                                                  uiState.value.vehicleDate,
-                                                 "Acquisition date",
+                                                 "Date of acquisition",
                                                  onDateSelected = {
                                                      Klog.line("onDateSelected: it: $it")
                                                      viewModel.onDateSelected(it)
