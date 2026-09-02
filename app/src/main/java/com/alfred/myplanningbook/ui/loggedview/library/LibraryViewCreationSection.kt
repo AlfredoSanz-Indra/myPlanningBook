@@ -27,7 +27,6 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -47,9 +46,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.alfred.myplanningbook.domain.model.library.Book
 import com.alfred.myplanningbook.domain.model.library.BookField
 import com.alfred.myplanningbook.domain.model.library.LMaster
+import com.alfred.myplanningbook.ui.common.ActionButtonComponent
 import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.loggedview.library.viewmodel.LibraryViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -85,25 +84,19 @@ private fun LibraryCreationActions() {
 
     Column {
         Row {
-            OutlinedButton(modifier = Modifier
-                .width(200.dp)
-                .height(70.dp),
-                colors = CommonViewComp.getActionsButtonColour(),
-                onClick = {
-                    viewModel.createBook();
-                }) {
-                Text("Save")
-            }
+            ActionButtonComponent.show("Save",
+                                        CommonViewComp.getActionsButtonColour(),
+                                        onClick = {
+                                            viewModel.createBook()
+                                        }
+            )
 
-            OutlinedButton(modifier = Modifier
-                .width(200.dp)
-                .height(70.dp),
-                colors = CommonViewComp.getSecondaryButtonColour(),
-                onClick = {
-                    viewModel.showAddBook(false);
-                }) {
-                Text("Cancel")
-            }
+            ActionButtonComponent.show("Cancel",
+                                        CommonViewComp.getSecondaryButtonColour(),
+                                        onClick = {
+                                            viewModel.showAddBook(false)
+                                        }
+            )
         }
     }
 }
@@ -118,26 +111,19 @@ private fun LibraryUpdateActions() {
             Alignment.CenterHorizontally) {
 
             Row {
-                OutlinedButton(modifier = Modifier
-                    .width(200.dp)
-                    .height(70.dp),
-                    colors = CommonViewComp.getActionsButtonColour(),
+                ActionButtonComponent.show("Save",
+                    CommonViewComp.getActionsButtonColour(),
                     onClick = {
-                        viewModel.updateBook();
-                    }) {
-                    Text("Save")
-                }
+                        viewModel.updateBook()
+                    }
+                )
 
-                OutlinedButton(
-                    modifier = Modifier
-                        .width(200.dp)
-                        .height(70.dp),
-                    colors = CommonViewComp.getSecondaryButtonColour(),
+                ActionButtonComponent.show("Cancel",
+                    CommonViewComp.getSecondaryButtonColour(),
                     onClick = {
-                        viewModel.showUpdateBook( false, null);
-                    }) {
-                    Text("Cancel")
-                }
+                        viewModel.showUpdateBook( false, null)
+                    }
+                )
             }
         }
         Row {
@@ -145,16 +131,12 @@ private fun LibraryUpdateActions() {
                 Arrangement.Top,
                 Alignment.CenterHorizontally) {
 
-                OutlinedButton(
-                    modifier = Modifier
-                        .width(200.dp)
-                        .height(70.dp),
-                    colors = CommonViewComp.getActionsButtonColour(),
-                    onClick = {
-                        viewModel.cloneBook();
-                    }) {
-                    Text("Clone with changes")
-                }
+                ActionButtonComponent.show("Clone with changes",
+                                            CommonViewComp.getActionsButtonColour(),
+                                            onClick = {
+                                                viewModel.cloneBook()
+                                            }
+                )
             }
         }
     }
@@ -166,25 +148,19 @@ private fun LibraryFilterActions() {
 
     Column {
         Row {
-            OutlinedButton(modifier = Modifier
-                .width(200.dp)
-                .height(70.dp),
-                colors = CommonViewComp.getActionsButtonColour(),
-                onClick = {
-                    viewModel.filterBooks();
-                }) {
-                Text("Search")
-            }
+            ActionButtonComponent.show("Save",
+                                        CommonViewComp.getActionsButtonColour(),
+                                        onClick = {
+                                            viewModel.filterBooks()
+                                        }
+            )
 
-            OutlinedButton(modifier = Modifier
-                .width(200.dp)
-                .height(70.dp),
-                colors = CommonViewComp.getSecondaryButtonColour(),
-                onClick = {
-                    viewModel.showFilterBooks(false);
-                }) {
-                Text("Cancel")
-            }
+            ActionButtonComponent.show("Cancel",
+                                        CommonViewComp.getSecondaryButtonColour(),
+                                        onClick = {
+                                            viewModel.showFilterBooks(false)
+                                        }
+            )
         }
     }
 }
@@ -254,18 +230,16 @@ private fun BookFormComponent_title() {
 
     Row {
         Column(
-            Modifier
-                .background(color = MaterialTheme.colorScheme.surface)
-                .fillMaxWidth(),
+            Modifier.background(color = MaterialTheme.colorScheme.surface)
+                    .fillMaxWidth(),
             Arrangement.Top,
             Alignment.CenterHorizontally
         ) {
             OutlinedTextField(
                 value = uiState.bookTitle,
-                modifier = Modifier
-                    .height(90.dp)
-                    .fillMaxSize(1f)
-                    .padding(10.dp),
+                modifier = Modifier.height(90.dp)
+                                   .fillMaxSize(1f)
+                                   .padding(10.dp),
                 onValueChange = { viewModel.updateBookTitle(it) },
                 label = { Text(text="Title")},
                 placeholder = { Text("Title (2-50)") },

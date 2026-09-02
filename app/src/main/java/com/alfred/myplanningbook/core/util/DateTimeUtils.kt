@@ -1,8 +1,6 @@
 package com.alfred.myplanningbook.core.util
 
-import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -11,6 +9,7 @@ import kotlinx.datetime.format
 import kotlinx.datetime.format.DayOfWeekNames
 import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import kotlinx.datetime.format.byUnicodePattern
+import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
@@ -39,17 +38,17 @@ object DateTimeUtils {
     }
 
     private fun getLocalDateTime(date: Long): LocalDateTime {
-        val instant = Instant.fromEpochMilliseconds(date)
+        val instant = kotlin.time.Instant.fromEpochMilliseconds(date)
         return instant.toLocalDateTime(getLocalTimeZone())
     }
 
     private fun getCurrentLocalDate(): LocalDate {
-        val now: Instant = Clock.System.now()
+        val now: kotlin.time.Instant = kotlin.time.Clock.System.now()
         return now.toLocalDateTime(getLocalTimeZone()).date
     }
 
     private fun getCurrentLocalDateTime(): LocalDateTime {
-        val now: Instant = Clock.System.now()
+        val now: kotlin.time.Instant = kotlin.time.Clock.System.now()
         return now.toLocalDateTime(getLocalTimeZone())
     }
 
@@ -107,7 +106,7 @@ object DateTimeUtils {
         val todayInstant: kotlinx.datetime.Instant = todayDateTime.toInstant(getLocalTimeZone())
         val afterInstant: kotlinx.datetime.Instant = todayInstant.plus(days, DateTimeUnit.DAY, getLocalTimeZone())
         val dayAfter: LocalDateTime = afterInstant.toLocalDateTime(getLocalTimeZone())
-        return dayAfter.dayOfWeek.value
+        return dayAfter.dayOfWeek.isoDayNumber
     }
 
     fun currentHour(): Int {
@@ -117,7 +116,7 @@ object DateTimeUtils {
 
     fun currentHourPlusHours(hours: Long): Int {
         val today = getCurrentLocalDateTime()
-        val todayInstant: kotlinx.datetime.Instant = today.toInstant(getLocalTimeZone())
+        val todayInstant: kotlin.time.Instant = today.toInstant(getLocalTimeZone())
         val todayAfterInstant = todayInstant.plus(hours, DateTimeUnit.HOUR, getLocalTimeZone())
         val todayAfter: LocalDateTime = todayAfterInstant.toLocalDateTime(getLocalTimeZone())
         return todayAfter.hour

@@ -15,4 +15,5 @@ object Collections {
     const val LIBRARYCATEGORY: String = "LIBRARYCATEGORY"
     const val LIBRARYPUBLISHER: String = "LIBRARYPUBLISHER"
     const val LIBRARYSAGA: String = "LIBRARYSAGA"
+    const val VEHICLES: String = "VEHICLES"
 }

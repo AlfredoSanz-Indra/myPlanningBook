@@ -5,7 +5,6 @@ import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.data.model.Collections
 import com.alfred.myplanningbook.data.model.Documents
 import com.alfred.myplanningbook.data.model.SimpleDataLibraryResponse
-import com.alfred.myplanningbook.data.model.SimpleDataResponse
 import com.alfred.myplanningbook.domain.model.library.Book
 import com.alfred.myplanningbook.domain.model.library.BookField
 import com.alfred.myplanningbook.domain.repositoryapi.library.LibraryRepository

@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
@@ -21,7 +20,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alfred.myplanningbook.domain.model.TaskBookNatureEnum
+import com.alfred.myplanningbook.ui.common.ActionButtonComponent
 import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.common.DialogDatePickerView
 import com.alfred.myplanningbook.ui.common.DialogTimePickerView
@@ -55,25 +54,19 @@ private fun TaskCreationActions() {
 
     Column {
         Row {
-            OutlinedButton(modifier = Modifier
-                .width(200.dp)
-                .height(70.dp),
-                colors = CommonViewComp.getActionsButtonColour(),
-                onClick = {
-                    viewModel.createTask();
-                }) {
-                Text("Save")
-            }
+            ActionButtonComponent.show("Save",
+                                        CommonViewComp.getActionsButtonColour(),
+                                        onClick = {
+                                            viewModel.createTask()
+                                        }
+            )
 
-            OutlinedButton(modifier = Modifier
-                .width(200.dp)
-                .height(70.dp),
-                colors = CommonViewComp.getSecondaryButtonColour(),
-                onClick = {
-                    viewModel.showTaskCreationSection(false);
-                }) {
-                Text("Cancel")
-            }
+            ActionButtonComponent.show("Cancel",
+                                        CommonViewComp.getSecondaryButtonColour(),
+                                        onClick = {
+                                            viewModel.showTaskCreationSection(false)
+                                        }
+            )
         }
     }
 }
@@ -96,25 +89,19 @@ private fun TaskUpdateActions() {
             Alignment.CenterHorizontally) {
 
             Row {
-                OutlinedButton(modifier = Modifier
-                    .width(200.dp)
-                    .height(70.dp),
-                    colors = CommonViewComp.getActionsButtonColour(),
-                    onClick = {
-                        viewModel.updateTask();
-                    }) {
-                    Text("Save")
-                }
+                ActionButtonComponent.show("Save",
+                                            CommonViewComp.getActionsButtonColour(),
+                                            onClick = {
+                                                viewModel.updateTask()
+                                            }
+                )
 
-                OutlinedButton(modifier = Modifier
-                    .width(200.dp)
-                    .height(70.dp),
-                    colors = CommonViewComp.getSecondaryButtonColour(),
-                    onClick = {
-                        viewModel.hideTaskUpdateSection();
-                    }) {
-                    Text("Cancel")
-                }
+                ActionButtonComponent.show("Cancel",
+                                            CommonViewComp.getSecondaryButtonColour(),
+                                            onClick = {
+                                                viewModel.hideTaskUpdateSection()
+                                            }
+                )
             }
         }
         if(uiState.taskNature != TaskBookNatureEnum.IS_ACTIVITY) {
@@ -123,14 +110,12 @@ private fun TaskUpdateActions() {
                 Alignment.CenterHorizontally) {
 
                 Row {
-                    OutlinedButton(
-                        modifier = Modifier.width(200.dp).height(70.dp),
-                        colors = CommonViewComp.getActionsButtonColour(),
+                    ActionButtonComponent.show("Clone with changes",
+                        CommonViewComp.getActionsButtonColour(),
                         onClick = {
-                            viewModel.cloneTask();
-                        }) {
-                        Text("Clone with changes")
-                    }
+                            viewModel.cloneTask()
+                        }
+                    )
                 }
             }
         }

@@ -63,4 +63,18 @@ object Documents {
 
     const val LIBRARYSAGA_NAME: String = "NAME"
     const val LIBRARYSAGA_USEREMAIL: String = "USER_EMAIL"
+
+    const val VEHICLE_USEREMAIL: String = "USER_EMAIL"
+    const val VEHICLE_NAME: String = "NAME"
+    const val VEHICLE_MODEL: String = "MODEL"
+    const val VEHICLE_NOTES: String = "NOTES"
+    const val VEHICLE_ACQUISITION_DATE: String = "ADQUISITION_DATE"
+    const val VEHICLE_ACQUISITION_YEAR: String = "ADQUISITION_YEAR"
+    const val VEHICLE_ACQUISITION_MONTH: String = "ADQUISITION_MONTH"
+    const val VEHICLE_ACQUISITION_DAY: String = "ADQUISITION_DAY"
+
+    const val VEHICLE_SALE_DATE: String = "SALE_DATE"
+    const val VEHICLE_SALE_YEAR: String = "SALE_YEAR"
+    const val VEHICLE_SALE_MONTH: String = "SALE_MONTH"
+    const val VEHICLE_SALE_DAY: String = "SALE_DAY"
 }

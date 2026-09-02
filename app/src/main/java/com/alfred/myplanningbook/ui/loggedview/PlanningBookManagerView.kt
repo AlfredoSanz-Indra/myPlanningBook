@@ -39,8 +39,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.domain.model.PlanningBook
+import com.alfred.myplanningbook.ui.common.ActionButtonComponent
 import com.alfred.myplanningbook.ui.common.CommonViewComp
-import com.alfred.myplanningbook.ui.loggedview.viewmodel.BookMenuViewModel
 import com.alfred.myplanningbook.ui.loggedview.viewmodel.PlanningBookManagerUiState
 import com.alfred.myplanningbook.ui.loggedview.viewmodel.PlanningBookManagerViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -224,29 +224,19 @@ class PlanningBookManagerView {
         val viewModel: PlanningBookManagerViewModel = koinViewModel()
 
         Row {
-            OutlinedButton(modifier = Modifier
-                .width(200.dp)
-                .height(70.dp),
-                colors = CommonViewComp.getActionsButtonColour(),
-                onClick = {
-                    Klog.line("PlanningBookManagerView","headerActions","create Planning Book button clicked")
-                    viewModel.showPBCreationSection(true);
-                }
-            ) {
-                Text("Create Planning Book")
-            }
+            ActionButtonComponent.show("New Planning Book",
+                                        CommonViewComp.getActionsButtonColour(),
+                                        onClick = {
+                                            viewModel.showPBCreationSection(true)
+                                        }
+            )
 
-            OutlinedButton(modifier = Modifier
-                .width(200.dp)
-                .height(70.dp),
-                colors = CommonViewComp.getSecondaryButtonColour(),
-                onClick = {
-                    Klog.line("PlanningBookManagerView", "headerActions", "back Button clicked")
-                    onBack()
-                }
-            ) {
-                Text("Back")
-            }
+            ActionButtonComponent.show("Cancel",
+                                        CommonViewComp.getSecondaryButtonColour(),
+                                        onClick = {
+                                            onBack()
+                                        }
+            )
         }
     }
 
@@ -263,27 +253,19 @@ class PlanningBookManagerView {
 
         Column {
             Row {
-                OutlinedButton(modifier = Modifier
-                    .width(200.dp)
-                    .height(70.dp),
-                    colors = CommonViewComp.getActionsButtonColour(),
+                ActionButtonComponent.show("Save",
+                    CommonViewComp.getActionsButtonColour(),
                     onClick = {
-                        Klog.line("PlanningBookManagerView","PBCreationActions", "create Planning Book button clicked")
-                        viewModel.createPlanningBook();
-                    }) {
-                    Text("Create")
-                }
+                        viewModel.createPlanningBook()
+                    }
+                )
 
-                OutlinedButton(modifier = Modifier
-                    .width(200.dp)
-                    .height(70.dp),
-                    colors = CommonViewComp.getSecondaryButtonColour(),
+                ActionButtonComponent.show("Cancel",
+                    CommonViewComp.getSecondaryButtonColour(),
                     onClick = {
-                        Klog.line("PlanningBookManagerView","PBCreationActions","cancel create Planning Book button clicked")
-                        viewModel.showPBCreationSection(false);
-                    }) {
-                    Text("Cancel")
-                }
+                        viewModel.showPBCreationSection(false)
+                    }
+                )
             }
         }
     }

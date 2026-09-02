@@ -17,7 +17,7 @@
         android:roundIcon="@mipmap/ic_launcher_alf_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyPlanningBook"
-        tools:targetApi="31">
+        >
 
         <activity
             android:name="com.alfred.myplanningbook.ui.MainActivity"

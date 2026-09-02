@@ -22,6 +22,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.alfred.myplanningbook.ui.common.ActionButtonComponent
 import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.loggedview.viewmodel.TaskManagerUiState
 import com.alfred.myplanningbook.ui.loggedview.viewmodel.TasksManagerViewModel
@@ -138,27 +139,19 @@ class TasksManagerView {
         val viewModel: TasksManagerViewModel = koinViewModel()
 
         Row {
-            OutlinedButton(modifier = Modifier
-                .width(200.dp)
-                .height(70.dp),
-                colors = CommonViewComp.getActionsButtonColour(),
-                onClick = {
-                    viewModel.showTaskCreationSection(true);
-                }
-            ) {
-                Text("Create Task")
-            }
+            ActionButtonComponent.show("Create Task",
+                                        CommonViewComp.getActionsButtonColour(),
+                                        onClick = {
+                                            viewModel.showTaskCreationSection(true)
+                                        }
+            )
 
-            OutlinedButton(modifier = Modifier
-                .width(200.dp)
-                .height(70.dp),
-                colors = CommonViewComp.getSecondaryButtonColour(),
-                onClick = {
-                    onBack()
-                }
-            ) {
-                Text("Back")
-            }
+            ActionButtonComponent.show("Back",
+                                        CommonViewComp.getSecondaryButtonColour(),
+                                        onClick = {
+                                            onBack()
+                                        }
+            )
         }
     }
 }
