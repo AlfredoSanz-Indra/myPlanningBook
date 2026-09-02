@@ -6,7 +6,6 @@ import com.alfred.myplanningbook.ui.loggedview.BookMenuView
 import com.alfred.myplanningbook.ui.loggedview.PlanningBookManagerView
 import com.alfred.myplanningbook.ui.loggedview.TasksManagerView
 import com.alfred.myplanningbook.ui.loggedview.library.LibraryView
-import com.alfred.myplanningbook.ui.loggedview.vehicles.VehiclesDetailView
 import com.alfred.myplanningbook.ui.loggedview.vehicles.VehiclesView
 
 /**
@@ -21,7 +20,6 @@ object ViewsStore {
     private var activitiesManagerView: ActivitiesManagerView? = null
     private var libraryView: LibraryView? = null
     private var vehiclesView: VehiclesView? = null
-    private var vehiclesDetailView: VehiclesDetailView? = null
 
     fun getBookMenuView(): BookMenuView {
         if(bookMenuView == null) {
@@ -71,20 +69,11 @@ object ViewsStore {
         return vehiclesView!!
     }
 
-    fun getVehiclesDetailView(): VehiclesDetailView {
-        if(vehiclesDetailView == null) {
-            Klog.line("ViewsStore", "getVehiclesDetailView", "creating VehiclesDetailView!")
-            vehiclesDetailView = VehiclesDetailView()
-        }
-        return vehiclesDetailView!!
-    }
-
     fun cleanLoggedViews() {
         bookMenuView = null
         planningBookmangerView = null
         tasksManagerView = null
         activitiesManagerView = null
         vehiclesView = null
-        vehiclesDetailView = null
     }
 }

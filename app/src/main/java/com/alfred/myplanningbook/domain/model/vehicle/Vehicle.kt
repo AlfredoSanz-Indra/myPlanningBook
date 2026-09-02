@@ -11,4 +11,8 @@ data class Vehicle(var id: String?,
                    var dateInMillis: Long,
                    val year: Int,
                    val month: Int,
-                   val day: Int, )
+                   val day: Int,
+                   var saleDateInMillis: Long? = null,
+                   var saleYear: Int? = null,
+                   var saleMonth: Int? = null,
+                   var saleDay: Int? = null)
