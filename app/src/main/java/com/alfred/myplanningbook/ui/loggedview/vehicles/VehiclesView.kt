@@ -16,12 +16,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.ui.common.ErrorGeneralField
 import com.alfred.myplanningbook.ui.common.ExecutingRowComponent
 import com.alfred.myplanningbook.ui.common.TitleViewComponent
 import com.alfred.myplanningbook.ui.loggedview.vehicles.sections.VehHeaderSection
 import com.alfred.myplanningbook.ui.loggedview.vehicles.sections.VehListSection
+import com.alfred.myplanningbook.ui.loggedview.vehicles.sections.VehicleAddSection
 import com.alfred.myplanningbook.ui.loggedview.vehicles.viewmodel.VehiclesViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -31,7 +31,7 @@ import org.koin.androidx.compose.koinViewModel
  */
 class VehiclesView {
     @Composable
-    fun createView(onNew: () -> Unit, onBack: () -> Unit) {
+    fun createView(onBack: () -> Unit) {
         val viewModel: VehiclesViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -48,29 +48,47 @@ class VehiclesView {
                 Arrangement.Top,
                 Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(20.dp))
-                TitleViewComponent.show("Vehicles")
-                Spacer(modifier = Modifier.height(10.dp))
-                VehHeaderSection.show(onNew = {
-                                          Klog.line("onNew pressed *****")
-                                          onNew()
-                                      },
-                                      onBack = {
-                                          Klog.line("onBack pressed *****")
-                                          onBack()
-                                      })
                 if(uiState.isVehiclesLoading) {
                     Spacer(modifier = Modifier.height(10.dp))
                     ExecutingRowComponent.show("Loading ...")
                     Spacer(modifier = Modifier.height(10.dp))
                 }
-                if(uiState.generalError) {
+                else {
+                    Spacer(modifier = Modifier.height(20.dp))
+                    if (uiState.generalError) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        ErrorGeneralField.showRow(uiState.generalErrorText)
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+
+                    TitleViewComponent.show(uiState.headerMessage)
                     Spacer(modifier = Modifier.height(10.dp))
-                    ErrorGeneralField.showRow(uiState.generalErrorText)
-                    Spacer(modifier = Modifier.height(10.dp))
+
+                    VehicleBodySection( onNew = {
+                        viewModel.showNewVehicle(true)
+                    }, onBack)
                 }
-                VehListSection.show()
             }
+        }
+    }
+
+    @Composable
+    private fun VehicleBodySection(onNew: () -> Unit, onBack: () -> Unit) {
+        val viewModel: VehiclesViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+        if(uiState.isToAddVehicle) {
+            VehicleAddSection()
+        }
+        else if(uiState.isToUpdateVehicle) {
+           // LibraryUpdateSection()
+        }
+        else if(uiState.isToMaintainVehicle) {
+            //LibraryFilterSection()
+        }
+        else {
+            VehHeaderSection.show(onNew = { onNew() }, onBack = { onBack() })
+            VehListSection.show()
         }
     }
 }

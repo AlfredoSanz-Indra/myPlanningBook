@@ -33,7 +33,7 @@ import com.alfred.myplanningbook.domain.model.vehicle.Vehicle
 object VehicleCardComponent {
 
     @Composable
-    fun show(veh: Vehicle, onEdit: () -> Unit, onDelete: () -> Unit, onNavigate: () -> Unit) {
+    fun show(veh: Vehicle, onEdit: () -> Unit,  onNavigate: () -> Unit) {
         OutlinedCard(
             modifier = Modifier
                 .padding(vertical = 3.dp)
@@ -61,7 +61,7 @@ object VehicleCardComponent {
                 Spacer(modifier = Modifier.height(5.dp))
                 rowOne(veh)
                 Spacer(modifier = Modifier.height(20.dp))
-                rowTwo(veh, onEdit, onDelete, onNavigate)
+                rowTwo(veh, onEdit, onNavigate)
             } //Column
         } //card
     }
@@ -91,7 +91,6 @@ object VehicleCardComponent {
     @Composable
     private fun rowTwo(veh: Vehicle,
                        onEdit: () -> Unit,
-                       onDelete: () -> Unit,
                        onNavigate: () -> Unit) {
         Row(
             Modifier
@@ -111,17 +110,6 @@ object VehicleCardComponent {
                                                 onEdit()
                                             }
                     )
-
-                    Spacer(modifier = Modifier.width(5.dp))
-                    VehicleCardButton.show("Del",
-                                           Color(0xFFe51d2e),
-                                           90.dp,
-                                           Icons.Filled.Delete,
-                                           onClick = {
-                                               onDelete()
-                                           }
-                    )
-
                 }
             }
             Column(modifier = Modifier.fillMaxWidth(1f),
@@ -129,7 +117,7 @@ object VehicleCardComponent {
                    horizontalAlignment = Alignment.End) {
 
                 Row(horizontalArrangement = Arrangement.End,) {
-                    VehicleCardButton.show("Mant",
+                    VehicleCardButton.show("Maint list",
                                            Color(0xFF35682d),
                                            140.dp,
                                            Icons.Filled.East,

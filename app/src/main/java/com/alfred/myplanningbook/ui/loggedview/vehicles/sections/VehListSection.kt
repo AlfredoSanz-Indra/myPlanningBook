@@ -53,9 +53,6 @@ object VehListSection {
                                                   onEdit = {
                                                       Klog.line("VehListSection -> onEdit")
                                                   },
-                                                  onDelete = {
-                                                      Klog.line("VehListSection -> onDelete")
-                                                  },
                                                   onNavigate = {
                                                       Klog.line("VehListSection -> onNavigate")
                                                   })

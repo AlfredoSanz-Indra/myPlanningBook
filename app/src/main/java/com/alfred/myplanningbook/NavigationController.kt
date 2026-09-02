@@ -197,23 +197,8 @@ fun NavigationGraph(
         ) {
             val vehiclesView = ViewsStore.getVehiclesView()
             vehiclesView.createView(
-                onNew = {
-                    Klog.line("NavigationController", "NavigationGraph", "navHost vehiclesView go to VehiclesDetailView!")
-                    navActions.navigateToVehiclesDetail()
-                },
                 onBack = {
                     Klog.line("NavigationController", "NavigationGraph", "navHost Vehicles go back!")
-                    navController.popBackStack()
-                })
-        }
-
-        composable(VEHICLES_DETAIL_ROUTE,
-            arguments = listOf()
-        ) {
-            val vehiclesDetailView = ViewsStore.getVehiclesDetailView()
-            vehiclesDetailView.createView(
-                onBack = {
-                    Klog.line("NavigationController", "NavigationGraph", "navHost VehiclesDetail go back!")
                     navController.popBackStack()
                 })
         }

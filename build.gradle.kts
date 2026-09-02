@@ -1,12 +1,12 @@
 buildscript {
     dependencies {
-        classpath("com.google.gms:google-services:4.4.2")
+        classpath("com.google.gms:google-services:4.5.0")
     }
 }
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-    id("com.android.application") version "8.10.0" apply false
-    id("org.jetbrains.kotlin.android") version "2.1.10" apply false
-    id("org.jetbrains.kotlin.plugin.compose") version "2.1.10"
+    id("com.android.application") version "9.4.0" apply false
+    id("org.jetbrains.kotlin.android") version "2.4.10" apply false
+    id("org.jetbrains.kotlin.plugin.compose") version "2.4.10"
 }
 val sourceCompatibility by extra(JavaVersion.VERSION_17)

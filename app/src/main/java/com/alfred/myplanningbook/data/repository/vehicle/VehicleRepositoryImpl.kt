@@ -18,111 +18,101 @@ import kotlinx.coroutines.withContext
 
 /**
  * @author Alfredo Sanz
- * @time 2025
+ * @time 2026
  */
 class VehicleRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): VehicleRepository {
 
-    override suspend fun insertVehicle(entity: Vehicle, userEmail: String): SimpleDataVehicleResponse {
+    override suspend fun insertVehicle(entity: Vehicle, userEmail: String): SimpleDataVehicleResponse = withContext(ioDispatcher) {
         Klog.line("VehicleRepositoryImpl", "insertVehicle", "name: ${entity.name}")
-        var result = SimpleDataVehicleResponse(false, 100, "fail inserting")
 
         val vehicleData = hashMapOf(
             Documents.VEHICLE_USEREMAIL to userEmail,
             Documents.VEHICLE_NAME to entity.name,
             Documents.VEHICLE_MODEL to entity.model,
             Documents.VEHICLE_NOTES to entity.notes,
-            Documents.VEHICLE_ADQUISITION_DATE to entity.dateInMillis,
-            Documents.VEHICLE_ADQUISITION_YEAR to entity.year,
-            Documents.VEHICLE_ADQUISITION_MONTH to entity.month,
-            Documents.VEHICLE_ADQUISITION_DAY to entity.day
+            Documents.VEHICLE_ACQUISITION_DATE to entity.dateInMillis,
+            Documents.VEHICLE_ACQUISITION_YEAR to entity.year,
+            Documents.VEHICLE_ACQUISITION_MONTH to entity.month,
+            Documents.VEHICLE_ACQUISITION_DAY to entity.day,
+            Documents.VEHICLE_SALE_DATE to entity.saleDateInMillis,
+            Documents.VEHICLE_SALE_YEAR to entity.saleYear,
+            Documents.VEHICLE_SALE_MONTH to entity.saleMonth,
+            Documents.VEHICLE_SALE_DAY to entity.saleDay
         )
+
         try {
-            withContext(ioDispatcher) {
-                val defer = async(ioDispatcher) {
-                    val task: Task<DocumentReference?> = FirebaseSession.db.collection(Collections.VEHICLES)
-                            .add(vehicleData)
-                            .addOnSuccessListener { Klog.line("VehicleRepositoryImpl", "insertVehicle", "addOnSuccessListener -> it: ${it.id}")}
-                            .addOnFailureListener { e -> Klog.line("VehicleRepositoryImpl", "insertVehicle", "addOnFailureListener -> ERR -> $e") }
+            val docRef = FirebaseSession.db.collection(Collections.VEHICLES)
+                .add(vehicleData)
+                .await()
 
-                    task.await()
-                    var vehicleResp: SimpleDataVehicleResponse
-                    if(task.isSuccessful) {
-                        Klog.line("VehicleRepositoryImpl", "insertVehicle", "task is successful")
-                        vehicleResp = SimpleDataVehicleResponse(true, 200, "inserted vehicle")
-                        entity.id = task.result?.id
-                        vehicleResp.vehicle = entity
-                    }
-                    else {
-                        Klog.line("VehicleRepositoryImpl", "insertVehicle", "error cause: ${task.exception?.cause}")
-                        Klog.line("VehicleRepositoryImpl", "insertVehicle", "error message: ${task.exception?.message}")
+            Klog.line("VehicleRepositoryImpl", "insertVehicle", "Successfully inserted -> ID: ${docRef.id}")
 
-                        vehicleResp = SimpleDataVehicleResponse(false, 400, "Inserting Vehicle failed.")
-                    }
-                    return@async vehicleResp
-                }
-                result = defer.await()
-            } //scope
+            entity.id = docRef.id
+            SimpleDataVehicleResponse(true, 200, "inserted vehicle").apply {
+                this.vehicle = entity
+            }
+
+        } catch (e: Exception) {
+            Klog.line("VehicleRepositoryImpl", "insertVehicle", "Error: ${e.message}")
+            SimpleDataVehicleResponse(false, 400, "Inserting Vehicle failed: ${e.message}")
         }
-        catch(err: Exception) {
-            Klog.line("Error: $err")
-        }
-
-        Klog.linedbg("VehicleRepositoryImpl", "insertVehicle", "result: $result")
-        return result
     }
 
-    override suspend fun getVehicles(userEmail: String): SimpleDataVehicleResponse {
-        Klog.line("VehicleRepositoryImpl", "getVehicles", "userEmail: ${userEmail}")
-        var result = SimpleDataVehicleResponse(false, 100, "fail getting vehicles")
+    override suspend fun getVehicles(userEmail: String): SimpleDataVehicleResponse = withContext(ioDispatcher) {
+        Klog.line("VehicleRepositoryImpl", "getVehicles", "userEmail: $userEmail")
 
-        withContext(ioDispatcher) {
-            val defer = async(ioDispatcher) {
-                val task: Task<QuerySnapshot?> =
-                    FirebaseSession.db.collection(Collections.VEHICLES)
-                        .whereEqualTo(Documents.VEHICLE_USEREMAIL, userEmail)
-                        .orderBy(Documents.VEHICLE_ADQUISITION_DATE, Direction.DESCENDING)
-                        .get()
-                        .addOnSuccessListener {
-                            Klog.line("VehicleRepositoryImpl", "getVehicles", "addOnSuccessListener -> it: ${it.documents.size}")
-                        }
-                        .addOnFailureListener {
-                            e -> Klog.line("VehicleRepositoryImpl", "getVehicles","addOnFailureListener -> ERR -> $e")
-                        }
+        try {
+            val snapshot = FirebaseSession.db.collection(Collections.VEHICLES)
+                .whereEqualTo(Documents.VEHICLE_USEREMAIL, userEmail)
+                .orderBy(Documents.VEHICLE_ACQUISITION_DATE, Direction.DESCENDING)
+                .get()
+                .await()
 
-                task.await()
+            Klog.line("VehicleRepositoryImpl", "getVehicles", "snapshot -> $snapshot")
 
-                var vehicleResp: SimpleDataVehicleResponse
-                if (task.isSuccessful) {
-                    Klog.line("VehicleRepositoryImpl", "getVehicles", "task is successful")
-                    var vehicleList: MutableList<Vehicle> = mutableListOf()
-                    for (document in task.result?.documents!!) {
-                        var vehicleFound: Vehicle = Vehicle(
-                            document.id,
-                            document.get(Documents.VEHICLE_NAME) as String,
-                            document.get(Documents.VEHICLE_MODEL) as String,
-                            document.get(Documents.VEHICLE_NOTES) as String?,
-                            document.get(Documents.VEHICLE_ADQUISITION_DATE) as Long,
-                            (document.get(Documents.VEHICLE_ADQUISITION_YEAR) as Long).toInt(),
-                            (document.get(Documents.VEHICLE_ADQUISITION_MONTH) as Long).toInt(),
-                            (document.get(Documents.VEHICLE_ADQUISITION_DAY) as Long).toInt()
-                        )
-                        vehicleList.add(vehicleFound)
-                    }
-                    vehicleResp = SimpleDataVehicleResponse(true, 200, "Vehicles obtained - ${task.result?.documents?.size}")
-                    vehicleResp.vehicleList = vehicleList
-
-                } else {
-                    Klog.line("VehicleRepositoryImpl", "getVehicles", "error cause: ${task.exception?.cause}")
-                    Klog.line("VehicleRepositoryImpl", "getVehicles", "error message: ${task.exception?.message}")
-
-                    vehicleResp = SimpleDataVehicleResponse(false, 400, "Getting Vehicles failed.")
-                }
-                return@async vehicleResp
+            val vehicleList = snapshot.documents.map { document ->
+                Vehicle(
+                    id = document.id,
+                    name = document.get(Documents.VEHICLE_NAME) as String,
+                    model = document.get(Documents.VEHICLE_MODEL) as String?,
+                    notes = document.get(Documents.VEHICLE_NOTES) as String?,
+                    dateInMillis = document.get(Documents.VEHICLE_ACQUISITION_DATE) as Long,
+                    year = (document.get(Documents.VEHICLE_ACQUISITION_YEAR) as Long).toInt(),
+                    month = (document.get(Documents.VEHICLE_ACQUISITION_MONTH) as Long).toInt(),
+                    day = (document.get(Documents.VEHICLE_ACQUISITION_DAY) as Long).toInt(),
+                    saleDateInMillis = document.get(Documents.VEHICLE_SALE_DATE) as Long?,
+                    saleYear = (document.get(Documents.VEHICLE_SALE_YEAR) as Long?)?.toInt(),
+                    saleMonth = (document.get(Documents.VEHICLE_SALE_MONTH) as Long?)?.toInt(),
+                    saleDay = (document.get(Documents.VEHICLE_SALE_DAY) as Long?)?.toInt()
+                )
             }
-            result = defer.await()
-        } //scope
+            Klog.line("VehicleRepositoryImpl", "getVehicles", "vehicleList -> $vehicleList")
 
-        Klog.line("VehicleRepositoryImpl", "getVehicles", "result: $result")
-        return result
+            SimpleDataVehicleResponse(true, 200, "Vehicles obtained - ${vehicleList.size}").apply {
+                this.vehicleList = vehicleList.toMutableList()
+            }
+        }
+        catch (e: Exception) {
+            Klog.line("VehicleRepositoryImpl", "getVehicles", "Error: ${e.message}")
+            SimpleDataVehicleResponse(false, 400, "Getting Vehicles failed: ${e.message}")
+        }
+    }
+
+    override suspend fun deleteVehicle(userEmail: String, vehicleId: String): SimpleDataVehicleResponse = withContext(ioDispatcher) {
+        Klog.line("VehicleRepositoryImpl", "deleteVehicle", "vehicleId: $vehicleId")
+
+        try {
+            FirebaseSession.db.collection(Collections.VEHICLES)
+                .document(vehicleId)
+                .delete()
+                .await()
+
+            Klog.line("VehicleRepositoryImpl", "deleteVehicle", "Successfully deleted -> ID: $vehicleId")
+            SimpleDataVehicleResponse(true, 200, "Vehicle deleted")
+        }
+        catch (e: Exception) {
+            Klog.line("VehicleRepositoryImpl", "deleteVehicle", "Error: ${e.message}")
+            SimpleDataVehicleResponse(false, 400, "Deleting Vehicle failed: ${e.message}")
+        }
     }
 }

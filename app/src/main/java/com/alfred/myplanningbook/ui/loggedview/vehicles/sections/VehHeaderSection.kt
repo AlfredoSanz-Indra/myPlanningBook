@@ -26,9 +26,6 @@ import org.koin.androidx.compose.koinViewModel
 object VehHeaderSection {
     @Composable
     fun show(onNew: () -> Unit, onBack: () -> Unit) {
-        val viewModel: VehiclesViewModel = koinViewModel()
-        val uiState: State<VehiclesUiState> = viewModel.uiState.collectAsStateWithLifecycle()
-
         rowActionButtons(onNew, onBack)
     }
 
