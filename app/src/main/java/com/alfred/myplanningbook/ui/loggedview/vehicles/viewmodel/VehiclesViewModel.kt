@@ -30,7 +30,6 @@ data class VehiclesUiState(
     var isVehiclesLoading: Boolean = false,
     var headerMessage: String = "",
     var vehicleList: MutableList<Vehicle> = mutableStateListOf(),
-    var flagFinal: Boolean = false,
     var isToAddVehicle: Boolean = false,
     var isToUpdateVehicle: Boolean = false,
     var isToMaintainVehicle: Boolean = false,
@@ -64,26 +63,26 @@ class VehiclesViewModel(private val vehicleService: VehicleService): ViewModel()
     private fun loadVehicles() {
         Klog.line("VehiclesViewModel", "loadVehicles", "loadVehicles")
 
-        updateIsVehicleLoading(true)
-
         viewModelScope.launch {
-            val resp = vehicleService.getVehicles(AppState.useremail!!)
-            Klog.line("VehiclesViewModel", "loadVehicles", "resp: $resp")
-            if(resp.result) {
-                updateVehicleList(resp.vehicleList ?: mutableStateListOf())
-                clearErrors()
-                clearState()
-                uiState.value.vehicleList.forEach { Klog.line("VehiclesViewModel", "loadVehicles", "vehicle: $it") }
-
-            }
-            else {
-                Klog.line("VehiclesViewModel", "loadVehicles", "error")
-                setGeneralError(" ${resp.code}: ${resp.message}")
-                updateVehicleList(mutableStateListOf())
-            }
+            updateIsVehicleLoading(true)
+            fetchVehiclesFromService()
             updateIsVehicleLoading(false)
         }
+    }
 
+    private suspend fun fetchVehiclesFromService() {
+        Klog.line("VehiclesViewModel", "fetchVehiclesFromService", "fetching vehicles")
+
+        val resp = vehicleService.getVehicles(AppState.useremail!!)
+        if(resp.result) {
+            updateVehicleList(resp.vehicleList ?: mutableStateListOf())
+            uiState.value.vehicleList.forEach { Klog.line("VehiclesViewModel", "loadVehicles", "vehicle: $it") }
+            clearErrors()
+        }
+        else {
+            Klog.line("VehiclesViewModel", "fetchVehiclesFromService", "error")
+            setGeneralError("${resp.code}: ${resp.message}")
+        }
     }
 
     fun showNewVehicle(action: Boolean) {
@@ -118,16 +117,15 @@ class VehiclesViewModel(private val vehicleService: VehicleService): ViewModel()
         Klog.linedbg("VehiclesViewModel", "saveNewVehicle", "Validation has been success")
 
         val veh: Vehicle = fillObj()
+        Klog.linedbg("VehiclesViewModel", "saveNewVehicle", "Veh: $veh")
 
         viewModelScope.launch {
             val resp = vehicleService.createVehicle(veh, AppState.useremail!!)
             Klog.line("VehiclesViewModel", "saveNewVehicle", "resp: $resp")
             if(resp.result) {
                 clearErrors()
+                fetchVehiclesFromService()
                 clearState()
-                updateFlagFinal(true)
-
-
             }
             else {
                 updateGeneralError(true, "${resp.code}: ${resp.message}")
@@ -297,12 +295,6 @@ class VehiclesViewModel(private val vehicleService: VehicleService): ViewModel()
         }
     }
 
-    private fun updateFlagFinal(flag: Boolean) {
-        _uiState.update {
-            it.copy(flagFinal = flag)
-        }
-    }
-
     private fun setGeneralError(txt: String) {
         _uiState.update {
             it.copy(generalError = true)
@@ -346,7 +338,6 @@ class VehiclesViewModel(private val vehicleService: VehicleService): ViewModel()
     }
 
     private fun clearState() {
-        updateFlagFinal(false)
         updateHeaderMessage("Vehicles")
         updateIsVehiclesLoading(false)
         updateVehiclesLoadingMessage("")
