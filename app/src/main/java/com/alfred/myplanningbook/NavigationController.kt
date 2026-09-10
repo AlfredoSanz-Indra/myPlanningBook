@@ -16,7 +16,6 @@ import com.alfred.myplanningbook.AppRoutes.PLANNINGBOOKMANAGER_ROUTE
 import com.alfred.myplanningbook.AppRoutes.REGISTER_ROUTE
 import com.alfred.myplanningbook.AppRoutes.RESETPWD_ROUTE
 import com.alfred.myplanningbook.AppRoutes.TASKS_ROUTE
-import com.alfred.myplanningbook.AppRoutes.VEHICLES_DETAIL_ROUTE
 import com.alfred.myplanningbook.AppRoutes.VEHICLES_ROUTE
 import com.alfred.myplanningbook.core.log.Klog
 import com.alfred.myplanningbook.ui.ViewsStore

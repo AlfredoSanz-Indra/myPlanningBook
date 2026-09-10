@@ -5,13 +5,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.waterfallPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.East
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.CardDefaults
@@ -38,7 +37,7 @@ object VehicleCardComponent {
             modifier = Modifier
                 .padding(vertical = 3.dp)
                 .fillMaxWidth()
-                .height(90.dp)
+                .height(120.dp)
                 .waterfallPadding(),
             shape = MaterialTheme.shapes.medium,
             colors = CardDefaults.outlinedCardColors(
@@ -54,14 +53,16 @@ object VehicleCardComponent {
             Column(
                 Modifier
                     .padding(0.dp)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .fillMaxHeight(),
                 horizontalAlignment = Alignment.Start
             )
             {
                 Spacer(modifier = Modifier.height(5.dp))
                 rowOne(veh)
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.weight(1f))
                 rowTwo(veh, onEdit, onNavigate)
+                Spacer(modifier = Modifier.height(10.dp))
             } //Column
         } //card
     }
