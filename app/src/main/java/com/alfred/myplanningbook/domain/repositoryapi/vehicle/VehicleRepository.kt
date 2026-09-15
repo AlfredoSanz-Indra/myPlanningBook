@@ -15,4 +15,7 @@ interface VehicleRepository {
 
     suspend fun deleteVehicle(userEmail: String, vehicleId: String): SimpleDataVehicleResponse
 
+    suspend fun getVehicle(userEmail: String, vehicleId: String): SimpleDataVehicleResponse
+
+    suspend fun updateVehicle(entity: Vehicle, userEmail: String): SimpleDataVehicleResponse
 }

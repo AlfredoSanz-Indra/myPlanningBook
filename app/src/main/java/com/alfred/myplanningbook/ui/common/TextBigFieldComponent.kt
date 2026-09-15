@@ -27,7 +27,8 @@ import androidx.compose.ui.unit.dp
 object TextBigFieldComponent {
     @Composable
     fun show(initialText: String, maxLines: Int, label: String, onValueChange: (String) -> Unit) {
-        var textValue by remember { mutableStateOf(TextFieldValue(initialText, TextRange(3, 100))) }
+        var textValue by remember { mutableStateOf(TextFieldValue(initialText,
+                                                TextRange(initialText.length))) }
 
         OutlinedTextField(
             value = textValue,

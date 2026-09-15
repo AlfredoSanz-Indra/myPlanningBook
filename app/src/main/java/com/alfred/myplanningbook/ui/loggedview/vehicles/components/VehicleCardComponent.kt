@@ -33,6 +33,8 @@ object VehicleCardComponent {
 
     @Composable
     fun show(veh: Vehicle, onEdit: () -> Unit,  onNavigate: () -> Unit) {
+        val cardColor = if (veh.terminationDateInMillis == null) Color(0xFF22D0A2) else Color(0xFF930b0c)
+
         OutlinedCard(
             modifier = Modifier
                 .padding(vertical = 3.dp)
@@ -41,7 +43,7 @@ object VehicleCardComponent {
                 .waterfallPadding(),
             shape = MaterialTheme.shapes.medium,
             colors = CardDefaults.outlinedCardColors(
-                containerColor = Color(0xFF8387c2),
+                containerColor = cardColor,
                 contentColor = Color.Black,
                 disabledContainerColor = Color.Blue,
                 disabledContentColor = Color.Black

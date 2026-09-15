@@ -52,6 +52,7 @@ object VehListSection {
                         VehicleCardComponent.show(vehicle,
                                                   onEdit = {
                                                       Klog.line("VehListSection -> onEdit")
+                                                      viewModel.showUpdateVehicle(true, vehicle)
                                                   },
                                                   onNavigate = {
                                                       Klog.line("VehListSection -> onNavigate")

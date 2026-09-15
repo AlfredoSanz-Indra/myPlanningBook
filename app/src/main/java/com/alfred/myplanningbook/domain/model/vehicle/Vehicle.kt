@@ -12,7 +12,7 @@ data class Vehicle(var id: String?,
                    val year: Int,
                    val month: Int,
                    val day: Int,
-                   var saleDateInMillis: Long? = null,
-                   var saleYear: Int? = null,
-                   var saleMonth: Int? = null,
-                   var saleDay: Int? = null)
+                   var terminationDateInMillis: Long? = null,
+                   var terminationYear: Int? = null,
+                   var terminationMonth: Int? = null,
+                   var terminationDay: Int? = null)
