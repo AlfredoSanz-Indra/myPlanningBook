@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.apply
 
 /**
  * @author Alfredo Sanz
@@ -39,9 +40,9 @@ data class VehiclesUiState(
     var vehicleNotes: String = "",
     var vehicleDate: Long = 0,
     var vehicleDateFormatted: String = "",
-    var vehicleSaleDate: Long? = null,
-    var vehicleSaleDateFormatted: String? = null,
-
+    var vehicleTerminationDate: Long? = null,
+    var vehicleTerminationDateFormatted: String? = null,
+    var vehicleToUpdate: Vehicle? = null
     )
 class VehiclesViewModel(private val vehicleService: VehicleService): ViewModel() {
     private val _uiState = MutableStateFlow(VehiclesUiState())
@@ -86,13 +87,13 @@ class VehiclesViewModel(private val vehicleService: VehicleService): ViewModel()
     }
 
     fun showNewVehicle(action: Boolean) {
-        Klog.line("VehiclesViewModel", "showNewVehicle", "showing new vehicle section")
+        Klog.line("VehiclesViewModel", "showNewVehicle", "showing new vehicle section action: $action")
 
         this.updateIsToAddVehicle(action)
         clearForm()
         clearErrors()
 
-        val msg = if(action) "-> Adding Vehicle" else ""
+        val msg = if(action) "-> Add" else ""
         updateHeaderMessage("Vehicles $msg")
 
         updateVehicleDate(DateTimeUtils.currentDate())
@@ -133,6 +134,112 @@ class VehiclesViewModel(private val vehicleService: VehicleService): ViewModel()
             }
             updateIsVehiclesLoading(false)
         }
+    }
+
+    fun showUpdateVehicle(action: Boolean, vehicle: Vehicle? = null) {
+        Klog.linedbg("VehiclesViewModel", "showUpdateVehicle", "updating vehicle action: $action")
+
+        this.updateIsToUpdateVehicle(action)
+        clearForm()
+        clearErrors()
+
+        val msg = if(action) "-> Edit" else ""
+        updateHeaderMessage("Vehicles $msg")
+
+        if(action && vehicle != null) {
+            getVehicle(vehicle)
+        }
+    }
+
+    private fun getVehicle(vehicle: Vehicle) {
+        Klog.linedbg("VehiclesViewModel", "getVehicle", "getting vehicle: $vehicle")
+
+        val vehicleId = vehicle.id
+        if (vehicleId.isNullOrBlank()) {
+            Klog.line("VehiclesViewModel", "getVehicle", "Error: vehicle.id is null or blank")
+            updateGeneralError(true, "Error: The vehicle ID is missing.")
+            return
+        }
+
+        updateIsVehiclesLoading(true)
+
+        viewModelScope.launch {
+            val resp = vehicleService.getVehicle(AppState.useremail!!, vehicle.id!!)
+            Klog.line("VehiclesViewModel", "getVehicle", "resp: $resp")
+            if(resp.result) {
+                clearErrors()
+                resp.vehicle?.let { v ->
+                    updateVehicleName(v.name)
+                    updateVehicleModel(v.model ?: "")
+                    updateVehicleNotes(v.notes ?: "")
+                    updateVehicleDate(v.dateInMillis)
+                    updateVehicleDateFormatted(DateTimeUtils.dateToDateString(v.dateInMillis))
+                    v.terminationDateInMillis?.let { tDate ->
+                        updateVehicleTerminationDate(tDate)
+                        updateVehicleTerminationDateFormatted(DateTimeUtils.dateToDateString(tDate))
+                    }
+                }
+                updateVehicleToUpdate(resp.vehicle)
+            }
+            else {
+                updateGeneralError(true, "${resp.code}: ${resp.message}")
+                Klog.linedbg("VehiclesViewModel", "getVehicle", "error getting vehicle")
+            }
+            updateIsVehiclesLoading(false)
+        }
+    }
+
+    fun updateVehicle() {
+        Klog.linedbg("VehiclesViewModel", "updateVehicle", "updating vehicle")
+        updateVehiclesLoadingMessage("Updating Vehicle")
+        updateIsVehiclesLoading(true)
+
+        val validateResult = validateFields()
+        if(!validateResult.result) {
+            updateGeneralError(true, "The field ${validateResult.field} ${validateResult.message}")
+            updateIsVehiclesLoading(false)
+            return
+        }
+        Klog.linedbg("VehiclesViewModel", "updateVehicle", "Validation has been success")
+
+        val veh: Vehicle = fillVehicleObject()
+        Klog.linedbg("VehiclesViewModel", "updateVehicle", "Veh: $veh")
+
+        viewModelScope.launch {
+            val resp = vehicleService.updateVehicle(veh, AppState.useremail!!)
+            Klog.line("VehiclesViewModel", "updateVehicle", "resp: $resp")
+            if(resp.result) {
+                clearErrors()
+                fetchVehiclesFromService()
+                clearState()
+            }
+            else {
+                updateGeneralError(true, "${resp.code}: ${resp.message}")
+                Klog.linedbg("VehiclesViewModel", "updateVehicle", "error updating Vehicle")
+            }
+            updateIsVehiclesLoading(false)
+        }
+    }
+
+    private fun fillVehicleObject(): Vehicle {
+        val result = Vehicle(
+            id = uiState.value.vehicleToUpdate?.id,
+            name = uiState.value.vehicleName,
+            model = uiState.value.vehicleModel.takeIf { it.isNotBlank() }?.trim(),
+            notes = uiState.value.vehicleNotes.takeIf { it.isNotBlank() }?.trim(),
+            dateInMillis = uiState.value.vehicleDate,
+            year = DateTimeUtils.dateToYear(uiState.value.vehicleDate),
+            month = DateTimeUtils.dateToMonth(uiState.value.vehicleDate),
+            day = DateTimeUtils.dateToDay(uiState.value.vehicleDate)
+        ).apply {
+            uiState.value.vehicleTerminationDate?.takeIf { it > 0L }?.let { date ->
+                terminationDateInMillis = date
+                terminationYear = DateTimeUtils.dateToYear(date)
+                terminationMonth = DateTimeUtils.dateToMonth(date)
+                terminationDay = DateTimeUtils.dateToDay(date)
+            }
+        }
+        return result
     }
 
     private fun validateFields(): ValidationResult {
@@ -184,20 +291,21 @@ class VehiclesViewModel(private val vehicleService: VehicleService): ViewModel()
 
     private fun fillObj(): Vehicle {
         val result = Vehicle(
-            null,
-            uiState.value.vehicleName!!,
-            if (uiState.value.vehicleModel.isNotBlank()) uiState.value.vehicleModel.trim() else null,
-            if (uiState.value.vehicleNotes.isNotBlank()) uiState.value.vehicleNotes.trim() else null,
-            uiState.value.vehicleDate,
-            DateTimeUtils.dateToYear(uiState.value.vehicleDate),
-            DateTimeUtils.dateToMonth(uiState.value.vehicleDate),
-            DateTimeUtils.dateToDay(uiState.value.vehicleDate)
-        )
-        if(uiState.value.vehicleSaleDate != null) {
-            result.saleDateInMillis = uiState.value.vehicleSaleDate!!
-            result.saleYear = DateTimeUtils.dateToYear(uiState.value.vehicleSaleDate!!)
-            result.saleMonth = DateTimeUtils.dateToMonth(uiState.value.vehicleSaleDate!!)
-            result.saleDay = DateTimeUtils.dateToDay(uiState.value.vehicleSaleDate!!)
+            id =null,
+            name = uiState.value.vehicleName!!,
+            model = uiState.value.vehicleModel.takeIf { it.isNotBlank() }?.trim(),
+            notes = uiState.value.vehicleNotes.takeIf { it.isNotBlank() }?.trim(),
+            dateInMillis = uiState.value.vehicleDate,
+            year = DateTimeUtils.dateToYear(uiState.value.vehicleDate),
+            month = DateTimeUtils.dateToMonth(uiState.value.vehicleDate),
+            day = DateTimeUtils.dateToDay(uiState.value.vehicleDate)
+        ).apply {
+            uiState.value.vehicleTerminationDate?.let { date ->
+                terminationDateInMillis = date
+                terminationYear = DateTimeUtils.dateToYear(date)
+                terminationMonth = DateTimeUtils.dateToMonth(date)
+                terminationDay = DateTimeUtils.dateToDay(date)
+            }
         }
 
         return result
@@ -209,10 +317,10 @@ class VehiclesViewModel(private val vehicleService: VehicleService): ViewModel()
         updateVehicleDateFormatted(dateFormatted)
     }
 
-    fun onDateSaleSelected(dateInMill: Long) {
+    fun onTerminationDateSelected(dateInMill: Long) {
         val dateFormatted = DateTimeUtils.dateToDateString(dateInMill)
-        updateVehicleSaleDate(dateInMill)
-        updateVehicleSaleDateFormatted(dateFormatted)
+        updateVehicleTerminationDate(dateInMill)
+        updateVehicleTerminationDateFormatted(dateFormatted)
     }
 
     fun clearForm() {
@@ -221,6 +329,8 @@ class VehiclesViewModel(private val vehicleService: VehicleService): ViewModel()
         updateVehicleNotes("")
         updateVehicleDate(0L)
         updateVehicleDateFormatted("")
+        updateVehicleTerminationDate(0L)
+        updateVehicleTerminationDateFormatted("")
     }
 
     private fun updateVehicleList(list: List<Vehicle>) {
@@ -253,15 +363,15 @@ class VehiclesViewModel(private val vehicleService: VehicleService): ViewModel()
         }
     }
 
-    fun updateVehicleSaleDate(date: Long) {
+    fun updateVehicleTerminationDate(date: Long) {
         _uiState.update {
-            it.copy(vehicleSaleDate = date)
+            it.copy(vehicleTerminationDate = date)
         }
     }
 
-    fun updateVehicleSaleDateFormatted(date: String) {
+    fun updateVehicleTerminationDateFormatted(date: String) {
         _uiState.update {
-            it.copy(vehicleSaleDateFormatted = date)
+            it.copy(vehicleTerminationDateFormatted = date)
         }
     }
 
@@ -325,6 +435,12 @@ class VehiclesViewModel(private val vehicleService: VehicleService): ViewModel()
         }
     }
 
+    private fun updateVehicleToUpdate(vehicle: Vehicle?) {
+        _uiState.update {
+            it.copy(vehicleToUpdate = vehicle)
+        }
+    }
+
     private fun updateIsToMaintainVehicle(action: Boolean) {
         _uiState.update {
             it.copy(isToMaintainVehicle = action)
@@ -348,6 +464,8 @@ class VehiclesViewModel(private val vehicleService: VehicleService): ViewModel()
         updateHeaderMessage("")
         updateIsToMaintainVehicle(false)
         updateIsToAddVehicle(false)
+        updateIsToUpdateVehicle(action = false)
+        updateVehicleToUpdate(null)
     }
 
     private fun clearErrors() {

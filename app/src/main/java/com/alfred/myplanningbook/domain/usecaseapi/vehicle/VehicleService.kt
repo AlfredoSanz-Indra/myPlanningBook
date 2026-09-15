@@ -15,5 +15,7 @@ interface VehicleService {
 
     suspend fun deleteVehicle(userEmail: String, vehicleId: String): SimpleVehicleResponse
 
+    suspend fun getVehicle(userEmail: String, vehicleId: String): SimpleVehicleResponse
 
+    suspend fun updateVehicle(vehicle: Vehicle, userEmail: String): SimpleVehicleResponse
 }

@@ -76,4 +76,49 @@ class VehicleServiceImpl(private val vehicleRepository: VehicleRepository): Vehi
             Klog.linedbg("VehicleServiceImpl", "deleteVehicle", "result: $it")
         }
     }
+
+    override suspend fun getVehicle(userEmail: String, vehicleId: String): SimpleVehicleResponse {
+        Klog.line("VehicleServiceImpl", "getVehicle", "getting Vehicle -> vehicleId: $vehicleId")
+
+        return try {
+            val resp = vehicleRepository.getVehicle(userEmail, vehicleId)
+
+            if (resp.result) {
+                SimpleVehicleResponse(true, resp.code, resp.message, "").apply {
+                    this.vehicle = resp.vehicle
+                }
+            } else {
+                SimpleVehicleResponse(false, resp.code, "error", resp.message)
+            }
+        }
+        catch (e: Exception) {
+            Klog.line("VehicleServiceImpl", "getVehicle", "Exception: ${e.message}")
+            SimpleVehicleResponse(false, 500, e.message ?: "Unknown error", "")
+        }.also {
+            Klog.linedbg("VehicleServiceImpl", "getVehicle", "result: $it")
+        }
+    }
+
+    override suspend fun updateVehicle(vehicle: Vehicle, userEmail: String): SimpleVehicleResponse {
+        Klog.line("VehicleServiceImpl", "updateVehicle", "updating Vehicle -> vehicle: ${vehicle.name}")
+
+        return try {
+            val resp = vehicleRepository.updateVehicle(vehicle, userEmail)
+
+            if (resp.result) {
+                SimpleVehicleResponse(true, resp.code, resp.message, "").apply {
+                    this.vehicle = resp.vehicle
+                }
+            } else {
+                SimpleVehicleResponse(false, resp.code, "error", resp.message)
+            }
+        }
+        catch (e: Exception) {
+            Klog.line("VehicleServiceImpl", "updateVehicle", "Exception: ${e.message}")
+            SimpleVehicleResponse(false, 500, e.message ?: "Unknown error", "")
+        }.also {
+            Klog.linedbg("VehicleServiceImpl", "updateVehicle", "result: $it")
+        }
+    }
 }
+

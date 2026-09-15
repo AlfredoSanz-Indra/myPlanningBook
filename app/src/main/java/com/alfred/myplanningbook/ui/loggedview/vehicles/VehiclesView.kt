@@ -22,6 +22,7 @@ import com.alfred.myplanningbook.ui.common.TitleViewComponent
 import com.alfred.myplanningbook.ui.loggedview.vehicles.sections.VehHeaderSection
 import com.alfred.myplanningbook.ui.loggedview.vehicles.sections.VehListSection
 import com.alfred.myplanningbook.ui.loggedview.vehicles.sections.VehicleAddSection
+import com.alfred.myplanningbook.ui.loggedview.vehicles.sections.VehicleEditSection
 import com.alfred.myplanningbook.ui.loggedview.vehicles.viewmodel.VehiclesViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -81,7 +82,7 @@ class VehiclesView {
             VehicleAddSection()
         }
         else if(uiState.isToUpdateVehicle) {
-           // LibraryUpdateSection()
+            VehicleEditSection()
         }
         else if(uiState.isToMaintainVehicle) {
             //LibraryFilterSection()

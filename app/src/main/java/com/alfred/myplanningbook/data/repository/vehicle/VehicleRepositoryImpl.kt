@@ -7,12 +7,8 @@ import com.alfred.myplanningbook.data.model.Documents
 import com.alfred.myplanningbook.data.model.SimpleDataVehicleResponse
 import com.alfred.myplanningbook.domain.model.vehicle.Vehicle
 import com.alfred.myplanningbook.domain.repositoryapi.vehicle.VehicleRepository
-import com.google.android.gms.tasks.Task
-import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.Query.Direction
-import com.google.firebase.firestore.QuerySnapshot
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.async
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
@@ -34,10 +30,10 @@ class VehicleRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): Vehi
             Documents.VEHICLE_ACQUISITION_YEAR to entity.year,
             Documents.VEHICLE_ACQUISITION_MONTH to entity.month,
             Documents.VEHICLE_ACQUISITION_DAY to entity.day,
-            Documents.VEHICLE_SALE_DATE to entity.saleDateInMillis,
-            Documents.VEHICLE_SALE_YEAR to entity.saleYear,
-            Documents.VEHICLE_SALE_MONTH to entity.saleMonth,
-            Documents.VEHICLE_SALE_DAY to entity.saleDay
+            Documents.VEHICLE_TERMINATION_DATE to entity.terminationDateInMillis,
+            Documents.VEHICLE_TERMINATION_YEAR to entity.terminationYear,
+            Documents.VEHICLE_TERMINATION_MONTH to entity.terminationMonth,
+            Documents.VEHICLE_TERMINATION_DAY to entity.terminationDay
         )
 
         try {
@@ -51,7 +47,6 @@ class VehicleRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): Vehi
             SimpleDataVehicleResponse(true, 200, "inserted vehicle").apply {
                 this.vehicle = entity
             }
-
         } catch (e: Exception) {
             Klog.line("VehicleRepositoryImpl", "insertVehicle", "Error: ${e.message}")
             SimpleDataVehicleResponse(false, 400, "Inserting Vehicle failed: ${e.message}")
@@ -80,12 +75,15 @@ class VehicleRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): Vehi
                     year = (document.get(Documents.VEHICLE_ACQUISITION_YEAR) as Long).toInt(),
                     month = (document.get(Documents.VEHICLE_ACQUISITION_MONTH) as Long).toInt(),
                     day = (document.get(Documents.VEHICLE_ACQUISITION_DAY) as Long).toInt(),
-                    saleDateInMillis = document.get(Documents.VEHICLE_SALE_DATE) as Long?,
-                    saleYear = (document.get(Documents.VEHICLE_SALE_YEAR) as Long?)?.toInt(),
-                    saleMonth = (document.get(Documents.VEHICLE_SALE_MONTH) as Long?)?.toInt(),
-                    saleDay = (document.get(Documents.VEHICLE_SALE_DAY) as Long?)?.toInt()
+                    terminationDateInMillis = document.get(Documents.VEHICLE_TERMINATION_DATE) as Long?,
+                    terminationYear = (document.get(Documents.VEHICLE_TERMINATION_YEAR) as Long?)?.toInt(),
+                    terminationMonth = (document.get(Documents.VEHICLE_TERMINATION_MONTH) as Long?)?.toInt(),
+                    terminationDay = (document.get(Documents.VEHICLE_TERMINATION_DAY) as Long?)?.toInt()
                 )
             }
+            .sortedWith(compareBy<Vehicle> { it.terminationDateInMillis != null})
+
+
             Klog.line("VehicleRepositoryImpl", "getVehicles", "vehicleList -> $vehicleList")
 
             SimpleDataVehicleResponse(true, 200, "Vehicles obtained - ${vehicleList.size}").apply {
@@ -115,4 +113,78 @@ class VehicleRepositoryImpl(private val ioDispatcher: CoroutineDispatcher): Vehi
             SimpleDataVehicleResponse(false, 400, "Deleting Vehicle failed: ${e.message}")
         }
     }
+
+    override suspend fun getVehicle(userEmail: String, vehicleId: String): SimpleDataVehicleResponse = withContext(ioDispatcher) {
+        Klog.line("VehicleRepositoryImpl", "getVehicle", "vehicleId: $vehicleId")
+
+        try {
+            val snapshot = FirebaseSession.db.collection(Collections.VEHICLES)
+                .document(vehicleId)
+                .get()
+                .await()
+
+            Klog.line("VehicleRepositoryImpl", "getVehicle", "snapshot -> $snapshot")
+
+            val vehicle = Vehicle(
+                id = snapshot.id,
+                name = snapshot.get(Documents.VEHICLE_NAME) as String,
+                model = snapshot.get(Documents.VEHICLE_MODEL) as String?,
+                notes = snapshot.get(Documents.VEHICLE_NOTES) as String?,
+                dateInMillis = snapshot.get(Documents.VEHICLE_ACQUISITION_DATE) as Long,
+                year = (snapshot.get(Documents.VEHICLE_ACQUISITION_YEAR) as Long).toInt(),
+                month = (snapshot.get(Documents.VEHICLE_ACQUISITION_MONTH) as Long).toInt(),
+                day = (snapshot.get(Documents.VEHICLE_ACQUISITION_DAY) as Long).toInt(),
+                terminationDateInMillis = snapshot.get(Documents.VEHICLE_TERMINATION_DATE) as Long?,
+                terminationYear = (snapshot.get(Documents.VEHICLE_TERMINATION_YEAR) as Long?)?.toInt(),
+                terminationMonth = (snapshot.get(Documents.VEHICLE_TERMINATION_MONTH) as Long?)?.toInt(),
+                terminationDay = (snapshot.get(Documents.VEHICLE_TERMINATION_DAY) as Long?)?.toInt()
+            )
+
+            Klog.line("VehicleRepositoryImpl", "getVehicle", "vehicle -> $vehicle")
+
+            SimpleDataVehicleResponse(true, 200, "Vehicle obtained - ${vehicle.id}").apply {
+                this.vehicle = vehicle
+            }
+        }
+        catch (e: Exception) {
+            Klog.line("VehicleRepositoryImpl", "getVehicle", "Error: ${e.message}")
+            SimpleDataVehicleResponse(false, 400, "Getting Vehicle failed: ${e.message}")
+        }
+    }
+
+    override suspend fun updateVehicle(entity: Vehicle, userEmail: String): SimpleDataVehicleResponse = withContext(ioDispatcher) {
+        Klog.line("VehicleRepositoryImpl", "updateVehicle", "vehicleId: ${entity.id}")
+
+        val vehicleData = hashMapOf(
+            Documents.VEHICLE_USEREMAIL to userEmail,
+            Documents.VEHICLE_NAME to entity.name,
+            Documents.VEHICLE_MODEL to entity.model,
+            Documents.VEHICLE_NOTES to entity.notes,
+            Documents.VEHICLE_ACQUISITION_DATE to entity.dateInMillis,
+            Documents.VEHICLE_ACQUISITION_YEAR to entity.year,
+            Documents.VEHICLE_ACQUISITION_MONTH to entity.month,
+            Documents.VEHICLE_ACQUISITION_DAY to entity.day,
+            Documents.VEHICLE_TERMINATION_DATE to entity.terminationDateInMillis,
+            Documents.VEHICLE_TERMINATION_YEAR to entity.terminationYear,
+            Documents.VEHICLE_TERMINATION_MONTH to entity.terminationMonth,
+            Documents.VEHICLE_TERMINATION_DAY to entity.terminationDay
+        )
+
+        try {
+            FirebaseSession.db.collection(Collections.VEHICLES)
+                .document(entity.id!!)
+                .set(vehicleData)
+                .await()
+
+            Klog.line("VehicleRepositoryImpl", "updateVehicle", "Successfully updated -> ID: ${entity.id}")
+            SimpleDataVehicleResponse(true, 200, "updated vehicle").apply {
+                this.vehicle = entity
+            }
+        }
+        catch (e: Exception) {
+            Klog.line("VehicleRepositoryImpl", "updateVehicle", "Error: ${e.message}")
+            SimpleDataVehicleResponse(false, 400, "Updating Vehicle failed: ${e.message}")
+        }
+    }
 }
+

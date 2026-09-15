@@ -28,6 +28,7 @@ import com.alfred.myplanningbook.ui.common.CommonViewComp
 import com.alfred.myplanningbook.ui.common.TextBigFieldComponent
 import com.alfred.myplanningbook.ui.common.TextFieldComponent
 import com.alfred.myplanningbook.ui.common.TextWithDatePickerComponent
+import com.alfred.myplanningbook.ui.loggedview.vehicles.components.VehicleForm
 import com.alfred.myplanningbook.ui.loggedview.vehicles.viewmodel.VehiclesUiState
 import com.alfred.myplanningbook.ui.loggedview.vehicles.viewmodel.VehiclesViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -44,6 +45,13 @@ fun VehicleAddSection() {
 }
 
 @Composable
+fun VehicleEditSection() {
+    VehicleEditActions()
+    Spacer(modifier = Modifier.height(10.dp))
+    VehicleAddForm()
+}
+
+@Composable
 private fun VehicleAddActions() {
     val viewModel: VehiclesViewModel = koinViewModel()
 
@@ -55,7 +63,7 @@ private fun VehicleAddActions() {
     ) {
         Spacer(Modifier.width(20.dp))
         ActionButtonComponent.show(
-            "New",
+            "Save",
             CommonViewComp.getActionsButtonColour(),
             onClick = {
                 viewModel.saveNewVehicle()
@@ -66,6 +74,33 @@ private fun VehicleAddActions() {
             CommonViewComp.getSecondaryButtonColour(),
             onClick = {
                 viewModel.showNewVehicle(false)
+            })
+    }//Row
+}
+
+@Composable
+private fun VehicleEditActions() {
+    val viewModel: VehiclesViewModel = koinViewModel()
+
+    Row(
+        Modifier.background(color = Color(0xFFf7f6ff))
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Spacer(Modifier.width(20.dp))
+        ActionButtonComponent.show(
+            "Update",
+            CommonViewComp.getActionsButtonColour(),
+            onClick = {
+                viewModel.updateVehicle()
+            })
+        Spacer(Modifier.width(5.dp))
+        ActionButtonComponent.show(
+            "Back",
+            CommonViewComp.getSecondaryButtonColour(),
+            onClick = {
+                viewModel.showUpdateVehicle(false)
             })
     }//Row
 }
@@ -84,38 +119,26 @@ private fun VehicleAddForm() {
         Column(
             Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 10.dp)
         ) {
-            TextFieldComponent.show(
-                uiState.value.vehicleName,
-                "Vehicle",
-                onValueChange = {
-                    viewModel.updateVehicleName(it)
-                })
+            VehicleForm.show()
+        }
+    }
+}
 
-            TextBigFieldComponent.show(
-                uiState.value.vehicleModel,
-                3,
-                "Model",
-                onValueChange = {
-                    viewModel.updateVehicleModel(it)
-                })
+@Composable
+private fun VehicleEditForm() {
+    val viewModel: VehiclesViewModel = koinViewModel()
+    val uiState: State<VehiclesUiState> = viewModel.uiState.collectAsStateWithLifecycle()
 
-            TextWithDatePickerComponent.show(
-                uiState.value.vehicleDateFormatted,
-                uiState.value.vehicleDate,
-                "Date of acquisition",
-                onDateSelected = {
-                    Klog.line("onDateSelected: it: $it")
-                    viewModel.onDateSelected(it)
-                })
-
-            TextBigFieldComponent.show(
-                uiState.value.vehicleNotes,
-                5,
-                "Notes",
-                onValueChange = {
-                    viewModel.updateVehicleNotes(it)
-                })
-
+    Box(
+        modifier = Modifier.padding(15.dp)
+            .border(2.dp, color = Color.Gray, shape = RoundedCornerShape(16.dp))
+            .fillMaxWidth()
+            .fillMaxHeight()
+    ) {
+        Column(
+            Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 10.dp)
+        ) {
+            VehicleForm.show()
         }
     }
 }
